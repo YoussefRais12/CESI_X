@@ -11,7 +11,7 @@ export const INITIAL_USER = {
     imageUrl: '',
     bio: ''
 }
-const INTIAL_STATE = {
+const INITIAL_STATE = {
     user: INITIAL_USER,
     isLoading: false,
     isAuthenticated: false,
@@ -28,7 +28,7 @@ type IContextType = {
     checkAuthUser: () => Promise < boolean >;
 };
 
-const AuthContext = createContext < IContextType > (INTIAL_STATE);
+const AuthContext = createContext < IContextType > (INITIAL_STATE);
 
 const AuthProvider = ({children} : {
     children: React.ReactNode

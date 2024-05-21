@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faHamburger, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import '../styles/login.css';
 import { userLogin, userRegister } from '../redux/userSlice/userSlice';
 import { useDispatch } from 'react-redux';
@@ -14,6 +14,7 @@ const LoginContainer = ({ ping, setPing }) => {
     const [error, setError] = useState('');
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
     const passwordRef = useRef(null);
 
     const togglePasswordVisibility = () => {
@@ -50,12 +51,58 @@ const LoginContainer = ({ ping, setPing }) => {
         try {
             await dispatch(userRegister(newUser)).unwrap();
             setNewUser({ name: '', email: '', password: '', role: '' });
-            alert('User registered successfully!');
-            setShowCreateAccountModal(false); // Close modal on successful account creation
+            handleLoginWithNewUser();
         } catch (error) {
             setError('Error registering user.');
             console.error("Error registering user", error);
         }
+    };
+
+    const handleLoginWithNewUser = async () => {
+        try {
+            setError('');
+
+            const response = await dispatch(userLogin({ email: newUser.email, password: newUser.password }));
+
+            if (response.payload.token) {
+                navigate('/profile');
+                setPing(!ping);
+                setShowCreateAccountModal(false); // Close modal on successful account creation and login
+            }
+        } catch (error) {
+            setError('Error logging in with new account.');
+            console.error('Login error:', error);
+        }
+    };
+
+    const nextStep = () => {
+        if (currentStep === 1 && (!newUser.name || !newUser.email)) {
+            setError('Name and email are required.');
+        } else if (currentStep === 2 && !newUser.password) {
+            setError('Password is required.');
+        } else if (currentStep === 1 && !validateEmail(newUser.email)) {
+            setError('Invalid email format.');
+        } else if (currentStep === 2 && !validatePassword(newUser.password)) {
+            setError('Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.');
+        } else {
+            setError('');
+            setCurrentStep(currentStep + 1);
+        }
+    };
+
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    };
+
+    const validatePassword = (password) => {
+        const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return re.test(String(password));
+    };
+
+    const selectRole = (role) => {
+        setNewUser({ ...newUser, role:role });
+        handleRegister();
     };
 
     return (
@@ -65,7 +112,11 @@ const LoginContainer = ({ ping, setPing }) => {
                 <h2 className="subheadline">Join today.</h2>
                 <div className="button-container">
                     <button className="sign-in" onClick={() => setShowSignInModal(true)}>Sign in</button>
-                    <button className="create-account" onClick={() => setShowCreateAccountModal(true)}>Create account</button>
+                    <button className="create-account" onClick={() => {
+                        setNewUser({ name: '', email: '', password: '', role: '' });
+                        setCurrentStep(1);
+                        setShowCreateAccountModal(true);
+                    }}>Create account</button>
                     <p className="terms-text">
                         By signing up, you agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>, including <a href="#">Cookie Use</a>.
                     </p>
@@ -115,45 +166,54 @@ const LoginContainer = ({ ping, setPing }) => {
                         <div className="login-container">
                             <span className="close" onClick={() => setShowCreateAccountModal(false)}>&times;</span>
                             <h2 className="headline-login">Create your account</h2>
-                            <div className="input-container">
-                                <input
-                                    type="text"
-                                    placeholder="Name"
-                                    value={newUser.name}
-                                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                                />
-                                <span className="input-count">{newUser.name.length} / 50</span>
-                            </div>
-                            <div className="input-container">
-                                <input
-                                    type="email"
-                                    placeholder="Email"
-                                    value={newUser.email}
-                                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                                />
-                            </div>
-                            <div className="input-container">
-                                <input
-                                    type="password"
-                                    placeholder="Password"
-                                    value={newUser.password}
-                                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                                />
-                            </div>
-                            <div className="input-container">
-                                <select
-                                    value={newUser.role}
-                                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                                >
-                                    <option value="">Select Role</option>
-                                    <option value="chef service hse">Chef Service HSE</option>
-                                    <option value="chef securité">Chef Securité</option>
-                                    <option value="responsable erp">Responsable ERP</option>
-                                    <option value="responsable commercial">Responsable Commercial</option>
-                                    <option value="responsable energie">Responsable Energie</option>
-                                </select>
-                            </div>
-                            <button onClick={handleRegister}>Next</button>
+                            {currentStep === 1 && (
+                                <div>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            placeholder="Name"
+                                            value={newUser.name}
+                                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                                        />
+                                        <span className="input-count">{newUser.name.length} / 50</span>
+                                    </div>
+                                    <div className="input-container">
+                                        <input
+                                            type="email"
+                                            placeholder="Email"
+                                            value={newUser.email}
+                                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {currentStep === 2 && (
+                                <div>
+                                    <div className="input-container">
+                                        <input
+                                            type="password"
+                                            placeholder="Password"
+                                            value={newUser.password}
+                                            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {currentStep === 3 && (
+                                <div className="role-selection-container">
+                                    <button className="role-button" onClick={() => selectRole('client')}>
+                                        Client
+                                        <FontAwesomeIcon icon={faHamburger} className="role-icon" />
+                                    </button>
+                                    <button className="role-button" onClick={() => selectRole('entreprise')}>
+                                        Entreprise
+                                        <FontAwesomeIcon icon={faBuilding} className="role-icon" />
+                                    </button>
+                                </div>
+                            )}
+                            {currentStep < 3 && (
+                                <button onClick={nextStep}>Next</button>
+                            )}
                             {error && <p className="error">{error}</p>}
                         </div>
                     </div>

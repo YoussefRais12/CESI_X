@@ -12,6 +12,7 @@ import Favoris from "./pages/Favoris";
 import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
 import Error from "./pages/Error";
+import Feed from "./pages/Feed";
 import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
 import Dashboard from "./pages/Dashboard";
 import './App.css'; // Import the global CSS file
@@ -48,6 +49,8 @@ console.log('userRole',userRole);
         <Route path="/dashboard" element={<Dashboard/>} />
         <Route path="/favoris" element={<Favoris/>} />
         <Route path="/error" element={<Error/>} />
+        <Route path="/feed" element={<Feed/>} />
+
     </Routes>
 </>
   );

@@ -6,9 +6,9 @@ import {useDispatch, useSelector} from "react-redux";
 import { userCurrent } from "./redux/userSlice/userSlice";
 import Profile from "./pages/Profile";
 import PrivateRoute from "./routes/PrivateRoute";
-import Box from "./pages/Box";
+import Commandes from "./pages/Commandes";
 import DepComercial from "./pages/DepComercial";
-import Hse from "./pages/Hse";
+import Favoris from "./pages/Favoris";
 import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
 import Error from "./pages/Error";
@@ -43,10 +43,10 @@ console.log('userRole',userRole);
                 <Route path="/profile" element={<Profile ping={ping} setPing={setPing}/>} />
             </Route>
         </Route>
-        <Route path="/box" element={<Box/>} />
+        <Route path="/commandes" element={<Commandes/>} />
         <Route path="/depcomercial" element={<DepComercial/>} />
         <Route path="/dashboard" element={<Dashboard/>} />
-        <Route path="/hse" element={<Hse/>} />
+        <Route path="/favoris" element={<Favoris/>} />
         <Route path="/error" element={<Error/>} />
     </Routes>
 </>

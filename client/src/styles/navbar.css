@@ -1,53 +1,179 @@
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #ffffff;
-  color: #333333;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: flex-start;
+    /* Align items to the start (left) */
+    align-items: center;
+    background-color: #ffffff;
+    color: #333333;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1001;
+    /* Ensure it is above the overlay */
+}
+
+.app-logo,
+.logo {
+    width: 90px;
+    /* Adjust size as needed */
+    height: auto;
+    margin-left: 0;
+    /* Align to the extreme left */
+}
+
+.menu-button {
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-right: 10px;
 }
 
 .navbar a {
-  text-decoration: none;
-  color: #333333;
-  padding: 0 15px;
-  font-size: 0.9rem; /* Decreased font size */
-  font-weight: 500;
+    text-decoration: none;
+    color: #333333;
+    padding: 0 15px;
+    font-size: 0.9rem;
+    /* Decreased font size */
+    font-weight: 500;
 }
 
 .navbar h1 {
-  font-size: 1.5rem; /* Decreased font size */
+    font-size: 1.5rem;
+    /* Decreased font size */
 }
 
 .logo {
-  width: 40px; /* Adjusted size of the logo */
-  height: auto;
-  margin-right: auto;
+    width: 40px;
+    /* Adjusted size of the logo */
+    height: auto;
+    margin-right: auto;
 }
 
-.tun {
-  width: 40px; /* Adjusted size of the logo */
-  height: auto;
-  margin-left: auto;
+.app-logo {
+    width: 90px;
+    /* Adjust size as needed */
+    height: auto;
+    margin-left: 10px;
+    margin-top: 5px;
 }
 
-.navbar-links {
-  display: flex;
-  align-items: center;
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Semi-transparent background */
+    z-index: 1000;
+    /* Below the navbar but above other content */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out;
 }
+
+.overlay.fade-in {
+    opacity: 1;
+    visibility: visible;
+}
+
+.overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+}
+
+.dropdown-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px;
+    background-color: #ffffff;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    /* Ensure it is above the overlay */
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.dropdown-menu.fade-in {
+    animation-name: fadeIn;
+}
+
+.dropdown-menu.fade-out {
+    animation-name: fadeOut;
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+    text-align: left;
+    padding: 10px 15px;
+    font-size: 1rem;
+    color: #333333;
+    text-decoration: none;
+    display: block;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-content {
+
+    text-align: left;
+    font-size: 1rem;
+    height: auto;
+
+}
+
+.menu-icon {
+  margin-right: 10px; /* Adjust the space as needed */
+}
+
 
 .logout-button {
     padding: 8px 16px;
-    background-color: #f44336; /* Red color for the disconnect button */
+    background-color: #f44336;
+    /* Red color for the disconnect button */
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s;
+    margin-top: auto;
+    /* Push the button to the bottom */
+    margin-bottom: 15px;
 }
-
 .logout-button:hover {
-    background-color: #d32f2f; /* Darken the red on hover */
+    background-color: #d32f2f;
+    /* Darken the red on hover */
 }

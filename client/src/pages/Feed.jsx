@@ -7,14 +7,16 @@ const items = [
         img: require('../styles/assets/carousel1.png'), // Use require
         title: 'Nouveaux restos ⭐',
         content: 'La fine sélection à découvrir',
-        color: '#d3efda' // Add color property
+        color: '#d3efda' ,// Add color property
+        text: 'En exclusivité sur Cesi Eats 🔥' // Add text property
     },
     {
         id: 2,
-        img: 'assets/images/SarayaAlBahar.png',
+        img: require('../styles/assets/carousel2.png'),
         title: 'Charming & Peaceful',
         content: 'Discover Saraya Al Bahar',
-        color: '#40754a' // Add color property
+        color: '#FEE4B6', // Add color property
+        text: 'Je fonce 🚀 ->' // Add text property
     },
     {
         id: 3,

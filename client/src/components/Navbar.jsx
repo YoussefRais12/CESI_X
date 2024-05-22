@@ -8,7 +8,9 @@ import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt } from '@for
 
 const Navbar = ({ setPing, ping }) => {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [cartOpen, setCartOpen] = useState(false);
     const [animationClass, setAnimationClass] = useState('');
+    const [cartAnimationClass, setCartAnimationClass] = useState('');
     const user = useSelector((state) => state.user?.user);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -38,6 +40,19 @@ const Navbar = ({ setPing, ping }) => {
         }
     };
 
+    const toggleCart = () => {
+        if (cartOpen) {
+            setCartAnimationClass('fade-out');
+            setTimeout(() => {
+                setCartOpen(false);
+                setCartAnimationClass('');
+            }, 500); // Match with the CSS animation duration
+        } else {
+            setCartOpen(true);
+            setCartAnimationClass('fade-in');
+        }
+    };
+
     const handleCloseMenu = () => {
         if (menuOpen) {
             setAnimationClass('fade-out');
@@ -48,11 +63,26 @@ const Navbar = ({ setPing, ping }) => {
         }
     };
 
+    const handleCloseCart = () => {
+        if (cartOpen) {
+            setCartAnimationClass('fade-out');
+            setTimeout(() => {
+                setCartOpen(false);
+                setCartAnimationClass('');
+            }, 500); // Match with the CSS animation duration
+        }
+    };
+
     return (
         <>
             <div className={`navbar`}>
                 <button className="menu-button" onClick={toggleMenu}>☰</button>
-                <img src="/logo.svg" alt="App Logo" className="app-logo" />
+                <Link to="/feed">
+                    <img src="/logo.svg" alt="App Logo" className="app-logo" />
+                </Link>
+                <button className="cart-button" onClick={toggleCart}>
+                    <FontAwesomeIcon icon={faShoppingCart} />
+                </button>
             </div>
 
             {menuOpen && (
@@ -65,7 +95,7 @@ const Navbar = ({ setPing, ping }) => {
                         {user?.role === "client" ? (
                             <>
                                 <Link to='favoris' onClick={toggleMenu}>
-                                <h1 className='dropdown-content'><FontAwesomeIcon icon={faHeart} className="menu-icon" /> Favoris</h1>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faHeart} className="menu-icon" /> Favoris</h1>
                                 </Link>
                                 <Link to='commandes' onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Commandes</h1>
@@ -74,7 +104,7 @@ const Navbar = ({ setPing, ping }) => {
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" /> Wallet</h1>
                                 </Link>
                                 <Link to='dashboard' onClick={toggleMenu}>
-                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon"  /> Dashboard</h1>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" /> Dashboard</h1>
                                 </Link>
                             </>
                         ) : user?.role === "role123" ? (
@@ -109,6 +139,17 @@ const Navbar = ({ setPing, ping }) => {
                             </>
                         ) : null}
                         <button className="logout-button" onClick={handleLogout}>Logout</button>
+                    </div>
+                </>
+            )}
+
+            {cartOpen && (
+                <>
+                    <div className={`overlay ${cartAnimationClass}`} onClick={handleCloseCart}></div>
+                    <div className={`cart-menu ${cartAnimationClass}`}>
+                        {/* Add your cart content here */}
+                        <h1 className='dropdown-content'>Cart Content</h1>
+                        <button className="close-cart-button" onClick={handleCloseCart}>Close</button>
                     </div>
                 </>
             )}

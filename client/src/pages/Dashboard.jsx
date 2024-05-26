@@ -3,6 +3,7 @@ import '../styles/dashboard.css';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllUsers, userEdit, userDelete, userAdd } from '../redux/userSlice/userSlice';
+const UserRole = require('../type.tsx');
 
 const Dashboard = () => {
     const currentUser = useSelector((state) => state.user?.user);
@@ -12,7 +13,7 @@ const Dashboard = () => {
     const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '' });
 
     useEffect(() => {
-        const allowedRoles = ['chef service hse'];
+        const allowedRoles = [UserRole.admin];
         if (!allowedRoles.includes(currentUser?.role)) {
             navigate('/error');
         } else {

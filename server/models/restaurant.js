@@ -8,8 +8,8 @@ const restaurantSchema = new schema({
     phone: { type: String, required: true },
     email: { type: String, required: true },
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    articles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }] // Array of article references
-
+    articles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }], // Array of article references
+    menus: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Menu' }] // Array of menu references
 });
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);

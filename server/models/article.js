@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema;
-const articleRoutes = require('../routes/articleRoute');
 
 const articleSchema = new schema({
     name: { type: String, required: true },

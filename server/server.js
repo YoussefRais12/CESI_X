@@ -16,6 +16,7 @@ const userRoute = require("./routes/userRoute");
 const articleRoute = require('./routes/articleRoute');
 const restaurantRoute = require('./routes/restaurantRoute');
 const deliveryPersonRoute = require('./routes/deliveryPersonRoute');
+const menuRoute = require('./routes/menuRoute');
 
 
 // ------------------------ our routes----------------------------
@@ -23,6 +24,7 @@ app.use("/user", userRoute);
 app.use('/article', articleRoute);
 app.use('/restaurant', restaurantRoute);
 app.use('/deliveryPerson', deliveryPersonRoute);
+app.use('/menu', menuRoute);
 
 // ------------------------ end our routes------------------------
 

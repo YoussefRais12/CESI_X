@@ -15,7 +15,7 @@ const UserRole = require("../../client/src/type.tsx");
 
 // Middleware to check user roles
 const checkRole = (UserRole) => (req, res, next) => {
-    if (req.isAuthenticated() && UserRole.includes(req.user.UserRole)) {
+    if (UserRole.includes(req.user.UserRole)) {
         next();
     } else {
         res.status(403).json({ message: "Access denied: You do not have sufficient permissions to access this resource." });

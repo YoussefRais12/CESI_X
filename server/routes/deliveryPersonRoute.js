@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const DeliveryPerson = require('../models/delivery-person');
 const User = require('../models/user');
+const isAuth = require("../middleware/passport");
+
 
 // Create a new delivery person
 router.post('/', async (req, res) => {
@@ -16,7 +18,10 @@ router.post('/', async (req, res) => {
 });
 
 // Get all delivery persons
-router.get('/', async (req, res) => {
+//--------------------------------
+// N'oubliez pas de protéger cette route avec le middleware isAuth
+//--------------------------------
+router.get('/all', isAuth(), async (req, res) => {
     try {
         const deliveryPersons = await DeliveryPerson.find().populate('userId', 'name email phone');
         res.status(200).json(deliveryPersons);
@@ -26,7 +31,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get a delivery person by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
     try {
         const deliveryPerson = await DeliveryPerson.findById(id).populate('userId', 'name email phone');
@@ -38,7 +43,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a delivery person
-router.put('/:id', async (req, res) => {
+router.put('/update/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
     const { vehicleDetails, available } = req.body;
     try {
@@ -51,7 +56,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a delivery person
-router.delete('/:id', async (req, res) => {
+router.delete('/delete/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
     try {
         const deliveryPerson = await DeliveryPerson.findByIdAndDelete(id);

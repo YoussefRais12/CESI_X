@@ -1,29 +1,27 @@
 const express = require('express');
 const articleRoute = express.Router();
 const Article = require('../models/article');
+const Restaurant = require('../models/restaurant');
 const isAuth = require("../middleware/passport");
 
 // Create a new article
-articleRoute.post('/', async (req, res) => {
+articleRoute.post('/add', async (req, res) => {
     const { name, price, description, restaurantId } = req.body;
     try {
         const newArticle = new Article({ name, price, description, restaurantId });
         await newArticle.save();
+
+        // Add the article to the restaurant's articles array
+        const restaurant = await Restaurant.findById(restaurantId);
+        restaurant.articles.push(newArticle._id);
+        await restaurant.save();
+
         res.status(201).json(newArticle);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
 
-articleRoute.get('/restaurant/:restaurantId', isAuth(), async (req, res) => {
-    const { restaurantId } = req.params;
-    try {
-        const articles = await Article.findOne({restaurantId});
-        res.json(articles);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
 
 
 // Delete an article by ID

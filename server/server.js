@@ -26,7 +26,7 @@ app.use('/deliveryPerson', deliveryPersonRoute);
 
 // ------------------------ end our routes------------------------
 
-PORT = process.env.PORT;
+PORT = process.env.PORT || 5000;
 
 //test our server
 app.listen(PORT, (err) =>

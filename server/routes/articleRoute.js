@@ -14,6 +14,17 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.get('/restaurant/:restaurantId', async (req, res) => {
+    const { restaurantId } = req.params;
+    try {
+        const articles = await Article.findByRestaurantId(restaurantId);
+        res.json(articles);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 // Delete an article by ID
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;

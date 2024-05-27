@@ -11,10 +11,11 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 require("dotenv").config();
+const UserRole = require("../../client/src/type.tsx");
 
 // Middleware to check user roles
-const checkRole = (roles) => (req, res, next) => {
-    if (req.isAuthenticated() && roles.includes(req.user.role)) {
+const checkRole = (UserRole) => (req, res, next) => {
+    if (req.isAuthenticated() && UserRole.includes(req.user.UserRole)) {
         next();
     } else {
         res.status(403).json({ message: "Access denied: You do not have sufficient permissions to access this resource." });
@@ -81,7 +82,7 @@ userRouter.post("/login", loginRules(), Validation, async (req, res) => {
 });
 
 // Add new user (requires role check)
-userRouter.post("/add", isAuth(), checkRole(['chef service hse']), async (req, res) => {
+userRouter.post("/add", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
     try {
         let newUser = new User(req.body);
         const result = await newUser.save();
@@ -92,7 +93,7 @@ userRouter.post("/add", isAuth(), checkRole(['chef service hse']), async (req, r
 });
 
 // Get all users (requires role check)
-userRouter.get("/all", isAuth(), checkRole(['chef service hse']), async (req, res) => {
+userRouter.get("/all", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
     try {
         let result = await User.find();
         res.send({ users: result, msg: "All users" });
@@ -102,7 +103,7 @@ userRouter.get("/all", isAuth(), checkRole(['chef service hse']), async (req, re
 });
 
 // Get user by ID (requires role check)
-userRouter.get("/find/:id", isAuth(), checkRole(['chef service hse']), async (req, res) => {
+userRouter.get("/find/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
     try {
         let result = await User.findById(req.params.id);
         res.send({ users: result, msg: "This is the user by ID" });
@@ -112,7 +113,7 @@ userRouter.get("/find/:id", isAuth(), checkRole(['chef service hse']), async (re
 });
 
 // Update user by ID (requires role check)
-userRouter.put("/update/:id", isAuth(), checkRole(['chef service hse']), async (req, res) => {
+userRouter.put("/update/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
     try {
         let updateUser = { ...req.body };
 
@@ -133,7 +134,7 @@ userRouter.put("/update/:id", isAuth(), checkRole(['chef service hse']), async (
 });
 
 // Delete user by ID (requires role check)
-userRouter.delete("/delete/:id", isAuth(), checkRole(['chef service hse']), async (req, res) => {
+userRouter.delete("/delete/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
     try {
         let result = await User.findByIdAndDelete(req.params.id);
         res.send({ msg: "User deleted" });

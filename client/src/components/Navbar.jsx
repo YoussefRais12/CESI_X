@@ -75,6 +75,10 @@ const Navbar = ({ setPing, ping }) => {
                         <FontAwesomeIcon icon={faShoppingCart} />
                     </button>
                 );
+                case "admin":
+                    return (
+                        <h1>admin</h1>
+                    );
             default:
                 return (
                     <div className="auth-buttons">

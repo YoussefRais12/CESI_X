@@ -113,15 +113,25 @@ userRouter.get("/find/:id", isAuth(), checkRole([UserRole.admin]), async (req, r
 });
 
 // Update user by ID (requires role check)
-userRouter.put("/update/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
+userRouter.put("/update/:id", isAuth(), async (req, res) => {
     try {
-        let updateUser = { ...req.body };
+        const { oldPassword, password, ...otherUpdates } = req.body;
 
-        // If the password is being updated, hash the new password
-        if (updateUser.password) {
-            const salt = 10;
-            const genSalt = await bcrypt.genSalt(salt);
-            const hashedPassword = await bcrypt.hash(updateUser.password, genSalt);
+        let updateUser = { ...otherUpdates };
+
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // If the password is being updated, verify the old password first
+        if (password) {
+            const isMatch = await bcrypt.compare(oldPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ error: "Old password is incorrect" });
+            }
+            const saltRounds = 10;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
             updateUser.password = hashedPassword;
         }
 
@@ -132,6 +142,7 @@ userRouter.put("/update/:id", isAuth(), checkRole([UserRole.admin]), async (req,
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 // Delete user by ID (requires role check)
 userRouter.delete("/delete/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {

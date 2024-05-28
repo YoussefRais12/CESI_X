@@ -15,16 +15,10 @@ const Navbar = ({ setPing, ping }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        const rolesWithPermissions = ["user"];
-        // if (user && !rolesWithPermissions.includes(user.role)) {
-        //     navigate('/profile');  // Redirect to profile if role does not have specific permissions
-        // }
-    }, [user, navigate]);
-
     const handleLogout = () => {
         dispatch(logout());
         navigate("/");
+        window.location.reload();
     };
 
     const toggleMenu = () => {
@@ -73,6 +67,24 @@ const Navbar = ({ setPing, ping }) => {
         }
     };
 
+    const renderCartOrAuthButtons = () => {
+        switch (user?.role) {
+            case "client":
+                return (
+                    <button className="cart-button" onClick={toggleCart}>
+                        <FontAwesomeIcon icon={faShoppingCart} />
+                    </button>
+                );
+            default:
+                return (
+                    <div className="auth-buttons">
+                        <button className="sign-in" onClick={() => navigate('/')}>Sign in</button>
+                        <button className="sign-up" onClick={() => navigate('/')}>Sign up</button>
+                    </div>
+                );
+        }
+    };
+
     return (
         <>
             <div className={`navbar`}>
@@ -80,9 +92,8 @@ const Navbar = ({ setPing, ping }) => {
                 <Link to="/feed">
                     <img src="/logo.svg" alt="App Logo" className="app-logo" />
                 </Link>
-                <button className="cart-button" onClick={toggleCart}>
-                    <FontAwesomeIcon icon={faShoppingCart} />
-                </button>
+                <div className="spacer"></div>
+                {renderCartOrAuthButtons()}
             </div>
 
             {menuOpen && (
@@ -92,52 +103,18 @@ const Navbar = ({ setPing, ping }) => {
                         <Link to='/profile' onClick={toggleMenu}>
                             <h1 className='dropdown-content'><FontAwesomeIcon icon={faUser} className="menu-icon" /> Profile</h1>
                         </Link>
-                        {user?.role === "client" ? (
-                            <>
-                                <Link to='favoris' onClick={toggleMenu}>
-                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faHeart} className="menu-icon" /> Favoris</h1>
-                                </Link>
-                                <Link to='commandes' onClick={toggleMenu}>
-                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Commandes</h1>
-                                </Link>
-                                <Link to='depcomercial' onClick={toggleMenu}>
-                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" /> Wallet</h1>
-                                </Link>
-                                <Link to='dashboard' onClick={toggleMenu}>
-                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" /> Dashboard</h1>
-                                </Link>
-                            </>
-                        ) : user?.role === "role123" ? (
-                            <>
-                                <Link to='favoris' onClick={toggleMenu}>
-                                    <h1><FontAwesomeIcon icon={faHeart} /> Favoris</h1>
-                                </Link>
-                            </>
-                        ) : user?.role === "role123" ? (
-                            <>
-                                <Link to='depcomercial' onClick={toggleMenu}>
-                                    <h1><FontAwesomeIcon icon={faWallet} /> Depcomercial</h1>
-                                </Link>
-                            </>
-                        ) : user?.role === "role123" ? (
-                            <>
-                                <Link to='commandes' onClick={toggleMenu}>
-                                    <h1><FontAwesomeIcon icon={faShoppingCart} /> Commandes</h1>
-                                </Link>
-                            </>
-                        ) : user?.role === "role123" ? (
-                            <>
-                                <Link to='favoris' onClick={toggleMenu}>
-                                    <h1><FontAwesomeIcon icon={faHeart} /> Favoris</h1>
-                                </Link>
-                            </>
-                        ) : user?.role === "role123" ? (
-                            <>
-                                <Link to='dashboard' onClick={toggleMenu}>
-                                    <h1><FontAwesomeIcon icon={faTachometerAlt} /> Dashboard</h1>
-                                </Link>
-                            </>
-                        ) : null}
+                        <Link to='favoris' onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faHeart} className="menu-icon" /> Favoris</h1>
+                        </Link>
+                        <Link to='commandes' onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Commandes</h1>
+                        </Link>
+                        <Link to='depcomercial' onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" /> Wallet</h1>
+                        </Link>
+                        <Link to='dashboard' onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" /> Dashboard</h1>
+                        </Link>
                         <button className="logout-button" onClick={handleLogout}>Logout</button>
                     </div>
                 </>

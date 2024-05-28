@@ -1,6 +1,6 @@
 import "./App.css";
 import Login from "./pages/Login";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes , useLocation} from "react-router-dom";
 import { useEffect, useState } from "react";
 import {useDispatch, useSelector} from "react-redux";
 import { userCurrent } from "./redux/userSlice/userSlice";
@@ -23,7 +23,9 @@ function App() {
   const isAuth = localStorage.getItem("token");
   const [ping, setPing] = useState(false);
   const userRole = useSelector(state => state.user.role); // Assuming role is part of user state
-console.log('userRole',userRole);
+  const location = useLocation(); // Get the current location
+
+  console.log('userRole',userRole);
   useEffect(() => {
     if (isAuth) {
       dispatch(userCurrent());
@@ -32,8 +34,8 @@ console.log('userRole',userRole);
 
   return (
     <>
-    {isAuth ? <Navbar/> : null}
-
+    {/* {isAuth ? <Navbar/> : null} */}
+    {location.pathname !== '/' && <Navbar />}
     <Routes>
     <Route path="/" element={isAuth ? <path to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
         <Route path="/test" element={<Test/>} />

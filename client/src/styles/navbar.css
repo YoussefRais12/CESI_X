@@ -27,7 +27,34 @@
 
 .cart-button {
     margin-left: auto;
-    /* Push the cart button to the right */
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.auth-buttons .sign-in, .auth-buttons .sign-up {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+
+
+.auth-buttons .sign-in:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+
+
+.auth-buttons .sign-up:hover {
+    background-color: rgba(40, 167, 69, 0.1);
 }
 
 .navbar a {
@@ -236,5 +263,4 @@
 
 .spacer {
     flex-grow: 1;
-    /* This will push the cart button to the right */
 }

@@ -2,23 +2,23 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 
-const OrderSchema = new Schema({
-    Orderaddress: { type: String, required: true },
-    OrderPhone: { type: String, required: true },
-    OrderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    OrderarrayArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true }]
+const orderSchema = new Schema({
+    orderaddress: { type: String, required: true },
+    orderPhone: { type: String, required: true },
+    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    orderarrayArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true }]
 });
 
-const Order = mongoose.model("Order", OrderSchema);
-module.exports = Restaurant;
+const Order = mongoose.model("Order", orderSchema);
+module.exports = Order;
 
 //fonction pour recup l'id de la commande
-OrderSchema.methods.getOwnerOrderId = function() {
+orderSchema.methods.getOwnerorderId = function() {
     return this.OrderId;
 };
 //fonction pour recup l'address du restaurant
-OrderSchema.methods.getAddress = function() {
-    return this.Orderaddress;
+orderSchema.methods.getAddress = function() {
+    return this.orderaddress;
 };
 //fonction pour recup le téléphone de la commander
 OrderSchema.methods.getdescription = function() {

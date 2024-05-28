@@ -60,7 +60,7 @@ menuRoute.get('/:id', isAuth(), async (req, res) => {
 // Update a menu by ID
 menuRoute.put('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
-    const { name, price, description, articles, restaurantId } = req.body;
+    const { name, price, description, articles } = req.body;
     try {
         const menu = await Menu.findById(id);
         if (!menu) {
@@ -85,7 +85,6 @@ menuRoute.put('/:id', isAuth(), async (req, res) => {
         menu.price = price;
         menu.description = description;
         menu.articles = articles;
-        menu.restaurantId = restaurantId;
 
         await menu.save();
 

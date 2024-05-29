@@ -36,15 +36,20 @@ articleRoute.get('/name/:name', isAuth(), async (req, res) => {
     }
 });
 
-// Find an article by ID
-articleRoute.get('/:id', isAuth(), async (req, res) => {
+// Update an article by ID
+articleRoute.put('/:id', async (req, res) => {
     const { id } = req.params;
+    const { name, price, description, restaurantId } = req.body;
     try {
-        const article = await Article.findById(id);
-        if (!article) {
+        const updatedArticle = await Article.findByIdAndUpdate(
+            id,
+            { name, price, description, restaurantId },
+            { new: true, runValidators: true }
+        );
+        if (!updatedArticle) {
             return res.status(404).json({ error: 'Article not found' });
         }
-        res.status(200).json(article);
+        res.status(200).json(updatedArticle);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

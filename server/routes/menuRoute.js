@@ -5,7 +5,6 @@ const Article = require('../models/article');
 const Restaurant = require('../models/restaurant');
 const isAuth = require("../middleware/passport");
 
-// Create a new menu
 menuRoute.post('/', isAuth(), async (req, res) => {
     const { name, price, description, articles, restaurantId } = req.body;
     try {
@@ -23,14 +22,20 @@ menuRoute.post('/', isAuth(), async (req, res) => {
             }
         }
 
+        // Create the new Menu
         const newMenu = new Menu({ name, price, description, articles, restaurantId });
         await newMenu.save();
+
+        // Add the new menu to the restaurant's menus array
+        restaurant.menus.push(newMenu._id);
+        await restaurant.save();  // Save the updated restaurant
 
         res.status(201).json(newMenu);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 // Get all menus for a specific restaurant
 menuRoute.get('/restaurant/:restaurantId', isAuth(), async (req, res) => {

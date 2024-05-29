@@ -18,34 +18,44 @@ const CardCarousel = ({ items, carouselId }) => {
         navigate(link);
     };
 
+    const swiperProps = {
+        spaceBetween: 10, // Adjust space between slides
+        slidesPerView: 5,
+        className: "mySwiper",
+        modules: [Pagination, Navigation],
+    };
+
+    if (items.length !== 5) {
+        swiperProps.pagination = { clickable: true };
+        swiperProps.navigation = {
+            nextEl: `.next-${carouselId}`,
+            prevEl: `.prev-${carouselId}`,
+        };
+    }
+
     return (
         <Box sx={{ margin: '20px 0' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <h2></h2>
-                <Box sx={{ display: 'flex', gap: '10px' }}>
-                    <IconButton className={`prev-${carouselId}`}>
-                        <FontAwesomeIcon icon={faChevronLeft} className="carousel-control" />
-                    </IconButton>
-                    <IconButton className={`next-${carouselId}`}>
-                        <FontAwesomeIcon icon={faChevronRight} className="carousel-control" />
-                    </IconButton>
-                </Box>
+                {items.length !== 5 && (
+                    <Box sx={{ display: 'flex', gap: '10px' }}>
+                        <IconButton className={`prev-${carouselId}`}>
+                            <FontAwesomeIcon icon={faChevronLeft} className="carousel-control" />
+                        </IconButton>
+                        <IconButton className={`next-${carouselId}`}>
+                            <FontAwesomeIcon icon={faChevronRight} className="carousel-control" />
+                        </IconButton>
+                    </Box>
+                )}
             </Box>
-            <Swiper
-                spaceBetween={10} // Adjust space between slides
-                pagination={{ clickable: true }}
-                navigation={{ nextEl: `.next-${carouselId}`, prevEl: `.prev-${carouselId}` }}
-                slidesPerView={5}
-                className="mySwiper"
-                modules={[Pagination, Navigation]}
-            >
+            <Swiper {...swiperProps}>
                 {items.map((item) => (
                     <SwiperSlide key={item.id} className="swiper-slide">
                         <Box onClick={() => handleItemClick(item.link)} sx={{ cursor: 'pointer' }}>
                             <Card
                                 img={item.img}
                                 title={item.title}
-                                description={item.content}
+                                price={item.price} // Pass the price to the Card component
                             />
                         </Box>
                     </SwiperSlide>

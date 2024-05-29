@@ -19,9 +19,10 @@ const Feed = () => {
     const generateItems = (restaurants) => {
         return restaurants.map((restaurant, index) => ({
             id: restaurant._id,
-            img: `../styles/assets/carousel${index % 5 + 1}.png`, // Cycle through carousel images
+            img:  '/default-article-image.png', // Cycle through carousel images
             title: restaurant.name,
             content: restaurant.address,
+            price : restaurant.address,
             color: ['#d3efda', '#FEE4B6', '#4c526c', '#955979', '#090702'][index % 5], // Cycle through colors
             link: `/restaurant/${restaurant._id}`, // Redirect link to restaurant detail page
             text: 'En exclusivité sur Cesi Eats 🔥',
@@ -41,6 +42,7 @@ const Feed = () => {
             <Carousel items={items1} carouselId="carousel1" />
             <h2 className='carousel-title'>Discover More</h2>
             <CardCarousel items={items1} carouselId="cardcarousel1" className="cardcarousel-container" />
+            <CardCarousel items={items2} carouselId="cardcarousel2" className="cardcarousel-container" />
         </div>
     );
 };

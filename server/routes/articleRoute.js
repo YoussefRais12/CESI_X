@@ -6,9 +6,9 @@ const isAuth = require("../middleware/passport");
 
 // Create a new article
 articleRoute.post('/add', async (req, res) => {
-    const { name, price, description, restaurantId } = req.body;
+    const { name, price, description, restaurantId, category } = req.body; // Include category in the request body
     try {
-        const newArticle = new Article({ name, price, description, restaurantId });
+        const newArticle = new Article({ name, price, description, restaurantId, category }); // Add category to the new article
         await newArticle.save();
 
         // Add the article to the restaurant's articles array
@@ -21,7 +21,6 @@ articleRoute.post('/add', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
-
 
 // Find an article by name
 articleRoute.get('/name/:name', isAuth(), async (req, res) => {
@@ -54,7 +53,7 @@ articleRoute.get('/:id', isAuth(), async (req, res) => {
 // Modify an article by ID
 articleRoute.put('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
-    const { name, price, description } = req.body; // Removed restaurantId from the request body
+    const { name, price, description, category } = req.body; // Include category in the request body
     try {
         const article = await Article.findById(id);
         if (!article) {
@@ -65,6 +64,7 @@ articleRoute.put('/:id', isAuth(), async (req, res) => {
         article.name = name !== undefined ? name : article.name;
         article.price = price !== undefined ? price : article.price;
         article.description = description !== undefined ? description : article.description;
+        article.category = category !== undefined ? category : article.category; // Update category
 
         await article.save();
         res.status(200).json(article);
@@ -86,5 +86,7 @@ articleRoute.delete('/:id', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
+
 
 module.exports = articleRoute;

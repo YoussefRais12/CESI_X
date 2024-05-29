@@ -69,13 +69,12 @@ html {
 .app-container {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    /* Prevent the app container from scrolling */
-}
-
-.content {
+    height: 100vh;
+    overflow: hidden; /* Prevent overflow outside of the viewport */
+  }
+  
+  .content {
     flex-grow: 1;
-    overflow-y: auto;
-    /* Enable vertical scrolling */
-}
+    overflow-y: auto; /* Enable vertical scrolling */
+  }
+  

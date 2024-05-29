@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Carousel from '../components/Carousel';
+import CardCarousel from '../components/CardCarousel'; // Import CardCarousel
 import { fetchAllRestaurants } from '../redux/slice/restaurantSlice';
 import '../styles/feed.css';
 
@@ -39,7 +40,7 @@ const Feed = () => {
             <h2 className='carousel-title'>Commandez de nouveau</h2>
             <Carousel items={items1} carouselId="carousel1" />
             <h2 className='carousel-title'>Discover More</h2>
-            <Carousel items={items2} carouselId="carousel2" />
+            <CardCarousel items={items1} carouselId="cardcarousel1" className="cardcarousel-container" />
         </div>
     );
 };

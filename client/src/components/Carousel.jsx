@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import '../styles/carousel.css'; // Adjust the path as necessary
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Box, IconButton } from '@mui/material';
 
 const Carousel = ({ items, carouselId }) => {
     const navigate = useNavigate(); // Initialize useNavigate
@@ -17,44 +18,59 @@ const Carousel = ({ items, carouselId }) => {
     };
 
     return (
-        <div className="carousel-container">
-            <div className="carousel-header">
+        <Box sx={{ margin: '20px 0' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <h2></h2>
-                <div className="carousel-controls">
-                    <FontAwesomeIcon icon={faChevronLeft} className={`carousel-control prev-${carouselId}`} />
-                    <FontAwesomeIcon icon={faChevronRight} className={`carousel-control next-${carouselId}`} />
-                </div>
-            </div>
+                <Box sx={{ display: 'flex', gap: '10px' }}>
+                    <IconButton className={`prev-${carouselId}`}>
+                        <FontAwesomeIcon icon={faChevronLeft} className="carousel-control" />
+                    </IconButton>
+                    <IconButton className={`next-${carouselId}`}>
+                        <FontAwesomeIcon icon={faChevronRight} className="carousel-control" />
+                    </IconButton>
+                </Box>
+            </Box>
             <Swiper
-                spaceBetween={20} // Add space between slides
+                spaceBetween={0}
                 pagination={{ clickable: true }}
-                navigation={{ nextEl: `.next-${carouselId}`, prevEl: `.prev-${carouselId}` }} // Enable navigation
-                slidesPerView={3} // Ensure 3 slides per view
+                navigation={{ nextEl: `.next-${carouselId}`, prevEl: `.prev-${carouselId}` }}
+                slidesPerView={4}
                 className="mySwiper"
-                modules={[Pagination, Navigation]} // Add Pagination and Navigation modules
+                modules={[Pagination, Navigation]}
             >
                 {items.map((item) => (
                     <SwiperSlide key={item.id} className="swiper-slide">
-                        <div
+                        <Box
                             className="slide-content"
-                            onClick={() => handleItemClick(item.link)} // Use handleItemClick function
-                            style={{ backgroundColor: item.color }} // Use color property
+                            onClick={() => handleItemClick(item.link)}
+                            sx={{
+                                backgroundColor: item.color,
+                                padding: '20px',
+                                borderRadius: '10px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                            }}
                         >
-                            <div className="text-content">
+                            <Box sx={{ marginBottom: '10px' }}>
                                 <div className="title">{item.title}</div>
                                 <div className="content">{item.content}</div>
-                            </div>
-                            <div className="image-right">
-                                <img src={item.img} alt={item.title} />
-                            </div>
-                            <div className="button-container">
+                            </Box>
+                            <Box sx={{ marginBottom: '10px' }}>
+                                <img src={item.img} alt={item.title} style={{ maxWidth: '100%', borderRadius: '10px' }} />
+                            </Box>
+                            <Box>
                                 <div className="text">{item.text}</div>
-                            </div>
-                        </div>
+                            </Box>
+                        </Box>
                     </SwiperSlide>
                 ))}
             </Swiper>
-        </div>
+        </Box>
     );
 };
 

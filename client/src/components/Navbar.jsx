@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import '../styles/navbar.css';
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from '../redux/slice/userSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt } from '@fortawesome/free-solid-svg-icons';
+import { Input, Box, IconButton } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 
 const Navbar = ({ setPing, ping }) => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -27,7 +29,7 @@ const Navbar = ({ setPing, ping }) => {
             setTimeout(() => {
                 setMenuOpen(false);
                 setAnimationClass('');
-            }, 500); // Match with the CSS animation duration
+            }, 500);
         } else {
             setMenuOpen(true);
             setAnimationClass('fade-in');
@@ -40,7 +42,7 @@ const Navbar = ({ setPing, ping }) => {
             setTimeout(() => {
                 setCartOpen(false);
                 setCartAnimationClass('');
-            }, 500); // Match with the CSS animation duration
+            }, 500);
         } else {
             setCartOpen(true);
             setCartAnimationClass('fade-in');
@@ -53,7 +55,7 @@ const Navbar = ({ setPing, ping }) => {
             setTimeout(() => {
                 setMenuOpen(false);
                 setAnimationClass('');
-            }, 500); // Match with the CSS animation duration
+            }, 500);
         }
     };
 
@@ -63,7 +65,7 @@ const Navbar = ({ setPing, ping }) => {
             setTimeout(() => {
                 setCartOpen(false);
                 setCartAnimationClass('');
-            }, 500); // Match with the CSS animation duration
+            }, 500);
         }
     };
 
@@ -75,10 +77,8 @@ const Navbar = ({ setPing, ping }) => {
                         <FontAwesomeIcon icon={faShoppingCart} />
                     </button>
                 );
-                case "admin":
-                    return (
-                        <h1>admin</h1>
-                    );
+            case "admin":
+                return <h1>admin</h1>;
             default:
                 return (
                     <div className="auth-buttons">
@@ -97,6 +97,17 @@ const Navbar = ({ setPing, ping }) => {
                     <img src="/logo.svg" alt="App Logo" className="app-logo" />
                 </Link>
                 <div className="spacer"></div>
+                <div className="search-container">
+                <IconButton type="submit" aria-label="search">
+                    <SearchIcon />
+                </IconButton>
+                    <Input
+                        placeholder="Search in CESI_X"
+                        inputProps={{ 'aria-label': 'search' }}
+                        className="search-input"
+                    />
+                   
+                </div>
                 {renderCartOrAuthButtons()}
             </div>
 
@@ -128,7 +139,6 @@ const Navbar = ({ setPing, ping }) => {
                 <>
                     <div className={`overlay ${cartAnimationClass}`} onClick={handleCloseCart}></div>
                     <div className={`cart-menu ${cartAnimationClass}`}>
-                        {/* Add your cart content here */}
                         <h1 className='dropdown-content'>Cart Content</h1>
                         <button className="close-cart-button" onClick={handleCloseCart}>Close</button>
                     </div>

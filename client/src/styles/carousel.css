@@ -1,4 +1,3 @@
-/* carousel.css */
 .carousel-container {
   margin: 20px 0;
 }
@@ -28,8 +27,9 @@
   justify-content: center;
   text-align: center;
   padding: 10px;
+  margin-right: -1%;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: transparent; /* Set background to transparent */
 }
 
 .slide-content {
@@ -41,6 +41,7 @@
   border-radius: 10px;
   text-align: center;
   cursor: pointer;
+  box-shadow: none; /* Remove shadow from the inner content */
 }
 
 .text-content {
@@ -69,4 +70,21 @@
   font-size: 0.9rem;
   font-weight: bold;
   color: #333;
+}
+
+.swiper-pagination {
+  margin-top: 20px; /* Add margin to separate pagination from the slides */
+}
+
+.swiper-pagination-bullet {
+  background: #333; /* Adjust bullet color */
+  opacity: 1;
+}
+
+.swiper-pagination-bullet-active {
+  background: #000; /* Adjust active bullet color */
+}
+
+.mySwiper {
+  padding-bottom: 30px; /* Add padding to the bottom to make room for pagination */
 }

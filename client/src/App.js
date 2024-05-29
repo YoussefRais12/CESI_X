@@ -13,9 +13,9 @@ import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
 import Error from "./pages/Error";
 import Feed from "./pages/Feed";
-import RequireRole from "./routes/PrivateRoute";
+import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
 import Dashboard from "./pages/Dashboard";
-import RestaurantDetail from "./pages/RestaurantDetail";
+import RestaurantDetail from "./pages/RestaurantDetail"; // Import RestaurantDetail
 import './App.css'; // Import the global CSS file
 
 function App() {
@@ -40,7 +40,8 @@ function App() {
         <Routes>
           <Route path="/" element={isAuth ? <Navigate to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
           <Route path="/test" element={<Test />} />
-
+          <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
+          
           {/* Applying RequireRole for protected routes */}
           <Route element={<PrivateRoute />}>
             <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
@@ -53,7 +54,6 @@ function App() {
           <Route path="/favoris" element={<Favoris />} />
           <Route path="/error" element={<Error />} />
           <Route path="/feed" element={<Feed />} />
-          <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line */}
         </Routes>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import "./App.css";
 import Login from "./pages/Login";
-import { Route, Routes , useLocation} from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {useDispatch, useSelector} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { userCurrent } from "./redux/userSlice/userSlice";
 import Profile from "./pages/Profile";
 import PrivateRoute from "./routes/PrivateRoute";
@@ -17,7 +17,6 @@ import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the
 import Dashboard from "./pages/Dashboard";
 import './App.css'; // Import the global CSS file
 
-
 function App() {
   const dispatch = useDispatch();
   const isAuth = localStorage.getItem("token");
@@ -25,7 +24,6 @@ function App() {
   const userRole = useSelector(state => state.user.role); // Assuming role is part of user state
   const location = useLocation(); // Get the current location
 
-  console.log('userRole',userRole);
   useEffect(() => {
     if (isAuth) {
       dispatch(userCurrent());
@@ -33,28 +31,30 @@ function App() {
   }, [dispatch, isAuth, ping]);
 
   return (
-    <>
-    {/* {isAuth ? <Navbar/> : null} */}
-    {location.pathname !== '/' && <Navbar />}
-    <Routes>
-    <Route path="/" element={isAuth ? <path to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
-        <Route path="/test" element={<Test/>} />
+    <div className="app-container">
+      {/* Conditionally render Navbar based on the current path */}
+      {location.pathname !== '/' && <Navbar />}
 
-        {/* Applying RequireRole for protected routes */}
-        <Route element={<PrivateRoute/>}>
-            <Route element={<RequireRole allowedRoles={['user']} userRole={userRole}/>}>
-                <Route path="/profile" element={<Profile ping={ping} setPing={setPing}/>} />
+      <div className="content">
+        <Routes>
+          <Route path="/" element={isAuth ? <Navigate to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
+          <Route path="/test" element={<Test />} />
+
+          {/* Applying RequireRole for protected routes */}
+          <Route element={<PrivateRoute />}>
+            <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
+              <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
             </Route>
-        </Route>
-        <Route path="/commandes" element={<Commandes/>} />
-        <Route path="/depcomercial" element={<DepComercial/>} />
-        <Route path="/dashboard" element={<Dashboard/>} />
-        <Route path="/favoris" element={<Favoris/>} />
-        <Route path="/error" element={<Error/>} />
-        <Route path="/feed" element={<Feed/>} />
-
-    </Routes>
-</>
+          </Route>
+          <Route path="/commandes" element={<Commandes />} />
+          <Route path="/depcomercial" element={<DepComercial />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/favoris" element={<Favoris />} />
+          <Route path="/error" element={<Error />} />
+          <Route path="/feed" element={<Feed />} />
+        </Routes>
+      </div>
+    </div>
   );
 }
 

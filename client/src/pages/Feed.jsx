@@ -86,12 +86,14 @@ const items2 = [
 
 const Feed = () => {
     return (
-        <div>
-            <h2 className='carousel-title'>Commandez de nouveau</h2>
-            <Carousel items={items1} carouselId="carousel1" />
-            <h2 className='carousel-title'>Discover More</h2>
-            <Carousel items={items2} carouselId="carousel2" />
-        </div>
+        <div className="feed-container">
+        <h2 className='carousel-title'>Commandez de nouveau</h2>
+        <Carousel items={items1} carouselId="carousel1" />
+        <h2 className='carousel-title'>Discover More</h2>
+        <Carousel items={items2} carouselId="carousel2" />
+        <h2 className='carousel-title'>Discover More</h2>
+        <Carousel items={items2} carouselId="carousel2" />
+    </div>
     );
 };
 

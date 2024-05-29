@@ -31,6 +31,7 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         // Check if email exists
         const searchedUser = await User.findOne({ email });
         if (searchedUser) {
+            
             return res.status(400).send({ msg: "Email already exists" });
         }
 
@@ -50,6 +51,7 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         res.send({ user: result, msg: "User is saved", token: `Bearer ${token}` });
     } catch (error) {
         res.send("Cannot save the user");
+        console.error("An error occured:", error.message);
         console.log(error);
     }
 });
@@ -77,6 +79,7 @@ userRouter.post("/login", loginRules(), Validation, async (req, res) => {
 
         res.status(200).send({ user: searchedUser, msg: "Success", token: `Bearer ${token}` });
     } catch (error) {
+        console.error("An error occured:", error.message);
         res.send({ msg: "Cannot get the user" });
     }
 });

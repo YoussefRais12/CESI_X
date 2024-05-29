@@ -7,8 +7,15 @@ import 'swiper/css/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import '../styles/carousel.css'; // Adjust the path as necessary
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const Carousel = ({ items, carouselId }) => {
+    const navigate = useNavigate(); // Initialize useNavigate
+
+    const handleItemClick = (link) => {
+        navigate(link); // Navigate to the specified link
+    };
+
     return (
         <div className="carousel-container">
             <div className="carousel-header">
@@ -30,7 +37,7 @@ const Carousel = ({ items, carouselId }) => {
                     <SwiperSlide key={item.id} className="swiper-slide">
                         <div
                             className="slide-content"
-                            onClick={() => window.location.href = item.link}
+                            onClick={() => handleItemClick(item.link)} // Use handleItemClick function
                             style={{ backgroundColor: item.color }} // Use color property
                         >
                             <div className="text-content">

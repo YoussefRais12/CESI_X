@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/profile.css';
-import { logout, userCurrent, userEdit } from '../redux/userSlice/userSlice';
+import { logout, userCurrent, userEdit } from '../redux/slice/userSlice';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

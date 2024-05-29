@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faHamburger, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import '../styles/login.css';
-import { userLogin, userRegister } from '../redux/userSlice/userSlice';
+import { userLogin, userRegister } from '../redux/slice/userSlice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 

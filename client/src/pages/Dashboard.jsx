@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import '../styles/dashboard.css';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllUsers, userEdit, userDelete, userAdd } from '../redux/userSlice/userSlice';
+import { fetchAllUsers, userEdit, userDelete, userAdd } from '../redux/slice/userSlice.js';
 const UserRole = require('../type.tsx');
 
 const Dashboard = () => {

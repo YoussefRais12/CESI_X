@@ -3,7 +3,7 @@ import Login from "./pages/Login";
 import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { userCurrent } from "./redux/userSlice/userSlice";
+import { userCurrent } from "./redux/slice/userSlice";
 import Profile from "./pages/Profile";
 import PrivateRoute from "./routes/PrivateRoute";
 import Commandes from "./pages/Commandes";
@@ -13,8 +13,9 @@ import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
 import Error from "./pages/Error";
 import Feed from "./pages/Feed";
-import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
+import RequireRole from "./routes/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
+import RestaurantDetail from "./pages/RestaurantDetail";
 import './App.css'; // Import the global CSS file
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           <Route path="/favoris" element={<Favoris />} />
           <Route path="/error" element={<Error />} />
           <Route path="/feed" element={<Feed />} />
+          <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line */}
         </Routes>
       </div>
     </div>

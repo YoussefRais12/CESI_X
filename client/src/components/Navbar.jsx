@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/navbar.css';
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from '../redux/userSlice/userSlice';
+import { logout } from '../redux/slice/userSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt } from '@fortawesome/free-solid-svg-icons';
 

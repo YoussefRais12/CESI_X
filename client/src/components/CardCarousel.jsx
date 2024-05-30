@@ -11,11 +11,15 @@ import { useNavigate } from 'react-router-dom';
 import { Box, IconButton } from '@mui/material';
 import Card from './Card'; // Import the Card component
 
-const CardCarousel = ({ items, carouselId }) => {
+const CardCarousel = ({ items, carouselId, onCardClick }) => {
     const navigate = useNavigate();
 
-    const handleItemClick = (link) => {
-        navigate(link);
+    const handleItemClick = (link, item) => {
+        if (onCardClick) {
+            onCardClick(item);
+        } else {
+            navigate(link);
+        }
     };
 
     const swiperProps = {
@@ -51,7 +55,7 @@ const CardCarousel = ({ items, carouselId }) => {
             <Swiper {...swiperProps}>
                 {items.map((item) => (
                     <SwiperSlide key={item.id} className="swiper-slide">
-                        <Box onClick={() => handleItemClick(item.link)} sx={{ cursor: 'pointer' }}>
+                        <Box onClick={() => handleItemClick(item.link, item)} sx={{ cursor: 'pointer' }}>
                             <Card
                                 img={item.img}
                                 title={item.title}

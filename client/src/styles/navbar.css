@@ -189,7 +189,7 @@
 }
 
 .menu-icon {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .logout-button {
@@ -275,4 +275,18 @@
 
 .spacer {
     width: 20px; /* Adjust the width as needed */
+}
+
+/* Styles for My Restaurants dropdown */
+.submenu-item {
+    padding: 5px 15px;
+    font-size: 0.9rem;
+    color: #333;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+}
+
+.submenu-item:hover {
+    background-color: #f0f0f0;
 }

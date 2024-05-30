@@ -47,10 +47,24 @@ restaurantRoute.get('/:id', async (req, res) => {
     }
 });
 
+// Get restaurants by owner ID
+restaurantRoute.get('/owner/:ownerId', async (req, res) => {
+    const { ownerId } = req.params;
+    try {
+        const restaurants = await Restaurant.find({ ownerId });
+        if (!restaurants || restaurants.length === 0) {
+            return res.status(404).json({ error: 'No restaurants found for this owner' });
+        }
+        res.status(200).json(restaurants);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Update a restaurant by ID
 restaurantRoute.put('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
-    const { name, address, phone, email, workingHours } = req.body; // Include workingHours in the request body
+    const { name, address, phone, email, workingHours, category } = req.body; // Include workingHours in the request body
     try {
         const restaurant = await Restaurant.findById(id);
         if (!restaurant) {
@@ -63,7 +77,7 @@ restaurantRoute.put('/:id', isAuth(), async (req, res) => {
         restaurant.phone = phone !== undefined ? phone : restaurant.phone;
         restaurant.email = email !== undefined ? email : restaurant.email;
         restaurant.workingHours = workingHours !== undefined ? workingHours : restaurant.workingHours; // Update workingHours
-        restaurant.category = category !== undefined ? category : restaurant.category; // Update workingHours
+        restaurant.category = category !== undefined ? category : restaurant.category; // Update category
 
         await restaurant.save();
         res.status(200).json(restaurant);
@@ -108,7 +122,7 @@ restaurantRoute.get('/:id/menus', isAuth(), async (req, res) => {
         const menus = await Menu.find({ restaurantId: id }).populate('articles');
         res.status(200).json(menus);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status500().json({ error: error.message });
     }
 });
 

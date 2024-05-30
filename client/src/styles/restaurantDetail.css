@@ -102,3 +102,41 @@
     font-weight: bold;
     color: #333;
 }
+
+/* Styles for the dialog */
+.MuiDialog-paper {
+    border-radius: 10px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+}
+
+.MuiDialogTitle-root {
+    padding: 16px;
+    background-color: transparent;
+}
+
+.MuiDialogContent-root {
+    padding: 16px;
+}
+
+.MuiDialogActions-root {
+    padding: 16px;
+}
+
+.MuiTextField-root {
+    margin-bottom: 16px;
+}
+
+.MuiButton-containedPrimary {
+    background-color: #1976d2;
+    color: #fff;
+}
+
+.MuiButton-outlinedSecondary {
+    color: #d32f2f;
+    border-color: #d32f2f;
+}
+
+.MuiButton-outlinedSecondary:hover {
+    background-color: rgba(211, 47, 47, 0.1);
+}

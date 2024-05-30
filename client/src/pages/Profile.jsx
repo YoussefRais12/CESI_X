@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import '../styles/profile.css';
 import { logout, userCurrent, userEdit } from '../redux/userSlice/userSlice';
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Profile = ({ ping, setPing }) => {
     const user = useSelector((state) => state.user?.user);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [profile, setProfile] = useState({
         id: user?._id, // Assuming the user ID is stored as _id
@@ -15,7 +16,7 @@ const Profile = ({ ping, setPing }) => {
         email: user?.email || ''
     });
     const [isEditing, setIsEditing] = useState(false);
-
+    const [languageData, setLanguageData] = useState([]);
     useEffect(() => {
         if (!user) {
             dispatch(userCurrent());
@@ -49,15 +50,28 @@ const Profile = ({ ping, setPing }) => {
     const handleEdit = () => {
         setIsEditing(true);
     };
-
+    // Get lang parameter from URL
+    const searchParams = new URLSearchParams(location.search);
+    const lang = searchParams.get('lang');
+    console.log('Language parameter:', lang);
     console.log(profile);
+    console.log(`../lang/${lang}.json`)
+    console.log('useEffect triggered with lang:', lang);
+    import(`../lang/${lang}.json`)
+        .then((data) => {
+            setLanguageData(data);
+        })
+        .catch((error) => {
+            console.error("Error loading language file:", error);
+        });
+    console.log(languageData)
     return (
         <div className="profile-page">
             <div className="profile-container">
-                <h1>Profile</h1>
+                <h1>{languageData.profile}</h1>
                 <img src="/images.png" alt="Profile" className="profile-img" />
                 <div>
-                    <p>Name: 
+                    <p>{languageData.greeting}: 
                         {isEditing ? (
                             <input
                                 type="text"
@@ -70,7 +84,7 @@ const Profile = ({ ping, setPing }) => {
                             <strong> { profile.name}</strong>
                         )}
                     </p>
-                    <p>Email:
+                    <p>{languageData.email}:
                         {isEditing ? (
                             <input
                                 type="email"
@@ -83,7 +97,7 @@ const Profile = ({ ping, setPing }) => {
                             <strong> { profile.email}</strong>
                         )}
                     </p>
-                    <p>Role:
+                    <p>{languageData.Role}:
                         <strong> { user?.role}</strong>
                     </p>
                 </div>
@@ -98,7 +112,7 @@ const Profile = ({ ping, setPing }) => {
                         navigate("/");
                         setPing(!ping);
                     }}>
-                    Logout
+                    {languageData.Logout}
                 </h4>
             </div>
         </div>

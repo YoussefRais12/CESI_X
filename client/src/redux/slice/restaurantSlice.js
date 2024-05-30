@@ -3,16 +3,21 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 // Fetch all restaurants
 export const fetchAllRestaurants = createAsyncThunk("restaurant/fetchAllRestaurants", async () => {
-    const response = await axios.get("http://localhost:5000/restaurant/all");
-    return response.data;
-  });
-  
-  // Fetch restaurant by ID
-  export const fetchRestaurantById = createAsyncThunk("restaurant/fetchRestaurantById", async (id) => {
-    const response = await axios.get(`http://localhost:5000/restaurant/${id}`);
-    return response.data;
-  });
-  
+  const response = await axios.get("http://localhost:5000/restaurant/all");
+  return response.data;
+});
+
+// Fetch restaurant by ID
+export const fetchRestaurantById = createAsyncThunk("restaurant/fetchRestaurantById", async (id) => {
+  const response = await axios.get(`http://localhost:5000/restaurant/${id}`);
+  return response.data;
+});
+
+// Fetch restaurants by owner ID
+export const fetchRestaurantsByOwnerId = createAsyncThunk("restaurant/fetchRestaurantsByOwnerId", async (ownerId) => {
+  const response = await axios.get(`http://localhost:5000/restaurant/owner/${ownerId}`);
+  return response.data;
+});
 
 // Add new restaurant
 export const addRestaurant = createAsyncThunk("restaurant/addRestaurant", async (newRestaurant) => {
@@ -92,6 +97,7 @@ export const fetchMenusByRestaurantId = createAsyncThunk("restaurant/fetchMenusB
 const initialState = {
   restaurants: [],
   restaurant: null,
+  ownedRestaurants: [],
   articles: [],
   menus: [],
   status: null,
@@ -123,6 +129,17 @@ const restaurantSlice = createSlice({
         state.restaurant = action.payload;
       })
       .addCase(fetchRestaurantById.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(fetchRestaurantsByOwnerId.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchRestaurantsByOwnerId.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.ownedRestaurants = action.payload;
+      })
+      .addCase(fetchRestaurantsByOwnerId.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       })

@@ -5,35 +5,34 @@ const articleSchema = new schema({
     name: { type: String, required: true },
     price: { type: Number, required: true },
     description: { type: String },
-    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant', required: true },
-
+    category: { type: String, required: true } ,// Added category field
+    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant', required: true }
 });
 
 const Article = mongoose.model("Article", articleSchema);
 module.exports = Article;
 
-//fonction pour recup le nom de l'article
+// Function to get the name of the article
 articleSchema.methods.getName = function() {
     return this.name;
 };
-//fonction pour recup le prix de l'article
+
+// Function to get the price of the article
 articleSchema.methods.getPrice = function() {
     return this.price;
 };
-//fonction pour recup la description  de l'article
-articleSchema.methods.getdescription = function() {
+
+// Function to get the description of the article
+articleSchema.methods.getDescription = function() {
     return this.description;
 };
-//fonction pour recup le restaurantId de l'article
-articleSchema.methods.getrestaurantId = function() {
+
+// Function to get the restaurantId of the article
+articleSchema.methods.getRestaurantId = function() {
     return this.restaurantId;
 };
-/* fonction pour trouver les infos de l'article en lui même
-articleSchema.statics.findByRestaurantId = async function(restaurantId) {
-    try {
-        const articles = await articleRoutes.findByRestaurantId(restaurantId);
-        return articles;
-    } catch (error) {
-        throw new Error(error.message);
-    }
-};*/
+
+// Function to get the category of the article
+articleSchema.methods.getCategory = function() {
+    return this.category;
+};

@@ -6,7 +6,7 @@ const PrivateRoute = () => {
 
     return isAuth
         ? <Outlet/>
-        : <Navigate to="/"/>;
+        : <Navigate to="/feed"/>;
 
 };
 

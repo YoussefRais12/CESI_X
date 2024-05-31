@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faHamburger, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import '../styles/login.css';
-import { userLogin, userRegister } from '../redux/userSlice/userSlice';
+import { userLogin, userRegister } from '../redux/slice/userSlice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,7 +38,7 @@ const LoginContainer = ({ ping, setPing }) => {
             const response = await dispatch(userLogin(login));
 
             if (response.payload.token) {
-                navigate('/profile');
+                navigate('/feed');
                 setPing(!ping);
             }
         } catch (error) {
@@ -65,7 +65,7 @@ const LoginContainer = ({ ping, setPing }) => {
             const response = await dispatch(userLogin({ email: newUser.email, password: newUser.password }));
 
             if (response.payload.token) {
-                navigate('/profile');
+                navigate('/feed');
                 setPing(!ping);
                 setShowCreateAccountModal(false); // Close modal on successful account creation and login
             }

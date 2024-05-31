@@ -116,7 +116,7 @@ const RestaurantDetail = () => {
     
         setIsSaving(true);
     
-        dispatch(updateArticle({ id: selectedArticle.id, name: articleFormData.name, price: articleFormData.price, description: articleFormData.description, category: articleFormData.category }))
+        dispatch(updateArticle({ id: selectedArticle.id, articleData: articleFormData}))
             .unwrap()
             .then((response) => {
                 setIsSaving(false);

@@ -1,9 +1,9 @@
-import "./App.css";
-import Login from "./pages/Login";
-import { Route, Routes, useLocation, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom"; // Add Navigate import here
 import { useDispatch, useSelector } from "react-redux";
 import { userCurrent } from "./redux/slice/userSlice";
+import "./App.css";
+import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import PrivateRoute from "./routes/PrivateRoute";
 import Commandes from "./pages/Commandes";
@@ -23,13 +23,21 @@ function App() {
   const isAuth = localStorage.getItem("token");
   const [ping, setPing] = useState(false);
   const userRole = useSelector(state => state.user.role); // Assuming role is part of user state
-  const location = useLocation(); // Get the current location
+  console.log('userRole', userRole);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const lang = searchParams.get('lang') || 'fr'; // Default language to 'fr'
+  
   useEffect(() => {
     if (isAuth) {
       dispatch(userCurrent());
     }
-  }, [dispatch, isAuth, ping]);
+    if (location.pathname === '/') {
+      navigate(`/profile?lang=${lang}`, { replace: true });
+    }
+  }, [dispatch, isAuth, location.pathname, lang, navigate]);
 
   return (
     <div className="app-container">

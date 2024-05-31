@@ -1,0 +1,20 @@
+{
+  "greeting": "Ciao",
+  "profile": "Profilo",
+  "Role": "Ruolo",
+  "email": "Email",
+  "password": "Password",
+  "Logout": "Disconnetti",
+  "accountInfo": "Informazioni sull'account",
+  "security": "Sicurezza",
+  "name": "Nome",
+  "oldPassword": "Vecchia password",
+  "newPassword": "Nuova password",
+  "fillAllFields": "Si prega di compilare tutti i campi per aggiornare il profilo o cambiare la password.",
+  "profileUpdated": "Profilo aggiornato con successo!",
+  "wrongPassword": "Password errata",
+  "unexpectedError": "Si è verificato un errore imprevisto. Riprova.",
+  "save": "Salva",
+  "changePassword": "Cambia password",
+  "userAccount": "Account utente"
+}

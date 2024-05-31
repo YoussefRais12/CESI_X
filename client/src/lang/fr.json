@@ -1,0 +1,20 @@
+{
+  "greeting": "Bonjour",
+  "profile": "Profil",
+  "Role": "Rôle",
+  "email": "Email",
+  "password": "Mot de passe",
+  "Logout": "Déconnecter",
+  "accountInfo": "Informations sur le compte",
+  "security": "Sécurité",
+  "name": "Nom",
+  "oldPassword": "Ancien mot de passe",
+  "newPassword": "Nouveau mot de passe",
+  "fillAllFields": "Veuillez remplir tous les champs pour mettre à jour le profil ou changer le mot de passe.",
+  "profileUpdated": "Profil mis à jour avec succès!",
+  "wrongPassword": "Mauvais mot de passe",
+  "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+  "save": "Enregistrer",
+  "changePassword": "Changer le mot de passe",
+  "userAccount": "Compte utilisateur"
+}

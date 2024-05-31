@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom"; // Add Navigate import here
+import { Route, Routes, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { userCurrent } from "./redux/slice/userSlice";
 import "./App.css";
@@ -16,7 +16,6 @@ import Feed from "./pages/Feed";
 import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
 import Dashboard from "./pages/Dashboard";
 import RestaurantDetail from "./pages/RestaurantDetail"; // Import RestaurantDetail
-import './App.css'; // Import the global CSS file
 
 function App() {
   const dispatch = useDispatch();
@@ -34,7 +33,7 @@ function App() {
     if (isAuth) {
       dispatch(userCurrent());
     }
-    if (location.pathname === '/') {
+    if (isAuth && location.pathname === '/') {
       navigate(`/profile?lang=${lang}`, { replace: true });
     }
   }, [dispatch, isAuth, location.pathname, lang, navigate]);

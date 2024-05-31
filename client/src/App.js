@@ -51,24 +51,11 @@ function App() {
             <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
           </Route>
         </Route>
-<<<<<<< Updated upstream
-        <Route path="/box" element={<Box/>} />
-        <Route path="/depcomercial" element={<DepComercial/>} />
-        <Route path="/dashboard" element={<Dashboard/>} />
-        <Route path="/hse" element={<Hse/>} />
-        <Route path="/error" element={<Error/>} />
-    </Routes>
-</>
-=======
-        <Route path="/commandes" element={<Commandes />} />
         <Route path="/depcomercial" element={<DepComercial />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/favoris" element={<Favoris />} />
         <Route path="/error" element={<Error />} />
-        <Route path="/feed" element={<Feed />} />
       </Routes>
     </>
->>>>>>> Stashed changes
   );
 }
 

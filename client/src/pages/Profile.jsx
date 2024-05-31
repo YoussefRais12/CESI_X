@@ -53,10 +53,6 @@ const Profile = ({ ping, setPing }) => {
     // Get lang parameter from URL
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get('lang');
-    console.log('Language parameter:', lang);
-    console.log(profile);
-    console.log(`../lang/${lang}.json`)
-    console.log('useEffect triggered with lang:', lang);
     import(`../lang/${lang}.json`)
         .then((data) => {
             setLanguageData(data);

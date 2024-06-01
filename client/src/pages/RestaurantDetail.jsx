@@ -8,6 +8,7 @@ import { updateArticle, addArticle, deleteArticle } from '../redux/slice/article
 import CardCarousel from '../components/CardCarousel';
 import ArticleDialog from '../components/ArticleDialog';
 import ViewArticleDialog from '../components/ViewArticleDialog';
+import ViewMenuDialog from '../components/ViewMenuDialog';
 import RestaurantInfo from '../components/RestaurantInfo';
 import LoadingScreen from '../components/LoadingScreen';
 import AWN from "awesome-notifications";
@@ -29,6 +30,8 @@ const RestaurantDetail = () => {
     const [deleteArticleMode, setDeleteArticleMode] = useState(false);
     const [createArticleMode, setCreateArticleMode] = useState(false);
     const [selectedArticle, setSelectedArticle] = useState(null);
+    const [viewMenuMode, setViewMenuMode] = useState(false);
+    const [selectedMenu, setSelectedMenu] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -213,6 +216,12 @@ const RestaurantDetail = () => {
                 notifier.alert('An unexpected error occurred. Please try again.');
             });
     };
+    console.log(selectedMenu);
+
+    const handleViewMenu = (menu) => {
+        setSelectedMenu(menu);
+        setViewMenuMode(true);
+    };
 
     if (status === 'loading' || isSaving) {
         return <LoadingScreen />;
@@ -302,9 +311,9 @@ const RestaurantDetail = () => {
                     img: menu.img || '/default-article-image.png',
                     title: menu.name,
                     price: `${menu.price} €`,
-                    color: menu.color || '#d3efda',
-                    text: 'Explore Menu'
-                }))} carouselId="menus" />
+                    description: menu.description,
+                    articles: menu.articles
+                }))} carouselId="menus" onCardClick={handleViewMenu} />
             ) : (
                 <p>No menus available.</p>
             )}
@@ -380,8 +389,20 @@ const RestaurantDetail = () => {
                     </DialogActions>
                 </Dialog>
             )}
+
+            {selectedMenu && (
+                <ViewMenuDialog
+                    open={viewMenuMode}
+                    onClose={() => setViewMenuMode(false)}
+                    menu={selectedMenu}
+                    onAddToCart={handleAddToCart}
+                    user={user}
+                    restaurant={restaurant}
+                />
+            )}
         </div>
     );
 };
 
 export default RestaurantDetail;
+

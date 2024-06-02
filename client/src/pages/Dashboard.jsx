@@ -8,6 +8,7 @@ const UserRole = require('../type.tsx');
 
 const Dashboard = () => {
     const currentUser = useSelector((state) => state.user?.user);
+    console.log(currentUser)
     const users = useSelector((state) => state.user?.users);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -28,7 +29,6 @@ const Dashboard = () => {
                 console.error("Error loading language file:", error);
             });
     }, [location.search]);
-
     useEffect(() => {
         const allowedRoles = [UserRole.admin];
         if (!allowedRoles.includes(currentUser?.role)) {

@@ -16,5 +16,12 @@
   "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer.",
   "save": "Enregistrer",
   "changePassword": "Changer le mot de passe",
-  "userAccount": "Compte utilisateur"
+  "userAccount": "Compte utilisateur",
+  "Favoris":"Favoris",
+  "Commandes":"Commandes",
+  "Wallet":"mon portefeuille",
+  "Dashboard":"menu principal",
+  "Chef_Service_HSE":"Chef_Service_HSE",
+  "Add_New_User":"Ajouter un nouvel utilisateur",
+  "Chef_Securite":"Chef_Securite"
 }

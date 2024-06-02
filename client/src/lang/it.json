@@ -16,5 +16,12 @@
   "unexpectedError": "Si è verificato un errore imprevisto. Riprova.",
   "save": "Salva",
   "changePassword": "Cambia password",
-  "userAccount": "Account utente"
+  "userAccount": "Account utente",
+  "Favoris":"preferiti",
+  "Commandes":"miei Ordini",
+  "Wallet":"portfolio",
+  "Dashboard":"menu principal",
+  "Chef_Service_HSE":"Capo_servizio_HSE",
+  "Add_New_User":"Aggiungere un nuovo utente",
+  "Chef_Securite":"Responsabile della sicurezza"
 }

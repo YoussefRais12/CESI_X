@@ -23,5 +23,7 @@
   "Dashboard":"menu principal",
   "Chef_Service_HSE":"Chef_Service_HSE",
   "Add_New_User":"Ajouter un nouvel utilisateur",
-  "Chef_Securite":"Chef_Securite"
+  "Chef_Securite":"Chef_Securite",
+  "basic" : "client",
+  "Add_User":"ajouter"
 }

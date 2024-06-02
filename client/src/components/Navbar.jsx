@@ -142,7 +142,7 @@ const Navbar = ({ setPing, ping }) => {
                 <>
                     <div className={`overlay ${animationClass}`} onClick={handleCloseMenu}></div>
                     <div className={`dropdown-menu ${animationClass}`}>
-                        <Link to={'/profile?lang='+lang} onClick={toggleMenu}>
+                        <Link to={'/profile'} onClick={toggleMenu}>
                             <h1 className='dropdown-content'><FontAwesomeIcon icon={faUser} className="menu-icon" />{languageData.profile}</h1>
                         </Link>
                         <Link to={'/favoris?lang='+lang} onClick={toggleMenu}>

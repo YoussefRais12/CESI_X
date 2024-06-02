@@ -24,7 +24,7 @@ const checkRole = (UserRole) => (req, res, next) => {
 
 // Register new user
 userRouter.post("/register", registerRules(), Validation, async (req, res) => {
-    const { name, email, password, role, isVerified } = req.body;
+    const { name, email, password, role, isVerified, lang } = req.body;
     try {
         const newUser = new User(req.body);
 

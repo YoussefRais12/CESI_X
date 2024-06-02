@@ -29,7 +29,6 @@ function App() {
   const searchParams = new URLSearchParams(location.search);
   const langUrl = userLang == undefined?"fr": userLang
   const lang = searchParams.get('lang') || langUrl; 
-  console.log(lang)
   
   useEffect(() => {
     if (isAuth) {

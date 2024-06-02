@@ -27,7 +27,7 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-  const lang = searchParams.get('lang'); // Default language to 'fr'
+  const lang = searchParams.get('lang') || "fr"; // Default language to 'fr'
   
   useEffect(() => {
     if (isAuth) {

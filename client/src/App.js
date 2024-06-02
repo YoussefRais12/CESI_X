@@ -27,7 +27,7 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-  const lang = searchParams.get('lang') || 'fr'; // Default language to 'fr'
+  const lang = searchParams.get('lang'); // Default language to 'fr'
   
   useEffect(() => {
     if (isAuth) {
@@ -45,22 +45,22 @@ function App() {
 
       <div className="content">
         <Routes>
-          <Route path="/" element={isAuth ? <Navigate to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
+          <Route path="/" element={isAuth ? <Navigate to={"/profile?lang="+lang} replace /> : <Login ping={ping} setPing={setPing} />} />
           <Route path="/test" element={<Test />} />
           <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
           
           {/* Applying RequireRole for protected routes */}
           <Route element={<PrivateRoute />}>
             <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
-              <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
+              <Route path={"/profile?lang="+lang}  element={<Profile ping={ping} setPing={setPing} />} />
             </Route>
           </Route>
-          <Route path="/commandes" element={<Commandes />} />
-          <Route path="/depcomercial" element={<DepComercial />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/favoris" element={<Favoris />} />
-          <Route path="/error" element={<Error />} />
-          <Route path="/feed" element={<Feed />} />
+          <Route path={"/commandes?lang="+lang} element={<Commandes />} />
+          <Route path={"/depcomercial?lang="+lang} element={<DepComercial />} />
+          <Route path={"/dashboard?lang="+lang} element={<Dashboard />} />
+          <Route path={"/favoris?lang="+lang} element={<Favoris />} />
+          <Route path={"/error?lang="+lang} element={<Error />} />
+          <Route path={"/feed?lang="+lang} element={<Feed />} />
         </Routes>
       </div>
     </div>

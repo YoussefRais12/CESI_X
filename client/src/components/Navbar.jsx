@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt, faStore } from '@fortawesome/free-solid-svg-icons';
 import { Input, Box, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import {useLocation } from "react-router-dom";
 
 const Navbar = ({ setPing, ping }) => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -102,7 +103,20 @@ const Navbar = ({ setPing, ping }) => {
                 );
         }
     };
-
+    // ************************** lang section ************************** //
+    const [languageData, setLanguageData] = useState({});
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const lang = searchParams.get('lang') || "fr";
+    useEffect(() => {
+        import(`../lang/${lang}.json`)
+            .then((data) => {
+                setLanguageData(data);
+            })
+            .catch((error) => {
+                console.error("Error loading language file:", error);
+            });
+    }, [location.search]);
     return (
         <>
             <div className={`navbar`}>
@@ -128,20 +142,20 @@ const Navbar = ({ setPing, ping }) => {
                 <>
                     <div className={`overlay ${animationClass}`} onClick={handleCloseMenu}></div>
                     <div className={`dropdown-menu ${animationClass}`}>
-                        <Link to='/profile' onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faUser} className="menu-icon" /> Profile</h1>
+                        <Link to={'/profile?lang='+lang} onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faUser} className="menu-icon" />{languageData.profile}</h1>
                         </Link>
-                        <Link to='/favoris' onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faHeart} className="menu-icon" /> Favoris</h1>
+                        <Link to={'/favoris?lang='+lang} onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faHeart} className="menu-icon" />{languageData.Favoris}</h1>
                         </Link>
-                        <Link to='/commandes' onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Commandes</h1>
+                        <Link to={'/commandes?lang='+lang} onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" />{languageData.Commandes}</h1>
                         </Link>
-                        <Link to='/depcomercial' onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" /> Wallet</h1>
+                        <Link to={'/depcomercial?lang='+lang} onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" />{languageData.Wallet}</h1>
                         </Link>
-                        <Link to='/dashboard' onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" /> Dashboard</h1>
+                        <Link to={'/dashboard?lang='+lang} onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" />{languageData.Dashboard}</h1>
                         </Link>
                         
                         {user?.role === 'restaurantOwner' && (

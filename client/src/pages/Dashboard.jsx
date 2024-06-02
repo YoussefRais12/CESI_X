@@ -3,6 +3,7 @@ import '../styles/dashboard.css';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllUsers, userEdit, userDelete, userAdd } from '../redux/slice/userSlice.js';
+import {useLocation } from "react-router-dom";
 const UserRole = require('../type.tsx');
 
 const Dashboard = () => {
@@ -11,6 +12,22 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '' });
+    
+    // ************************** lang section ************************** //
+    const [languageData, setLanguageData] = useState({});
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    console.log(searchParams)
+    const lang = searchParams.get('lang'); // Default language to 'fr'
+    useEffect(() => {
+        import(`../lang/${lang}.json`)
+            .then((data) => {
+                setLanguageData(data);
+            })
+            .catch((error) => {
+                console.error("Error loading language file:", error);
+            });
+    }, [location.search]);
 
     useEffect(() => {
         const allowedRoles = [UserRole.admin];
@@ -62,8 +79,8 @@ const Dashboard = () => {
                                 value={user.role}
                                 onChange={(e) => handleRoleChange(user._id, e.target.value)}
                             >
-                                <option value="chef service hse">Chef Service HSE</option>
-                                <option value="chef securité">Chef Securité</option>
+                                <option value="chef service hse">{languageData.Chef_Service_HSE}</option>
+                                <option value="chef securité">{languageData.Chef_Securite}</option>
                                 <option value="responsable erp">Responsable ERP</option>
                                 <option value="responsable commercial">Responsable Commercial</option>
                                 <option value="responsable energie">Responsable Energie</option>
@@ -78,7 +95,7 @@ const Dashboard = () => {
                 ))}
             </div>
             <div className="add-user-form">
-                <h2>Add New User</h2>
+                <h2>{languageData.Add_New_User}</h2>
                 <input
                     type="text"
                     placeholder="Name"

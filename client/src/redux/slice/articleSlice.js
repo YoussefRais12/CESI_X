@@ -13,6 +13,12 @@ export const fetchArticlesByIds = createAsyncThunk('article/fetchByIds', async (
     return response.data;
 });
 
+// Fetch all articles for a restaurant
+export const fetchArticlesByRestaurantId = createAsyncThunk("article/fetchArticlesByRestaurantId", async (restaurantId) => {
+    const response = await axios.get(`http://localhost:5000/article/restaurant/${restaurantId}`);
+    return response.data;
+});
+
 // Add new article
 export const addArticle = createAsyncThunk("article/addArticle", async (newArticle) => {
     try {
@@ -60,6 +66,7 @@ export const deleteArticle = createAsyncThunk("article/deleteArticle", async (id
 
 const initialState = {
     articles: [],
+    restaurantArticles: [],
     article: null,
     status: null,
     error: null,
@@ -91,6 +98,17 @@ const articleSlice = createSlice({
             })
             .addCase(fetchArticlesByIds.rejected, (state, action) => {
                 state.status = 'failed';
+                state.error = action.error.message;
+            })
+            .addCase(fetchArticlesByRestaurantId.pending, (state) => {
+                state.status = "loading";
+            })
+            .addCase(fetchArticlesByRestaurantId.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                state.restaurantArticles = action.payload;
+            })
+            .addCase(fetchArticlesByRestaurantId.rejected, (state, action) => {
+                state.status = "failed";
                 state.error = action.error.message;
             })
             .addCase(addArticle.pending, (state) => {

@@ -1,26 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Button, Box, Typography, TextField } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Button, Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchArticlesByIds } from '../redux/slice/articleSlice';
+import { fetchArticlesByIds, fetchArticlesByRestaurantId } from '../redux/slice/articleSlice';
 import { deleteMenu, updateMenu } from '../redux/slice/menuSlice';
 
 const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) => {
     const dispatch = useDispatch();
     const articles = useSelector((state) => state.article.articles);
+    const restaurantArticles = useSelector((state) => state.article.restaurantArticles);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [menuData, setMenuData] = useState({
-        name: menu?.name || '',
+        title: menu?.title || '',
         description: menu?.description || '',
         price: menu?.price || '',
         articles: menu?.articles || []
     });
 
     const [editMenuData, setEditMenuData] = useState({
-        name: menu?.name || '',
+        title: menu?.title || '',
         description: menu?.description || '',
-        price: menu?.price || ''
+        price: menu?.price || '',
+        articles: menu?.articles || []
     });
 
     useEffect(() => {
@@ -32,20 +34,27 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
     useEffect(() => {
         if (menu) {
             setMenuData({
-                name: menu.name,
+                title: menu.title,
                 description: menu.description,
                 price: menu.price,
                 articles: menu.articles
             });
 
             setEditMenuData({
-                name: menu.title,
+                title: menu.title,
                 description: menu.description,
-                price: menu.price.toString().replace(' €', '')
+                price: menu.price.toString().replace(' €', ''),
+                articles: menu.articles
             });
-            console.log('Menu data:', menu);
+           
         }
     }, [menu]);
+
+    useEffect(() => {
+        if (restaurant?._id) {
+            dispatch(fetchArticlesByRestaurantId(restaurant._id));
+        }
+    }, [dispatch, restaurant]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -55,9 +64,17 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
         });
     };
 
+    const handleArticleChange = (e) => {
+        const { value } = e.target;
+        setEditMenuData({
+            ...editMenuData,
+            articles: value
+        });
+    };
+
     const handleSaveChanges = () => {
         const formattedPrice = parseFloat(editMenuData.price); // Ensure the price is a number
-        const updatedMenuData = { ...editMenuData, price: formattedPrice };
+        const updatedMenuData = { name:editMenuData.title, description:editMenuData.description , price: formattedPrice, articles: editMenuData.articles};
         console.log("Saving changes with updatedMenuData:", updatedMenuData);
         dispatch(updateMenu({ id: menu.id, menuData: updatedMenuData }))
             .unwrap()
@@ -101,9 +118,9 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                         {editMode ? (
                             <>
                                 <TextField
-                                    label="Name"
-                                    name="name"
-                                    value={editMenuData.name}
+                                    label="Title"
+                                    name="title"
+                                    value={editMenuData.title}
                                     onChange={handleInputChange}
                                     fullWidth
                                     margin="normal"
@@ -124,10 +141,30 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                                     fullWidth
                                     margin="normal"
                                 />
+                                <FormControl fullWidth margin="normal">
+                                    <InputLabel id="articles-label">Articles</InputLabel>
+                                    <Select
+                                        labelId="articles-label"
+                                        name="articles"
+                                        multiple
+                                        value={editMenuData.articles}
+                                        onChange={handleArticleChange}
+                                        renderValue={(selected) => selected.map(id => {
+                                            const article = restaurantArticles.find(a => a._id === id);
+                                            return article ? article.name : id;
+                                        }).join(', ')}
+                                    >
+                                        {restaurantArticles.map((article) => (
+                                            <MenuItem key={article._id} value={article._id}>
+                                                {article.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
                             </>
                         ) : (
                             <>
-                                <Typography variant="h6" sx={{ marginBottom: 2, fontWeight: 'bold' }}>{menu?.name}</Typography>
+                                <Typography variant="h6" sx={{ marginBottom: 2, fontWeight: 'bold' }}>{menu?.title}</Typography>
                                 <Typography variant="body1" sx={{ marginBottom: 2 }}>Price: {menu?.price} </Typography>
                                 <Typography variant="body1" sx={{ marginBottom: 2 }}>{menu?.description}</Typography>
                                 <Typography variant="body1" sx={{ marginBottom: 2, fontWeight: 'bold' }}>Articles:</Typography>

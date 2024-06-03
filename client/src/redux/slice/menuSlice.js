@@ -14,7 +14,7 @@ export const fetchMenuById = createAsyncThunk("menu/fetchMenuById", async (id) =
 });
 
 // Add new menu
-export const addMenu = createAsyncThunk("menu/addMenu", async (newMenu) => {
+export const createMenu = createAsyncThunk("menu/createMenu", async (newMenu) => {
     try {
         let result = await axios.post("http://localhost:5000/menu/", newMenu, {
             headers: {
@@ -31,12 +31,12 @@ export const addMenu = createAsyncThunk("menu/addMenu", async (newMenu) => {
 // Update menu
 export const updateMenu = createAsyncThunk("menu/updateMenu", async ({ id, menuData }) => {
     try {
-        const response = await axios.put(`http://localhost:5000/menu/${id}`, menuData, {
+        let result = await axios.put(`http://localhost:5000/menu/${id}`, menuData, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
         });
-        return response.data;
+        return result.data;
     } catch (error) {
         console.log(error);
         throw error;
@@ -93,14 +93,14 @@ const menuSlice = createSlice({
                 state.status = "failed";
                 state.error = action.error.message;
             })
-            .addCase(addMenu.pending, (state) => {
+            .addCase(createMenu.pending, (state) => {
                 state.status = "loading";
             })
-            .addCase(addMenu.fulfilled, (state, action) => {
+            .addCase(createMenu.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.menus.push(action.payload);
             })
-            .addCase(addMenu.rejected, (state, action) => {
+            .addCase(createMenu.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.error.message;
             })
@@ -109,7 +109,7 @@ const menuSlice = createSlice({
             })
             .addCase(updateMenu.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                const index = state.menus.findIndex((menu) => menu._id === action.payload._id);
+                const index = state.menus.findIndex((menu) => menu.id === action.payload.id);
                 if (index !== -1) {
                     state.menus[index] = action.payload;
                 }
@@ -123,7 +123,7 @@ const menuSlice = createSlice({
             })
             .addCase(deleteMenu.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.menus = state.menus.filter((menu) => menu._id !== action.payload);
+                state.menus = state.menus.filter((menu) => menu.id !== action.payload);
             })
             .addCase(deleteMenu.rejected, (state, action) => {
                 state.status = "failed";

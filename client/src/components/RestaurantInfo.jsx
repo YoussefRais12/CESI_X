@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Rating, Button } from '@mui/material';
 
-const RestaurantInfo = ({ restaurant, user, averageRating, onEdit, onCreateArticle }) => (
+const RestaurantInfo = ({ restaurant, user, averageRating, onEdit, onCreateArticle, onCreateMenu }) => (
     <>
         <Typography variant="h1" className="restaurant-name">{restaurant.name}</Typography>
         <Typography variant="body1" className="restaurant-address">Address: {restaurant.address}</Typography>
@@ -23,6 +23,9 @@ const RestaurantInfo = ({ restaurant, user, averageRating, onEdit, onCreateArtic
                 </Button>
                 <Button variant="contained" color="primary" onClick={onCreateArticle} sx={{ marginLeft: 2 }}>
                     Add Article
+                </Button>
+                <Button variant="contained" color="primary" onClick={onCreateMenu} sx={{ marginLeft: 2 }}>
+                    Add Menu
                 </Button>
             </>
         )}

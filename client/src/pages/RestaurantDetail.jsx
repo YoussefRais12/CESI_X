@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
+import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { fetchRestaurantById, updateRestaurant } from '../redux/slice/restaurantSlice';
-import { updateArticle, addArticle, deleteArticle } from '../redux/slice/articleSlice';
+import { updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId } from '../redux/slice/articleSlice';
+import { fetchMenusByRestaurantId, createMenu } from '../redux/slice/menuSlice';
 import CardCarousel from '../components/CardCarousel';
 import ArticleDialog from '../components/ArticleDialog';
 import ViewArticleDialog from '../components/ViewArticleDialog';
@@ -21,6 +22,8 @@ const RestaurantDetail = () => {
     const restaurant = useSelector((state) => state.restaurant.restaurant);
     const status = useSelector((state) => state.restaurant.status);
     const user = useSelector((state) => state.user?.user);
+    const articles = useSelector((state) => state.article.restaurantArticles);
+    const menus = useSelector((state) => state.menu.menus);
     const notifier = new AWN();
     const [showContent, setShowContent] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -29,6 +32,7 @@ const RestaurantDetail = () => {
     const [editArticleMode, setEditArticleMode] = useState(false);
     const [deleteArticleMode, setDeleteArticleMode] = useState(false);
     const [createArticleMode, setCreateArticleMode] = useState(false);
+    const [createMenuMode, setCreateMenuMode] = useState(false);
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [viewMenuMode, setViewMenuMode] = useState(false);
     const [selectedMenu, setSelectedMenu] = useState(null);
@@ -45,10 +49,18 @@ const RestaurantDetail = () => {
         description: '',
         category: ''
     });
+    const [newMenuData, setNewMenuData] = useState({
+        name: '',
+        description: '',
+        price: '',
+        articles: []
+    });
 
     useEffect(() => {
         if (id) {
             dispatch(fetchRestaurantById(id));
+            dispatch(fetchMenusByRestaurantId(id));
+            dispatch(fetchArticlesByRestaurantId(id));
         }
     }, [dispatch, id]);
 
@@ -74,6 +86,10 @@ const RestaurantDetail = () => {
         }
     }, [restaurant]);
 
+    useEffect(() => {
+        document.body.classList.add('fade-in');
+    }, []);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -87,6 +103,22 @@ const RestaurantDetail = () => {
         setArticleFormData({
             ...articleFormData,
             [name]: value
+        });
+    };
+
+    const handleNewMenuInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewMenuData({
+            ...newMenuData,
+            [name]: value
+        });
+    };
+
+    const handleNewMenuArticleChange = (e) => {
+        const { value } = e.target;
+        setNewMenuData({
+            ...newMenuData,
+            articles: value
         });
     };
 
@@ -152,9 +184,9 @@ const RestaurantDetail = () => {
 
     const handleEditArticle = () => {
         setArticleFormData({
-            name: selectedArticle.title,
+            name: selectedArticle.name,
             price: selectedArticle.price.replace(' €', ''), // Remove the Euro symbol for editing
-            description: selectedArticle.content,
+            description: selectedArticle.description,
             category: selectedArticle.category || ''
         });
         setViewArticleMode(false);
@@ -222,6 +254,45 @@ const RestaurantDetail = () => {
         setViewMenuMode(true);
     };
 
+    const handleCreateMenu = () => {
+        if (!newMenuData.name || !newMenuData.price || !newMenuData.description || newMenuData.articles.length === 0) {
+            notifier.alert('Please fill in all fields to create a menu.');
+            return;
+        }
+
+        setIsSaving(true);
+
+        const formattedPrice = parseFloat(newMenuData.price);
+        const newMenu = { ...newMenuData, price: formattedPrice, restaurantId: restaurant._id };
+        console.log('New Menu:', newMenu.name);
+        dispatch(createMenu(newMenu))
+            .unwrap()
+            .then((response) => {
+                setIsSaving(false);
+                if (response.error) {
+                    notifier.alert(response.error);
+                } else {
+                    notifier.success('Menu created successfully!');
+                    setCreateMenuMode(false);
+                    setNewMenuData({
+                        name: '',
+                        description: '',
+                        price: '',
+                        articles: []
+                    });
+                    document.body.classList.remove('fade-in');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            })
+            .catch((error) => {
+                setIsSaving(false);
+                console.error(error);
+                notifier.alert('An unexpected error occurred. Please try again.');
+            });
+    };
+
     if (status === 'loading' || isSaving) {
         return <LoadingScreen />;
     }
@@ -235,7 +306,7 @@ const RestaurantDetail = () => {
         : 0;
 
     return (
-        <div className="restaurant-detail-container">
+        <div className="restaurant-detail-container fade-in">
             {editMode ? (
                 <Dialog open={editMode} onClose={() => setEditMode(false)}>
                     <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -300,6 +371,7 @@ const RestaurantDetail = () => {
                     averageRating={averageRating}
                     onEdit={() => setEditMode(true)}
                     onCreateArticle={() => setCreateArticleMode(true)}
+                    onCreateMenu={() => setCreateMenuMode(true)} // Add this line
                 />
             )}
 
@@ -399,9 +471,69 @@ const RestaurantDetail = () => {
                     restaurant={restaurant}
                 />
             )}
+
+            <Dialog open={createMenuMode} onClose={() => setCreateMenuMode(false)} fullWidth maxWidth="md">
+                <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Create Menu
+                    <IconButton onClick={() => setCreateMenuMode(false)}>
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 2 }}>
+                        <TextField
+                            label="Name"
+                            name="name"
+                            value={newMenuData.name}
+                            onChange={handleNewMenuInputChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Description"
+                            name="description"
+                            value={newMenuData.description}
+                            onChange={handleNewMenuInputChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            label="Price"
+                            name="price"
+                            value={newMenuData.price}
+                            onChange={handleNewMenuInputChange}
+                            fullWidth
+                            margin="normal"
+                        />
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel id="articles-label">Articles</InputLabel>
+                            <Select
+                                labelId="articles-label"
+                                name="articles"
+                                multiple
+                                value={newMenuData.articles}
+                                onChange={handleNewMenuArticleChange}
+                                renderValue={(selected) => selected.map(id => {
+                                    const article = articles.find(a => a._id === id);
+                                    return article ? article.name : id;
+                                }).join(', ')}
+                            >
+                                {articles.map((article) => (
+                                    <MenuItem key={article._id} value={article._id}>
+                                        {article.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCreateMenu} color="primary">Create</Button>
+                    <Button onClick={() => setCreateMenuMode(false)} color="secondary">Cancel</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };
 
 export default RestaurantDetail;
-

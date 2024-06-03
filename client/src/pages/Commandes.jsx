@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import * as XLSX from 'xlsx';
-import '../styles/commandes.css';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllUsers, userEdit, userDelete, userAdd } from '../redux/slice/userSlice.js';
-
+import * as XLSX from "xlsx";
+import "../styles/commandes.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchAllUsers,
+  userEdit,
+  userDelete,
+  userAdd,
+} from "../redux/slice/userSlice.js";
 
 function Commandes() {
   const [excelFile, setExcelFile] = useState(null);
@@ -14,27 +18,37 @@ function Commandes() {
   const [sheetNames, setSheetNames] = useState([]);
   const currentUser = useSelector((state) => state.user?.user);
   const dispatch = useDispatch();
+  const location = useLocation();
 
+  const [languageData, setLanguageData] = useState({});
   const user = useSelector((state) => state.user?.user); // Assuming user details include role
   const navigate = useNavigate();
 
   // Check for permission
   useEffect(() => {
-    const allowedRoles = ['client','responsable erp','admin']; // Define appropriate roles that can access
+    const allowedRoles = ["client", "responsable erp", "admin"]; // Define appropriate roles that can access
     if (currentUser && !allowedRoles.includes(currentUser.role)) {
-        navigate('/error');
+      navigate("/error");
     } else {
-        dispatch(fetchAllUsers());
+      dispatch(fetchAllUsers());
     }
-  });
+  },[currentUser, dispatch, navigate]);
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const lang = searchParams.get("lang") || "fr";
+    import(`../lang/${lang}.json`)
+      .then((data) => {
+        setLanguageData(data);
+      })
+      .catch((error) => {
+        console.error("Let's try again buddy:", error);
+      });
+  }, [location.search]);
 
   return (
     <div className="wrapper">
-      <h3>Commandes</h3>
-
-      
-      
+      <h3> {languageData.orders || 'Commandes'} </h3>
     </div>
   );
 }

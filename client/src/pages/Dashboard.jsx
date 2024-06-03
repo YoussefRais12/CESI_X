@@ -18,13 +18,27 @@ const Dashboard = () => {
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get('lang') || 'fr'; // Default language to 'fr'
 
+    // useEffect(() => {
+    //      const searchParams= new URLSearchParams(location.search);
+    //      const lang = searchParams.get('lang')||'fr';
+    //     import(`../lang/${lang}.json`) 
+    //     .then((data) =>{
+    //         setLanguageData(data);
+    //     })
+    //     .catch((error)=> {
+    //         console.error("Let's try again buddy:", error);
+    
+    //     });
+
+    // },[location.search]);
+    
     useEffect(() => {
         import(`../lang/${lang}.json`)
             .then((data) => {
                 setLanguageData(data);
             })
             .catch((error) => {
-                console.error("Error loading language file:", error);
+                console.error("Let's try again buddy:", error);
             });
     }, [lang]);
 

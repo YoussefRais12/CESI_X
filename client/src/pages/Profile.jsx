@@ -43,7 +43,7 @@ const Profile = ({ ping, setPing }) => {
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
-        const lang = searchParams.get('lang') || 'fr'; // Default language to 'fr'
+        const lang = searchParams.get('lang') || 'en'; // Default language to 'fr'
         import(`../lang/${lang}.json`)
             .then((data) => {
                 setLanguageData(data);

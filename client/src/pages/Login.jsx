@@ -20,9 +20,9 @@ const LoginContainer = ({ ping, setPing }) => {
     const passwordRef = useRef(null);
 
     useEffect(() =>{
-        const searchParams= new URLSearchparams(location.search);
+        const searchParams= new URLSearchParams(location.search);
         const lang = searchParams.get('lang')||'en';
-        import('.../lang/${lang}.json')
+        import(`.../lang/${lang}.json`) 
         .then((data) =>{
             setLanguageData(data);
         })

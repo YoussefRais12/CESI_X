@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const TestStripe = () => {
     const stripe = useStripe();
     const elements = useElements();
+    const navigate = useNavigate();
     const [amount, setAmount] = useState('');
     const [currency, setCurrency] = useState('usd');
     const [paymentStatus, setPaymentStatus] = useState(null);
@@ -45,11 +46,14 @@ const TestStripe = () => {
             if (backendError) {
                 console.log('Backend error:', backendError);
                 setPaymentStatus(`Payment failed: ${backendError}`);
+                navigate('/verif-pay', { state: { paymentStatus: `Payment failed: ${backendError}` } });
             } else {
                 if (paymentIntent.status === 'succeeded') {
                     setPaymentStatus('Payment succeeded!');
+                    navigate('/verif-pay', { state: { paymentStatus: 'Payment succeeded!' } });
                 } else {
                     setPaymentStatus(`Payment failed: ${paymentIntent.status}`);
+                    navigate('/verif-pay', { state: { paymentStatus: `Payment failed: ${paymentIntent.status}` } });
                 }
             }
         }
@@ -84,6 +88,7 @@ const TestStripe = () => {
                     Payer
                 </button>
             </form>
+            {paymentStatus && <p>{paymentStatus}</p>}
         </div>
     );
 };

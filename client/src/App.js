@@ -11,11 +11,15 @@ import DepComercial from "./pages/DepComercial";
 import Favoris from "./pages/Favoris";
 import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
+import TestStripe from "./pages/TestStripe";
 import Error from "./pages/Error";
 import Feed from "./pages/Feed";
 import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
 import Dashboard from "./pages/Dashboard";
 import RestaurantDetail from "./pages/RestaurantDetail"; // Import RestaurantDetail
+
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 function App() {
   const dispatch = useDispatch();
@@ -28,6 +32,7 @@ function App() {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const lang = searchParams.get('lang') || 'fr'; // Default language to 'fr'
+  const stripePromise = loadStripe('pk_test_51PMUzFKJ5LRFuT3XFS2dKbfHUQm734UzoqoQXunU66rfSFilgwLXyqIBrbuecc83rlMTKQxEzijrX7iQAqPGIXXz00av4XhuzD');
   
   useEffect(() => {
     if (isAuth) {
@@ -44,24 +49,27 @@ function App() {
       {location.pathname !== '/' && <Navbar />}
 
       <div className="content">
-        <Routes>
-          <Route path="/" element={isAuth ? <Navigate to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
-          <Route path="/test" element={<Test />} />
-          <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
-          
-          {/* Applying RequireRole for protected routes */}
-          <Route element={<PrivateRoute />}>
-            <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
-              <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
+        <Elements stripe={stripePromise}>
+          <Routes>
+            <Route path="/" element={isAuth ? <Navigate to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
+            <Route path="/test" element={<Test />} />
+            <Route path="/teststripe" element={<TestStripe />} />
+            <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
+            
+            {/* Applying RequireRole for protected routes */}
+            <Route element={<PrivateRoute />}>
+              <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
+                <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
+              </Route>
             </Route>
-          </Route>
-          <Route path="/commandes" element={<Commandes />} />
-          <Route path="/depcomercial" element={<DepComercial />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/favoris" element={<Favoris />} />
-          <Route path="/error" element={<Error />} />
-          <Route path="/feed" element={<Feed />} />
-        </Routes>
+            <Route path="/commandes" element={<Commandes />} />
+            <Route path="/depcomercial" element={<DepComercial />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/favoris" element={<Favoris />} />
+            <Route path="/error" element={<Error />} />
+            <Route path="/feed" element={<Feed />} />
+          </Routes>
+        </Elements>
       </div>
     </div>
   );

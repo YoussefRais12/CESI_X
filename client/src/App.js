@@ -12,6 +12,7 @@ import Favoris from "./pages/Favoris";
 import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
 import TestStripe from "./pages/TestStripe";
+import VerifPay from './pages/VerifPay';
 import Error from "./pages/Error";
 import Feed from "./pages/Feed";
 import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
@@ -55,6 +56,7 @@ function App() {
             <Route path="/" element={isAuth ? <Navigate to={"/profile?lang="+lang} replace /> : <Login ping={ping} setPing={setPing} />} />
             <Route path="/test" element={<Test />} />
             <Route path="/teststripe" element={<TestStripe />} />
+            <Route path="/verif-pay" element={<VerifPay />} />
             <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
             
             {/* Applying RequireRole for protected routes */}

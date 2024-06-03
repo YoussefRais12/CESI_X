@@ -25,13 +25,14 @@ function App() {
   const dispatch = useDispatch();
   const isAuth = localStorage.getItem("token");
   const [ping, setPing] = useState(false);
-  const userRole = useSelector(state => state.user.role); // Assuming role is part of user state
-  console.log('userRole', userRole);
+  const userRole = useSelector(state => state.user.user?.role);
+  const userLang = useSelector(state => state.user.user?.lang);
 
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-  const lang = searchParams.get('lang') || 'fr'; // Default language to 'fr'
+  const langUrl = userLang == undefined?"fr": userLang
+  const lang = searchParams.get('lang') || langUrl; 
   const stripePromise = loadStripe('pk_test_51PMUzFKJ5LRFuT3XFS2dKbfHUQm734UzoqoQXunU66rfSFilgwLXyqIBrbuecc83rlMTKQxEzijrX7iQAqPGIXXz00av4XhuzD');
   
   useEffect(() => {
@@ -51,7 +52,7 @@ function App() {
       <div className="content">
         <Elements stripe={stripePromise}>
           <Routes>
-            <Route path="/" element={isAuth ? <Navigate to="/profile" replace /> : <Login ping={ping} setPing={setPing} />} />
+            <Route path="/" element={isAuth ? <Navigate to={"/profile?lang="+lang} replace /> : <Login ping={ping} setPing={setPing} />} />
             <Route path="/test" element={<Test />} />
             <Route path="/teststripe" element={<TestStripe />} />
             <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
@@ -59,15 +60,15 @@ function App() {
             {/* Applying RequireRole for protected routes */}
             <Route element={<PrivateRoute />}>
               <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
-                <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
+                <Route path={"/profile"}  element={<Profile ping={ping} setPing={setPing} />} />
               </Route>
             </Route>
-            <Route path="/commandes" element={<Commandes />} />
-            <Route path="/depcomercial" element={<DepComercial />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/favoris" element={<Favoris />} />
-            <Route path="/error" element={<Error />} />
-            <Route path="/feed" element={<Feed />} />
+            <Route path={"/commandes"} element={<Commandes />} />
+            <Route path={"/depcomercial"} element={<DepComercial />} />
+            <Route path={"/dashboard"} element={<Dashboard />} />
+            <Route path={"/favoris"} element={<Favoris />} />
+            <Route path={"/error"} element={<Error />} />
+            <Route path={"/feed"} element={<Feed />} />
           </Routes>
         </Elements>
       </div>

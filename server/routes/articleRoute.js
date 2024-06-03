@@ -37,6 +37,16 @@ articleRoute.get('/name/:name', isAuth(), async (req, res) => {
     }
 });
 
+// Find articles by IDs
+articleRoute.post('/articles/findByIds', async (req, res) => {
+    const { ids } = req.body;
+    try {
+        const articles = await Article.find({ '_id': { $in: ids } });
+        res.status(200).json(articles);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 // Update an article by ID
 articleRoute.put('/:id', isAuth(), checkRole('restaurantOwner'), async (req, res) => {
@@ -61,7 +71,6 @@ articleRoute.put('/:id', isAuth(), checkRole('restaurantOwner'), async (req, res
     }
 });
 
-
 // Delete an article by ID
 articleRoute.delete('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
@@ -75,7 +84,5 @@ articleRoute.delete('/:id', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
-
-
 
 module.exports = articleRoute;

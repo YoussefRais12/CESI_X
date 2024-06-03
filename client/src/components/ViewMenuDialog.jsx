@@ -11,10 +11,16 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [menuData, setMenuData] = useState({
-        title: menu?.title || '',
+        name: menu?.name || '',
         description: menu?.description || '',
         price: menu?.price || '',
         articles: menu?.articles || []
+    });
+
+    const [editMenuData, setEditMenuData] = useState({
+        name: menu?.name || '',
+        description: menu?.description || '',
+        price: menu?.price || ''
     });
 
     useEffect(() => {
@@ -26,42 +32,54 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
     useEffect(() => {
         if (menu) {
             setMenuData({
-                title: menu.title,
+                name: menu.name,
                 description: menu.description,
                 price: menu.price,
                 articles: menu.articles
             });
+
+            setEditMenuData({
+                name: menu.title,
+                description: menu.description,
+                price: menu.price.toString().replace(' €', '')
+            });
+            console.log('Menu data:', menu);
         }
     }, [menu]);
 
-    console.log(menu)
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setMenuData({
-            ...menuData,
+        setEditMenuData({
+            ...editMenuData,
             [name]: value
         });
     };
 
     const handleSaveChanges = () => {
-        dispatch(updateMenu({ id: menu.id, menudData: menuData }))
+        const formattedPrice = parseFloat(editMenuData.price); // Ensure the price is a number
+        const updatedMenuData = { ...editMenuData, price: formattedPrice };
+        console.log("Saving changes with updatedMenuData:", updatedMenuData);
+        dispatch(updateMenu({ id: menu.id, menuData: updatedMenuData }))
             .unwrap()
             .then(() => {
                 setEditMode(false);
+                onClose(); // Close the dialog after saving
                 window.location.reload();
             })
             .catch((error) => {
                 console.error('Failed to update menu:', error);
+                if (error.response && error.response.data) {
+                    console.error('Backend error:', error.response.data);
+                }
             });
     };
 
     const handleDeleteMenu = () => {
-        dispatch(deleteMenu(menu.id)) // Use `id` instead of `_id`
+        dispatch(deleteMenu(menu.id))
             .unwrap()
             .then(() => {
-                setConfirmDelete(false); // Close the confirmation dialog
-                onClose(); // Close the main dialog
+                setConfirmDelete(false);
+                onClose();
                 window.location.reload();
             })
             .catch((error) => {
@@ -83,9 +101,9 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                         {editMode ? (
                             <>
                                 <TextField
-                                    label="Title"
-                                    name="title"
-                                    value={menuData.title}
+                                    label="Name"
+                                    name="name"
+                                    value={editMenuData.name}
                                     onChange={handleInputChange}
                                     fullWidth
                                     margin="normal"
@@ -93,7 +111,7 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                                 <TextField
                                     label="Description"
                                     name="description"
-                                    value={menuData.description}
+                                    value={editMenuData.description}
                                     onChange={handleInputChange}
                                     fullWidth
                                     margin="normal"
@@ -101,7 +119,7 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                                 <TextField
                                     label="Price"
                                     name="price"
-                                    value={menuData.price}
+                                    value={editMenuData.price}
                                     onChange={handleInputChange}
                                     fullWidth
                                     margin="normal"
@@ -109,7 +127,7 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                             </>
                         ) : (
                             <>
-                                <Typography variant="h6" sx={{ marginBottom: 2, fontWeight: 'bold' }}>{menu?.title}</Typography>
+                                <Typography variant="h6" sx={{ marginBottom: 2, fontWeight: 'bold' }}>{menu?.name}</Typography>
                                 <Typography variant="body1" sx={{ marginBottom: 2 }}>Price: {menu?.price} </Typography>
                                 <Typography variant="body1" sx={{ marginBottom: 2 }}>{menu?.description}</Typography>
                                 <Typography variant="body1" sx={{ marginBottom: 2, fontWeight: 'bold' }}>Articles:</Typography>

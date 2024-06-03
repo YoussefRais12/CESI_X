@@ -1,6 +1,7 @@
 const express = require('express');
 const articleRoute = express.Router();
 const Article = require('../models/article');
+const Menu = require('../models/menu'); // Import the Menu model
 const Restaurant = require('../models/restaurant');
 const isAuth = require("../middleware/passport");
 const checkRole = require("../middleware/checkRole");
@@ -48,6 +49,17 @@ articleRoute.post('/articles/findByIds', async (req, res) => {
     }
 });
 
+// Find articles by restaurant ID
+articleRoute.get('/restaurant/:restaurantId', async (req, res) => {
+    const { restaurantId } = req.params;
+    try {
+        const articles = await Article.find({ restaurantId });
+        res.status(200).json(articles);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 // Update an article by ID
 articleRoute.put('/:id', isAuth(), checkRole('restaurantOwner'), async (req, res) => {
     const { id } = req.params;
@@ -79,7 +91,14 @@ articleRoute.delete('/:id', isAuth(), async (req, res) => {
         if (!article) {
             return res.status(404).json({ error: 'Article not found' });
         }
-        res.status(200).json({ message: 'Article deleted successfully' });
+
+        // Find and delete menus that contain this article
+        const menus = await Menu.find({ articles: id });
+        for (const menu of menus) {
+            await Menu.findByIdAndDelete(menu._id);
+        }
+
+        res.status(200).json({ message: 'Article and associated menus deleted successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

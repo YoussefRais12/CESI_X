@@ -66,30 +66,32 @@ menuRoute.get('/:id', isAuth(), async (req, res) => {
 menuRoute.put('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
     const { name, price, description, articles } = req.body;
+
     try {
         const menu = await Menu.findById(id);
         if (!menu) {
             return res.status(404).json({ error: "Menu not found" });
         }
 
-        // Verify that the restaurant exists
-        const restaurant = await Restaurant.findById(restaurantId);
-        if (!restaurant) {
-            return res.status(400).json({ error: "Restaurant not found" });
-        }
-
-        // Verify that all articles exist
-        for (const articleId of articles) {
-            const article = await Article.findById(articleId);
-            if (!article) {
-                return res.status(400).json({ error: `Article with ID ${articleId} not found` });
+        if (articles !== undefined) {
+            if (!Array.isArray(articles)) {
+                return res.status(400).json({ error: "articles must be an array" });
             }
+
+            // Verify that all articles exist
+            for (const articleId of articles) {
+                const article = await Article.findById(articleId);
+                if (!article) {
+                    return res.status(400).json({ error: `Article with ID ${articleId} not found` });
+                }
+            }
+
+            menu.articles = articles;
         }
 
-        menu.name = name;
-        menu.price = price;
-        menu.description = description;
-        menu.articles = articles;
+        menu.name = name !== undefined ? name : menu.name;
+        menu.price = price !== undefined ? price : menu.price;
+        menu.description = description !== undefined ? description : menu.description;
 
         await menu.save();
 
@@ -98,6 +100,8 @@ menuRoute.put('/:id', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
+
 
 // Delete a menu by ID
 menuRoute.delete('/:id', isAuth(), async (req, res) => {

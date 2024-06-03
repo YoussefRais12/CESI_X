@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { CircularProgress, Box, Typography, Rating, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { fetchRestaurantById, updateRestaurant } from '../redux/slice/restaurantSlice';
-import { updateArticle } from '../redux/slice/articleSlice'; // Import the updateArticle action
+import { updateArticle, addArticle, deleteArticle } from '../redux/slice/articleSlice';
 import CardCarousel from '../components/CardCarousel';
+import ArticleDialog from '../components/ArticleDialog';
+import ViewArticleDialog from '../components/ViewArticleDialog';
+import ViewMenuDialog from '../components/ViewMenuDialog';
+import RestaurantInfo from '../components/RestaurantInfo';
+import LoadingScreen from '../components/LoadingScreen';
 import AWN from "awesome-notifications";
 import "awesome-notifications/dist/style.css"; // Import the CSS for notifications
 import '../styles/restaurantDetail.css';
@@ -16,12 +21,17 @@ const RestaurantDetail = () => {
     const restaurant = useSelector((state) => state.restaurant.restaurant);
     const status = useSelector((state) => state.restaurant.status);
     const user = useSelector((state) => state.user?.user);
+    const notifier = new AWN();
     const [showContent, setShowContent] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [editMode, setEditMode] = useState(false);
-    const [viewArticleMode, setViewArticleMode] = useState(false); // State for viewing articles
-    const [editArticleMode, setEditArticleMode] = useState(false); // State for editing articles
-    const [selectedArticle, setSelectedArticle] = useState(null); // State for the selected article
+    const [viewArticleMode, setViewArticleMode] = useState(false);
+    const [editArticleMode, setEditArticleMode] = useState(false);
+    const [deleteArticleMode, setDeleteArticleMode] = useState(false);
+    const [createArticleMode, setCreateArticleMode] = useState(false);
+    const [selectedArticle, setSelectedArticle] = useState(null);
+    const [viewMenuMode, setViewMenuMode] = useState(false);
+    const [selectedMenu, setSelectedMenu] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -35,7 +45,6 @@ const RestaurantDetail = () => {
         description: '',
         category: ''
     });
-    const notifier = new AWN();
 
     useEffect(() => {
         if (id) {
@@ -113,14 +122,13 @@ const RestaurantDetail = () => {
             notifier.alert('Please fill in all fields to update the article.');
             return;
         }
-    
+
         setIsSaving(true);
-    
-        dispatch(updateArticle({ id: selectedArticle.id, articleData: articleFormData}))
+
+        dispatch(updateArticle({ id: selectedArticle.id, articleData: articleFormData }))
             .unwrap()
             .then((response) => {
                 setIsSaving(false);
-                console.log('Response from update:', response); // Log the response to verify
                 if (response.error) {
                     notifier.alert(response.error);
                 } else {
@@ -136,8 +144,6 @@ const RestaurantDetail = () => {
                 notifier.alert('An unexpected error occurred. Please try again.');
             });
     };
-    
-    
 
     const handleViewArticle = (article) => {
         setSelectedArticle(article);
@@ -156,16 +162,69 @@ const RestaurantDetail = () => {
     };
 
     const handleAddToCart = () => {
-        // Add logic to add the article to the cart
         notifier.success('Article added to cart!');
     };
 
-    if (status === 'loading') {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <CircularProgress />
-            </Box>
-        );
+    const handleCreateArticle = () => {
+        if (!articleFormData.name || !articleFormData.price || !articleFormData.description || !articleFormData.category) {
+            notifier.alert('Please fill in all fields to add the article.');
+            return;
+        }
+
+        setIsSaving(true);
+
+        dispatch(addArticle({ ...articleFormData, restaurantId: restaurant._id }))
+            .unwrap()
+            .then((response) => {
+                setIsSaving(false);
+                if (response.error) {
+                    notifier.alert(response.error);
+                } else {
+                    notifier.success('Article added successfully!');
+                    setCreateArticleMode(false);
+                    setArticleFormData({
+                        name: '',
+                        price: '',
+                        description: '',
+                        category: ''
+                    });
+                    dispatch(fetchRestaurantById(id)); // Refetch the restaurant details to get the latest updates
+                }
+            })
+            .catch((error) => {
+                setIsSaving(false);
+                console.error(error);
+                notifier.alert('An unexpected error occurred. Please try again.');
+            });
+    };
+
+    const handleDeleteArticle = () => {
+        setIsSaving(true);
+
+        dispatch(deleteArticle(selectedArticle.id))
+            .unwrap()
+            .then((response) => {
+                setIsSaving(false);
+                notifier.success('Article deleted successfully!');
+                setDeleteArticleMode(false);
+                setSelectedArticle(null);
+                dispatch(fetchRestaurantById(id)); // Refetch the restaurant details to get the latest updates
+            })
+            .catch((error) => {
+                setIsSaving(false);
+                console.error('Error:', error);
+                notifier.alert('An unexpected error occurred. Please try again.');
+            });
+    };
+    console.log(selectedMenu);
+
+    const handleViewMenu = (menu) => {
+        setSelectedMenu(menu);
+        setViewMenuMode(true);
+    };
+
+    if (status === 'loading' || isSaving) {
+        return <LoadingScreen />;
     }
 
     if (!restaurant) {
@@ -178,15 +237,16 @@ const RestaurantDetail = () => {
 
     return (
         <div className="restaurant-detail-container">
-            {isSaving && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                    <CircularProgress />
-                </Box>
-            )}
-            {!isSaving && (
-                <>
-                    {editMode ? (
-                        <Box>
+            {editMode ? (
+                <Dialog open={editMode} onClose={() => setEditMode(false)}>
+                    <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        Edit Restaurant
+                        <IconButton onClick={() => setEditMode(false)}>
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <TextField
                                 label="Name"
                                 name="name"
@@ -227,152 +287,122 @@ const RestaurantDetail = () => {
                                 fullWidth
                                 margin="normal"
                             />
-                            <Button variant="contained" color="primary" onClick={handleSaveChanges}>
-                                Save Changes
-                            </Button>
-                            <Button variant="outlined" color="secondary" onClick={() => setEditMode(false)} sx={{ marginLeft: 2 }}>
-                                Cancel
-                            </Button>
                         </Box>
-                    ) : (
-                        <>
-                            <Typography variant="h1" className="restaurant-name">{restaurant.name}</Typography>
-                            <Typography variant="body1" className="restaurant-address">Address: {restaurant.address}</Typography>
-                            <Rating
-                                name="read-only"
-                                value={parseFloat(averageRating)}
-                                precision={0.1}
-                                readOnly
-                            />
-                            <Typography variant="body1" className="restaurant-phone">Phone: {restaurant.phone}</Typography>
-                            <Typography variant="body1" className="restaurant-working-hours">Working Hours: {restaurant.workingHours}</Typography>
-                            <Typography variant="body1" className="restaurant-category">Category: {restaurant.category}</Typography>
-                            <Box className="restaurant-ratings" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-                            </Box>
-                            {user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId && (
-                                <Button variant="contained" color="primary" onClick={() => setEditMode(true)}>
-                                    Edit Information
-                                </Button>
-                            )}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleSaveChanges} color="primary">Save</Button>
+                        <Button onClick={() => setEditMode(false)} color="secondary">Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+            ) : (
+                <RestaurantInfo
+                    restaurant={restaurant}
+                    user={user}
+                    averageRating={averageRating}
+                    onEdit={() => setEditMode(true)}
+                    onCreateArticle={() => setCreateArticleMode(true)}
+                />
+            )}
 
-                            <h2 className="carousel-title">Menus</h2>
-                            {restaurant.menus && restaurant.menus.length > 0 ? (
-                                <CardCarousel items={restaurant.menus.map(menu => ({
-                                    id: menu._id,
-                                    img: menu.img || '/default-article-image.png', // Add a default image if none is provided
-                                    title: menu.name,
-                                    price: `${menu.price} €`, // Add price if available
-                                    color: menu.color || '#d3efda', // Use a default color if none is provided
-                                    text: 'Explore Menu'
-                                }))} carouselId="menus" />
-                            ) : (
-                                <p>No menus available.</p>
-                            )}
+            <h2 className="carousel-title">Menus</h2>
+            {restaurant.menus && restaurant.menus.length > 0 ? (
+                <CardCarousel items={restaurant.menus.map(menu => ({
+                    id: menu._id,
+                    img: menu.img || '/default-article-image.png',
+                    title: menu.name,
+                    price: `${menu.price} €`,
+                    description: menu.description,
+                    articles: menu.articles
+                }))} carouselId="menus" onCardClick={handleViewMenu} />
+            ) : (
+                <p>No menus available.</p>
+            )}
 
-                            <h2 className="carousel-title">Articles</h2>
-                            {restaurant.articles && restaurant.articles.length > 0 ? (
-                                <CardCarousel items={restaurant.articles.map(article => ({
-                                    id: article._id,
-                                    img: article.img || '/default-article-image.png', // Add a default image if none is provided
-                                    title: article.name,
-                                    content: article.description,
-                                    price: `${article.price} €`, // Add price
-                                    color: article.color || '#e3f1f8', // Use a default color if none is provided
-                                    text: 'Read Article',
-                                    link: '', // Ensure there's an empty link so the onClick works
-                                    category: article.category // Add category field
-                                }))} carouselId="articles" onCardClick={handleViewArticle} />
-                            ) : (
-                                <p>No articles available.</p>
-                            )}
+            <h2 className="carousel-title">Articles</h2>
+            {restaurant.articles && restaurant.articles.length > 0 ? (
+                <CardCarousel items={restaurant.articles.map(article => ({
+                    id: article._id,
+                    img: article.img || '/default-article-image.png',
+                    title: article.name,
+                    content: article.description,
+                    price: `${article.price} €`,
+                    color: article.color || '#e3f1f8',
+                    text: 'Read Article',
+                    link: '',
+                    category: article.category
+                }))} carouselId="articles" onCardClick={handleViewArticle} />
+            ) : (
+                <p>No articles available.</p>
+            )}
 
-                            {selectedArticle && (
-                                <Dialog open={viewArticleMode} onClose={() => setViewArticleMode(false)}>
-                                    <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        Article Details
-                                        <IconButton onClick={() => setViewArticleMode(false)}>
-                                            <CloseIcon />
-                                        </IconButton>
-                                    </DialogTitle>
-                                    <DialogContent>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                            <Box sx={{ width: '100%', marginBottom: 2 }}>
-                                                <img src={selectedArticle.img || '/default-article-image.png'} alt={selectedArticle.name} style={{ width: '100%', borderRadius: '10px' }} />
-                                            </Box>
-                                            <Typography variant="h6">{selectedArticle.title}</Typography>
-                                            <Typography variant="body1">Price: {selectedArticle.price}</Typography>
-                                            <Typography variant="body1">{selectedArticle.content}</Typography>
-                                            <Typography variant="body1">Category: {selectedArticle.category}</Typography>
-                                        </Box>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={handleAddToCart} color="primary">Add to Cart</Button>
-                                        {user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId && (
-                                            <Button onClick={handleEditArticle} color="secondary">Edit</Button>
-                                        )}
-                                    </DialogActions>
-                                </Dialog>
-                            )}
+            {selectedArticle && (
+                <ViewArticleDialog
+                    open={viewArticleMode}
+                    onClose={() => setViewArticleMode(false)}
+                    article={selectedArticle}
+                    onEdit={handleEditArticle}
+                    onDelete={() => setDeleteArticleMode(true)}
+                    onAddToCart={handleAddToCart}
+                    user={user}
+                    restaurant={restaurant}
+                />
+            )}
 
-                            {editArticleMode && selectedArticle && (
-                                <Dialog open={editArticleMode} onClose={() => setEditArticleMode(false)}>
-                                    <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        Edit Article
-                                        <IconButton onClick={() => setEditArticleMode(false)}>
-                                            <CloseIcon />
-                                        </IconButton>
-                                    </DialogTitle>
-                                    <DialogContent>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                            <Box sx={{ width: '100%', marginBottom: 2 }}>
-                                                <img src={selectedArticle.img || '/default-article-image.png'} alt={selectedArticle.name} style={{ width: '100%', borderRadius: '10px' }} />
-                                            </Box>
-                                            <TextField
-                                                label="Article Name"
-                                                name="name"
-                                                value={articleFormData.name}
-                                                onChange={handleArticleInputChange}
-                                                fullWidth
-                                                margin="normal"
-                                            />
-                                            <TextField
-                                                label="Article Price"
-                                                name="price"
-                                                value={articleFormData.price}
-                                                onChange={handleArticleInputChange}
-                                                fullWidth
-                                                margin="normal"
-                                            />
-                                            <TextField
-                                                label="Article Description"
-                                                name="description"
-                                                value={articleFormData.description}
-                                                onChange={handleArticleInputChange}
-                                                fullWidth
-                                                margin="normal"
-                                            />
-                                            <TextField
-                                                label="Article Category"
-                                                name="category"
-                                                value={articleFormData.category}
-                                                onChange={handleArticleInputChange}
-                                                fullWidth
-                                                margin="normal"
-                                            />
-                                        </Box>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={handleSaveArticleChanges} color="primary">Save</Button>
-                                        <Button onClick={() => setEditArticleMode(false)} color="secondary">Cancel</Button>
-                                    </DialogActions>
-                                </Dialog>
-                            )}
-                        </>
-                    )}
-                </>
+            {editArticleMode && selectedArticle && (
+                <ArticleDialog
+                    open={editArticleMode}
+                    onClose={() => setEditArticleMode(false)}
+                    title="Edit Article"
+                    formData={articleFormData}
+                    onInputChange={handleArticleInputChange}
+                    onSave={handleSaveArticleChanges}
+                    onCancel={() => setEditArticleMode(false)}
+                />
+            )}
+
+            {createArticleMode && (
+                <ArticleDialog
+                    open={createArticleMode}
+                    onClose={() => setCreateArticleMode(false)}
+                    title="Add Article"
+                    formData={articleFormData}
+                    onInputChange={handleArticleInputChange}
+                    onSave={handleCreateArticle}
+                    onCancel={() => setCreateArticleMode(false)}
+                />
+            )}
+
+            {deleteArticleMode && (
+                <Dialog open={deleteArticleMode} onClose={() => setDeleteArticleMode(false)}>
+                    <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        Confirm Delete
+                        <IconButton onClick={() => setDeleteArticleMode(false)}>
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+                    <DialogContent>
+                        <Typography>Are you sure you want to delete this article?</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleDeleteArticle} color="error">Delete</Button>
+                        <Button onClick={() => setDeleteArticleMode(false)} color="secondary">Cancel</Button>
+                    </DialogActions>
+                </Dialog>
+            )}
+
+            {selectedMenu && (
+                <ViewMenuDialog
+                    open={viewMenuMode}
+                    onClose={() => setViewMenuMode(false)}
+                    menu={selectedMenu}
+                    onAddToCart={handleAddToCart}
+                    user={user}
+                    restaurant={restaurant}
+                />
             )}
         </div>
     );
 };
 
 export default RestaurantDetail;
+

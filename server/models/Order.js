@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const orderSchema = new Schema({
     orderaddress: { type: String, required: true },
     orderPhone: { type: String, required: true },
-    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     orderarrayArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true }]
 });
 

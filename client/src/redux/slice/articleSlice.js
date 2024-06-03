@@ -8,8 +8,8 @@ export const fetchAllArticles = createAsyncThunk("article/fetchAllArticles", asy
 });
 
 // Fetch article by ID
-export const fetchArticleById = createAsyncThunk("article/fetchArticleById", async (id) => {
-    const response = await axios.get(`http://localhost:5000/article/${id}`);
+export const fetchArticlesByIds = createAsyncThunk('article/fetchByIds', async (ids) => {
+    const response = await axios.post('http://localhost:5000/article/articles/findByIds', { ids });
     return response.data;
 });
 
@@ -82,15 +82,15 @@ const articleSlice = createSlice({
                 state.status = "failed";
                 state.error = action.error.message;
             })
-            .addCase(fetchArticleById.pending, (state) => {
-                state.status = "loading";
+            .addCase(fetchArticlesByIds.pending, (state) => {
+                state.status = 'loading';
             })
-            .addCase(fetchArticleById.fulfilled, (state, action) => {
-                state.status = "succeeded";
-                state.article = action.payload;
+            .addCase(fetchArticlesByIds.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.articles = action.payload;
             })
-            .addCase(fetchArticleById.rejected, (state, action) => {
-                state.status = "failed";
+            .addCase(fetchArticlesByIds.rejected, (state, action) => {
+                state.status = 'failed';
                 state.error = action.error.message;
             })
             .addCase(addArticle.pending, (state) => {

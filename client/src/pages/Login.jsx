@@ -1,21 +1,37 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faHamburger, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import '../styles/login.css';
 import { userLogin, userRegister } from '../redux/slice/userSlice';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const LoginContainer = ({ ping, setPing }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location= useLocation();
     const [login, setLogin] = useState({ email: '', password: '', showPassword: false });
     const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '' });
     const [error, setError] = useState('');
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
+    const [languageData, setLanguageData] = useState({});
     const passwordRef = useRef(null);
+
+    useEffect(() =>{
+        const searchParams= new URLSearchparams(location.search);
+        const lang = searchParams.get('lang')||'en';
+        import('.../lang/${lang}.json')
+        .then((data) =>{
+            setLanguageData(data);
+        })
+        .catch((error)=>{
+            console.error("Let's try again buddy:", error);
+    
+        });
+
+    },[location.search]);
 
     const togglePasswordVisibility = () => {
         setLogin({ ...login, showPassword: !login.showPassword });

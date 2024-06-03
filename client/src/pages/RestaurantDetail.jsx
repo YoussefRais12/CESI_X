@@ -216,7 +216,6 @@ const RestaurantDetail = () => {
                 notifier.alert('An unexpected error occurred. Please try again.');
             });
     };
-    console.log(selectedMenu);
 
     const handleViewMenu = (menu) => {
         setSelectedMenu(menu);

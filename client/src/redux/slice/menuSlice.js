@@ -31,12 +31,12 @@ export const addMenu = createAsyncThunk("menu/addMenu", async (newMenu) => {
 // Update menu
 export const updateMenu = createAsyncThunk("menu/updateMenu", async ({ id, menuData }) => {
     try {
-        let result = await axios.put(`http://localhost:5000/menu/${id}`, menuData, {
+        const response = await axios.put(`http://localhost:5000/menu/${id}`, menuData, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
         });
-        return result.data;
+        return response.data;
     } catch (error) {
         console.log(error);
         throw error;

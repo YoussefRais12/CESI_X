@@ -65,28 +65,12 @@ menuRoute.get('/:id', isAuth(), async (req, res) => {
 // Update a menu by ID
 menuRoute.put('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
-    const { name, price, description, articles } = req.body;
+    const { name, price, description } = req.body;
 
     try {
         const menu = await Menu.findById(id);
         if (!menu) {
             return res.status(404).json({ error: "Menu not found" });
-        }
-
-        if (articles !== undefined) {
-            if (!Array.isArray(articles)) {
-                return res.status(400).json({ error: "articles must be an array" });
-            }
-
-            // Verify that all articles exist
-            for (const articleId of articles) {
-                const article = await Article.findById(articleId);
-                if (!article) {
-                    return res.status(400).json({ error: `Article with ID ${articleId} not found` });
-                }
-            }
-
-            menu.articles = articles;
         }
 
         menu.name = name !== undefined ? name : menu.name;

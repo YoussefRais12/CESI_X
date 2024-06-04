@@ -72,7 +72,6 @@ export const userRegister = createAsyncThunk("user/register", async (newUser) =>
   }
 });
 
-
 // Login user
 export const userLogin = createAsyncThunk("user/login", async (user) => {
   try {
@@ -93,6 +92,22 @@ export const userCurrent = createAsyncThunk("user/current", async () => {
       },
     });
     return result.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+});
+
+// Upload user image
+export const uploadUserImage = createAsyncThunk("user/uploadImage", async (formData) => {
+  try {
+    let result = await axios.post("http://localhost:5000/user/upload-image", formData, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return result.data.user;
   } catch (error) {
     console.log(error);
     throw error;
@@ -188,6 +203,17 @@ export const userSlice = createSlice({
         state.users.push(action.payload);
       })
       .addCase(userAdd.rejected, (state) => {
+        state.status = "fail";
+      })
+      // upload user image cases
+      .addCase(uploadUserImage.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(uploadUserImage.fulfilled, (state, action) => {
+        state.status = "success";
+        state.user = { ...state.user, img: action.payload.img };
+      })
+      .addCase(uploadUserImage.rejected, (state) => {
         state.status = "fail";
       });
   },

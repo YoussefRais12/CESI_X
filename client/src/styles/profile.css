@@ -90,7 +90,7 @@
 .profile-button {
   background-color: #007bff;
   color: #ffffff;
-  border:#d0d0d0;
+  border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
@@ -100,6 +100,21 @@
 
 .profile-button:hover {
   background-color: #0056b3;
+}
+
+.upload-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.upload-button:hover {
+  background-color: #45a049;
 }
 
 .logout {
@@ -122,4 +137,9 @@
 
 .edit-icon:hover {
   color: #0056b3;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
 }

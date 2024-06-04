@@ -1,6 +1,8 @@
 import {useEffect, useState} from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 
 const TestStripe = () => {
     const stripe = useStripe();
@@ -9,6 +11,7 @@ const TestStripe = () => {
     const [amount, setAmount] = useState('');
     const [currency, setCurrency] = useState('usd');
     const [paymentStatus, setPaymentStatus] = useState(null);
+    const user = useSelector((state) => state.user?.user);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -46,13 +49,34 @@ const TestStripe = () => {
             if (backendError) {
                 console.log('Backend error:', backendError);
                 setPaymentStatus(`Payment failed: ${backendError}`);
+
+                // Enregistrer la notification de paiement échoué
+                await axios.post('http://localhost:5000/notifications', {
+                    userId: user._id,
+                    message: `Payment failed: ${backendError}`,
+                });
+
                 navigate('/verif-pay', { state: { paymentStatus: `Payment failed: ${backendError}` } });
             } else {
                 if (paymentIntent.status === 'succeeded') {
                     setPaymentStatus('Payment succeeded!');
+
+                    // Enregistrer la notification de paiement réussi
+                    await axios.post('http://localhost:5000/notifications', {
+                        userId: user._id,
+                        message: 'Payment succeeded!',
+                    });
+
                     navigate('/verif-pay', { state: { paymentStatus: 'Payment succeeded!' } });
                 } else {
                     setPaymentStatus(`Payment failed: ${paymentIntent.status}`);
+
+                    // Enregistrer la notification de paiement échoué
+                    await axios.post('http://localhost:5000/notifications', {
+                        userId: user._id,
+                        message: `Payment failed: ${paymentIntent.status}`,
+                    });
+
                     navigate('/verif-pay', { state: { paymentStatus: `Payment failed: ${paymentIntent.status}` } });
                 }
             }

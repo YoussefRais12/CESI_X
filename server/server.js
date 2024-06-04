@@ -7,6 +7,8 @@ const db_connect = require("./config/db_connect");
 const app = express();
 const stripe = Stripe('sk_test_51PMUzFKJ5LRFuT3XK0gGfYY7jtr2CUDbJP8mQt4IQyNjZq63GUXUDaq1qdGqLkN1UdUDSVm1eZXzNhz6bCFtef1j00tyTYOHs6');
 
+const Notification = require('./models/Notif');
+
 db_connect();
 app.use(express.json());
 app.use(cors());
@@ -52,6 +54,33 @@ app.post('/create-payment-intent', async (req, res) => {
       res.status(500).send({
           error: error.message,
       });
+  }
+});
+
+app.post('/notifications', async (req, res) => {
+  const { userId, message } = req.body;
+
+  try {
+    const notification = new Notification({
+      userId,
+      message,
+      createdAt: new Date(),
+    });
+    await notification.save();
+    res.status(201).json(notification);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/notifications', async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+    res.status(200).json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

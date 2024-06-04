@@ -60,8 +60,8 @@ const Carousel = ({ items, carouselId }) => {
                                 <div className="title">{item.title}</div>
                                 <div className="content">{item.content}</div>
                             </Box>
-                            <Box sx={{ marginBottom: '10px' }}>
-                                <img src={item.img} alt={item.title} style={{ maxWidth: '100%', borderRadius: '10px' }} />
+                            <Box sx={{ marginBottom: '10px', width: '200px', height: '200px' }}>
+                                <img src={item.img} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }} />
                             </Box>
                             <Box>
                                 <div className="text">{item.text}</div>

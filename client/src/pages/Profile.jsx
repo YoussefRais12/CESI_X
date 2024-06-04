@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout, userCurrent, userEdit, uploadUserImage } from '../redux/slice/userSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faCamera } from '@fortawesome/free-solid-svg-icons';
 import AWN from "awesome-notifications";
 import "awesome-notifications/dist/style.css"; // Import the CSS for notifications
+import { TailSpin } from 'react-loader-spinner';
 import '../styles/profile.css';
 
 const Profile = ({ ping, setPing }) => {
@@ -28,6 +29,7 @@ const Profile = ({ ping, setPing }) => {
     const [isEditingPassword, setIsEditingPassword] = useState(false);
     const [activeTab, setActiveTab] = useState('info');
     const [error, setError] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -134,9 +136,12 @@ const Profile = ({ ping, setPing }) => {
         const formData = new FormData();
         formData.append('img', file);
 
+        setIsUploading(true);
+
         dispatch(uploadUserImage(formData))
             .unwrap()
             .then((response) => {
+                setIsUploading(false);
                 if (response.error) {
                     notifier.alert(response.error);
                 } else {
@@ -145,6 +150,7 @@ const Profile = ({ ping, setPing }) => {
                 }
             })
             .catch((error) => {
+                setIsUploading(false);
                 console.error(error);
                 notifier.alert(languageData.unexpectedError || 'An unexpected error occurred. Please try again.');
             });
@@ -163,17 +169,31 @@ const Profile = ({ ping, setPing }) => {
                                 onClick={isEditing ? handleCancel : handleEdit}
                             />
                         </h2>
-                        <img src={user?.img} alt="Profile" className="profile-img" />
-                        <div>
-                            <label htmlFor="upload-img" className="upload-button">
-                                {languageData.uploadImage || 'Upload Image'}
-                            </label>
-                            <input
-                                type="file"
-                                id="upload-img"
-                                style={{ display: 'none' }}
-                                onChange={handleImageUpload}
-                            />
+                        <div className="profile-image-container">
+                            {isUploading ? (
+                                <div className="loader-container">
+                                    <TailSpin
+                                        height="100"
+                                        width="100"
+                                        color="#007bff"
+                                        ariaLabel="loading"
+                                    />
+                                </div>
+                            ) : (
+                                <>
+                                    <img src={user?.img} alt="Profile" className="profile-img" />
+                                    <label htmlFor="upload-img" className="camera-icon">
+                                        <FontAwesomeIcon icon={faCamera} />
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="upload-img"
+                                        style={{ display: 'none' }}
+                                        onChange={handleImageUpload}
+                                        disabled={isUploading}
+                                    />
+                                </>
+                            )}
                         </div>
                         <div>
                             <p>{languageData.name || 'Name'}:
@@ -213,7 +233,6 @@ const Profile = ({ ping, setPing }) => {
                                 </button>
                             </>
                         )}
-                      
                     </div>
                 );
             case 'security':

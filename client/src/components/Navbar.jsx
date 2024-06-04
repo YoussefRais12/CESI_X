@@ -9,6 +9,7 @@ import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt, faStore, fa
 import { Input, Box, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import {useLocation } from "react-router-dom";
+import axios from 'axios';
 
 const Navbar = ({ setPing, ping }) => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -29,18 +30,19 @@ const Navbar = ({ setPing, ping }) => {
     }, [dispatch, user, ping]); // Add ping as a dependency
 
     useEffect(() => {
-        // Fetch notifications from backend or any source
         const fetchNotifications = async () => {
-            // Simulate fetching notifications
-            const userNotifications = [
-                { id: 1, message: 'Paiement réussi: 100 USD', status: 'succeeded' },
-                { id: 2, message: 'Paiement refusé: 50 EUR', status: 'failed' }
-            ];
-            setNotifications(userNotifications);
+            if (user) {
+                try {
+                    const response = await axios.get(`http://localhost:5000/notifications?userId=${user._id}`);
+                    setNotifications(response.data);
+                } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                }
+            }
         };
 
         fetchNotifications();
-    }, []);
+    }, [user]);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -110,14 +112,9 @@ const Navbar = ({ setPing, ping }) => {
                 return <h1>admin</h1>;
             case "restaurantOwner":
                 return (
-                    <div className="navbar-buttons">
-                        <button className="notification-button" onClick={toggleNotifications}>
-                            <FontAwesomeIcon icon={faBell} />
-                        </button>
-                        <button className="dropdown-button" onClick={toggleMenu}>
-                            <FontAwesomeIcon icon={faStore} /> My Restaurants
-                        </button>
-                    </div>
+                    <button className="dropdown-button" onClick={toggleMenu}>
+                        <FontAwesomeIcon icon={faStore} /> My Restaurants
+                    </button>
                 );
             default:
                 return (
@@ -128,6 +125,21 @@ const Navbar = ({ setPing, ping }) => {
                 );
         }
     };
+
+    const renderNotifications = () => (
+        <div className="notification-dropdown">
+            {notifications.length > 0 ? (
+                notifications.map((notification, index) => (
+                    <div key={index} className="notification-item">
+                        {notification.message}
+                    </div>
+                ))
+            ) : (
+                <div className="notification-item">No notifications</div>
+            )}
+        </div>
+    );
+
     // ************************** lang section ************************** //
     const [languageData, setLanguageData] = useState({});
     const location = useLocation();
@@ -142,6 +154,7 @@ const Navbar = ({ setPing, ping }) => {
                 console.error("Error loading language file:", error);
             });
     }, [location.search]);
+    
     return (
         <>
             <div className={`navbar`}>
@@ -160,6 +173,10 @@ const Navbar = ({ setPing, ping }) => {
                         className="search-input"
                     />
                 </div>
+                <button className="notification-button" onClick={toggleNotifications}>
+                    <FontAwesomeIcon icon={faBell} />
+                    {notifications.length > 0 && <span className="notification-count">{notifications.length}</span>}
+                </button>
                 {renderCartOrAuthButtons()}
             </div>
     
@@ -214,19 +231,7 @@ const Navbar = ({ setPing, ping }) => {
                 </>
             )}
 
-            {showNotifications && (
-                <div className="notification-dropdown">
-                    {notifications.length > 0 ? (
-                        notifications.map(notification => (
-                            <div key={notification.id} className="notification-item">
-                                {notification.message}
-                            </div>
-                        ))
-                    ) : (
-                        <div className="notification-item">Aucune notification</div>
-                    )}
-                </div>
-            )}
+            {showNotifications && renderNotifications()}
         </>
     );
 }

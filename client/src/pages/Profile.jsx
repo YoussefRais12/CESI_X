@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import { logout, userCurrent, userEdit } from '../redux/slice/userSlice';
+import { logout, userCurrent, userEdit, uploadUserImage } from '../redux/slice/userSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen } from '@fortawesome/free-solid-svg-icons';
 import AWN from "awesome-notifications";
@@ -127,6 +127,29 @@ const Profile = ({ ping, setPing }) => {
         setPasswords({ oldPassword: '', newPassword: '' });
     };
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('img', file);
+
+        dispatch(uploadUserImage(formData))
+            .unwrap()
+            .then((response) => {
+                if (response.error) {
+                    notifier.alert(response.error);
+                } else {
+                    notifier.success(languageData.imageUploaded || 'Image uploaded successfully!');
+                    setPing(!ping);  // Trigger ping to refresh data if needed
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                notifier.alert(languageData.unexpectedError || 'An unexpected error occurred. Please try again.');
+            });
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'info':
@@ -140,7 +163,18 @@ const Profile = ({ ping, setPing }) => {
                                 onClick={isEditing ? handleCancel : handleEdit}
                             />
                         </h2>
-                        <img src="/images.png" alt="Profile" className="profile-img" />
+                        <img src={user?.img} alt="Profile" className="profile-img" />
+                        <div>
+                            <label htmlFor="upload-img" className="upload-button">
+                                {languageData.uploadImage || 'Upload Image'}
+                            </label>
+                            <input
+                                type="file"
+                                id="upload-img"
+                                style={{ display: 'none' }}
+                                onChange={handleImageUpload}
+                            />
+                        </div>
                         <div>
                             <p>{languageData.name || 'Name'}:
                                 {isEditing ? (
@@ -179,6 +213,7 @@ const Profile = ({ ping, setPing }) => {
                                 </button>
                             </>
                         )}
+                      
                     </div>
                 );
             case 'security':

@@ -12,6 +12,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 require("dotenv").config();
 const UserRole = require("../../client/src/type.tsx");
+const cloudinary = require('../config/cloudinary'); // Import your cloudinary configuration
 
 // Middleware to check user roles
 const checkRole = (UserRole) => (req, res, next) => {
@@ -31,7 +32,6 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         // Check if email exists
         const searchedUser = await User.findOne({ email });
         if (searchedUser) {
-            
             return res.status(400).send({ msg: "Email already exists" });
         }
 
@@ -146,7 +146,6 @@ userRouter.put("/update/:id", isAuth(), async (req, res) => {
     }
 });
 
-
 // Delete user by ID (requires role check)
 userRouter.delete("/delete/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
     try {
@@ -160,6 +159,41 @@ userRouter.delete("/delete/:id", isAuth(), checkRole([UserRole.admin]), async (r
 // Get current user
 userRouter.get("/current", isAuth(), (req, res) => {
     res.status(200).send({ user: req.user });
+});
+
+// Upload user image
+userRouter.post("/upload-image", isAuth(), upload.single("img"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).send("No file uploaded.");
+        }
+
+        const user = await User.findById(req.user._id);
+        if (user.imgPublicId) {
+            // Delete the old image from Cloudinary
+            await cloudinary.uploader.destroy(user.imgPublicId);
+        }
+
+        const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream((error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            });
+            uploadStream.end(req.file.buffer);
+        });
+
+        // Update user with image URL and public ID
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            { img: uploadResult.secure_url, imgPublicId: uploadResult.public_id },
+            { new: true }
+        );
+
+        res.send({ user: updatedUser, msg: "Image uploaded successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 // Data upload (example, assuming it requires authentication and specific roles)

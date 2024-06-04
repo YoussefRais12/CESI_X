@@ -19,7 +19,7 @@ const Feed = () => {
     const generateItems = (restaurants) => {
         return restaurants.map((restaurant, index) => ({
             id: restaurant._id,
-            img:  '/default-article-image.png', // Cycle through carousel images
+            img:   restaurant.img || '/default-article-image.png', // Cycle through carousel images
             title: restaurant.name,
             content: restaurant.address,
             price : restaurant.address,

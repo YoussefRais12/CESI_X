@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from '../redux/slice/userSlice';
 import { fetchRestaurantsByOwnerId } from '../redux/slice/restaurantSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt, faStore } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt, faStore, faBell } from '@fortawesome/free-solid-svg-icons';
 import { Input, Box, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import {useLocation } from "react-router-dom";
@@ -15,6 +15,8 @@ const Navbar = ({ setPing, ping }) => {
     const [cartOpen, setCartOpen] = useState(false);
     const [animationClass, setAnimationClass] = useState('');
     const [cartAnimationClass, setCartAnimationClass] = useState('');
+    const [notifications, setNotifications] = useState([]);
+    const [showNotifications, setShowNotifications] = useState(false);
     const user = useSelector((state) => state.user?.user);
     const ownedRestaurants = useSelector((state) => state.restaurant?.ownedRestaurants);
     const dispatch = useDispatch();
@@ -25,6 +27,20 @@ const Navbar = ({ setPing, ping }) => {
             dispatch(fetchRestaurantsByOwnerId(user._id));
         }
     }, [dispatch, user, ping]); // Add ping as a dependency
+
+    useEffect(() => {
+        // Fetch notifications from backend or any source
+        const fetchNotifications = async () => {
+            // Simulate fetching notifications
+            const userNotifications = [
+                { id: 1, message: 'Paiement réussi: 100 USD', status: 'succeeded' },
+                { id: 2, message: 'Paiement refusé: 50 EUR', status: 'failed' }
+            ];
+            setNotifications(userNotifications);
+        };
+
+        fetchNotifications();
+    }, []);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -56,6 +72,10 @@ const Navbar = ({ setPing, ping }) => {
             setCartOpen(true);
             setCartAnimationClass('fade-in');
         }
+    };
+
+    const toggleNotifications = () => {
+        setShowNotifications(!showNotifications);
     };
 
     const handleCloseMenu = () => {
@@ -90,9 +110,14 @@ const Navbar = ({ setPing, ping }) => {
                 return <h1>admin</h1>;
             case "restaurantOwner":
                 return (
-                    <button className="dropdown-button" onClick={toggleMenu}>
-                        <FontAwesomeIcon icon={faStore} /> My Restaurants
-                    </button>
+                    <div className="navbar-buttons">
+                        <button className="notification-button" onClick={toggleNotifications}>
+                            <FontAwesomeIcon icon={faBell} />
+                        </button>
+                        <button className="dropdown-button" onClick={toggleMenu}>
+                            <FontAwesomeIcon icon={faStore} /> My Restaurants
+                        </button>
+                    </div>
                 );
             default:
                 return (
@@ -187,6 +212,20 @@ const Navbar = ({ setPing, ping }) => {
                         <button className="close-cart-button" onClick={handleCloseCart}>Close</button>
                     </div>
                 </>
+            )}
+
+            {showNotifications && (
+                <div className="notification-dropdown">
+                    {notifications.length > 0 ? (
+                        notifications.map(notification => (
+                            <div key={notification.id} className="notification-item">
+                                {notification.message}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="notification-item">Aucune notification</div>
+                    )}
+                </div>
             )}
         </>
     );

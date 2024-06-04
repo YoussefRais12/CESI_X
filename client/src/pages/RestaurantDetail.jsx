@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { fetchRestaurantById, updateRestaurant } from '../redux/slice/restaurantSlice';
+import { fetchRestaurantById, updateRestaurant, uploadRestaurantImage } from '../redux/slice/restaurantSlice';
 import { updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId } from '../redux/slice/articleSlice';
 import { fetchMenusByRestaurantId, createMenu } from '../redux/slice/menuSlice';
 import CardCarousel from '../components/CardCarousel';
@@ -15,6 +15,9 @@ import LoadingScreen from '../components/LoadingScreen';
 import AWN from "awesome-notifications";
 import "awesome-notifications/dist/style.css"; // Import the CSS for notifications
 import '../styles/restaurantDetail.css';
+import { TailSpin } from 'react-loader-spinner';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCamera } from '@fortawesome/free-solid-svg-icons';
 
 const RestaurantDetail = () => {
     const { id } = useParams();
@@ -36,6 +39,7 @@ const RestaurantDetail = () => {
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [viewMenuMode, setViewMenuMode] = useState(false);
     const [selectedMenu, setSelectedMenu] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -65,7 +69,7 @@ const RestaurantDetail = () => {
     }, [dispatch, id]);
 
     useEffect(() => {
-        if (status === 'success' || status === 'error') {
+        if (status === 'succeeded' || status === 'failed') {
             const timer = setTimeout(() => {
                 setShowContent(true);
             }, 1000); // Ensure the loading animation is shown for at least 1 second
@@ -120,6 +124,32 @@ const RestaurantDetail = () => {
             ...newMenuData,
             articles: value
         });
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('img', file);
+        setIsUploading(true);
+
+        dispatch(uploadRestaurantImage({ id: restaurant._id, formData }))
+            .unwrap()
+            .then((response) => {
+                if (response.error) {
+                    notifier.alert(response.error);
+                } else {
+                    notifier.success('Image uploaded successfully!');
+                    setIsUploading(false);
+                    dispatch(fetchRestaurantById(id)); // Refetch the restaurant details to get the latest updates
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                notifier.alert('An unexpected error occurred. Please try again.');
+                setIsUploading(false);
+            });
     };
 
     const handleSaveChanges = () => {
@@ -264,7 +294,6 @@ const RestaurantDetail = () => {
 
         const formattedPrice = parseFloat(newMenuData.price);
         const newMenu = { ...newMenuData, price: formattedPrice, restaurantId: restaurant._id };
-        console.log('New Menu:', newMenu.name);
         dispatch(createMenu(newMenu))
             .unwrap()
             .then((response) => {
@@ -374,6 +403,27 @@ const RestaurantDetail = () => {
                     onCreateMenu={() => setCreateMenuMode(true)} // Add this line
                 />
             )}
+
+            <div className="profile-image-container">
+                {isUploading ? (
+                    <div className="loader-container">
+                        <TailSpin color="#007bff" height={40} width={40} />
+                    </div>
+                ) : (
+                    <>
+                        <img src={restaurant.img} alt="Restaurant" className="profile-img" />
+                        <label htmlFor="upload-img" className="camera-icon">
+                            <FontAwesomeIcon icon={faCamera} />
+                        </label>
+                        <input
+                            type="file"
+                            id="upload-img"
+                            style={{ display: 'none' }}
+                            onChange={handleImageUpload}
+                        />
+                    </>
+                )}
+            </div>
 
             <h2 className="carousel-title">Menus</h2>
             {restaurant.menus && restaurant.menus.length > 0 ? (

@@ -94,6 +94,22 @@ export const fetchMenusByRestaurantId = createAsyncThunk("restaurant/fetchMenusB
   }
 });
 
+// Upload restaurant image
+export const uploadRestaurantImage = createAsyncThunk("restaurant/uploadImage", async ({ id, formData }) => {
+  try {
+      let result = await axios.post(`http://localhost:5000/restaurant/upload-image/${id}`, formData, {
+          headers: {
+              Authorization: localStorage.getItem("token"),
+              "Content-Type": "multipart/form-data"
+          },
+      });
+      return result.data.restaurant;
+  } catch (error) {
+      console.log(error);
+      throw error;
+  }
+});
+
 const initialState = {
   restaurants: [],
   restaurant: null,
@@ -198,6 +214,20 @@ const restaurantSlice = createSlice({
         state.menus = action.payload;
       })
       .addCase(fetchMenusByRestaurantId.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(uploadRestaurantImage.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(uploadRestaurantImage.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        const index = state.restaurants.findIndex((restaurant) => restaurant._id === action.payload._id);
+        if (index !== -1) {
+          state.restaurants[index] = action.payload;
+        }
+      })
+      .addCase(uploadRestaurantImage.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       });

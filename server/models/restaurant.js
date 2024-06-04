@@ -11,11 +11,14 @@ const restaurantSchema = new schema({
     menus: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Menu' }], // Array of menu references
     ratings: [{ type: Number }], // Array to store user ratings
     workingHours: { type: String, required: true }, // String to store working hours
-    category: { type: String, required: true } // Added category field
+    category: { type: String, required: true }, // Added category field
+    img: { type: String }, // Image URL
+    imgPublicId: { type: String } // Public ID for Cloudinary
 });
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 module.exports = Restaurant;
+
 
 // Method to get the restaurant's name
 restaurantSchema.methods.getName = function() {

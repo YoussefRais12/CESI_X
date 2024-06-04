@@ -4,6 +4,11 @@ const Restaurant = require('../models/restaurant');
 const Article = require('../models/article');
 const Menu = require('../models/menu');
 const isAuth = require("../middleware/passport");
+const multer = require("multer");
+const cloudinary = require("../config/cloudinary"); // Import your cloudinary configuration
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // Create a new restaurant
 restaurantRoute.post('/register', async (req, res) => {
@@ -97,6 +102,39 @@ restaurantRoute.delete('/:id', isAuth(), async (req, res) => {
         res.status(200).json({ message: 'Restaurant deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Upload restaurant image
+restaurantRoute.post('/upload-image/:id', isAuth(), upload.single("img"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).send("No file uploaded.");
+        }
+
+        const restaurant = await Restaurant.findById(req.params.id);
+        if (restaurant.imgPublicId) {
+            // Delete the old image from Cloudinary
+            await cloudinary.uploader.destroy(restaurant.imgPublicId);
+        }
+
+        const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream((error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            });
+            uploadStream.end(req.file.buffer);
+        });
+
+        // Update restaurant with image URL and public ID
+        restaurant.img = uploadResult.secure_url;
+        restaurant.imgPublicId = uploadResult.public_id;
+        await restaurant.save();
+
+        res.send({ restaurant, msg: "Image uploaded successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
     }
 });
 

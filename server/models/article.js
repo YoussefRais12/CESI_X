@@ -6,7 +6,9 @@ const articleSchema = new schema({
     price: { type: Number, required: true },
     description: { type: String },
     category: { type: String, required: true } ,// Added category field
-    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant', required: true }
+    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant', required: true },
+    img: { type: String }, // Image URL
+    imgPublicId: { type: String } // Public ID for Cloudinary
 });
 
 const Article = mongoose.model("Article", articleSchema);

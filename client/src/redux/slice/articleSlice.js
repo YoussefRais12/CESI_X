@@ -64,6 +64,21 @@ export const deleteArticle = createAsyncThunk("article/deleteArticle", async (id
     }
 });
 
+// Upload article image
+export const uploadArticleImage = createAsyncThunk("article/uploadArticleImage", async ({ id, formData }) => {
+    try {
+        const result = await axios.post(`http://localhost:5000/article/upload-image/${id}`, formData, {
+            headers: {
+                Authorization: localStorage.getItem("token"),
+            },
+        });
+        return result.data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+});
+
 const initialState = {
     articles: [],
     restaurantArticles: [],
@@ -144,6 +159,20 @@ const articleSlice = createSlice({
                 state.articles = state.articles.filter((article) => article._id !== action.payload);
             })
             .addCase(deleteArticle.rejected, (state, action) => {
+                state.status = "failed";
+                state.error = action.error.message;
+            })
+            .addCase(uploadArticleImage.pending, (state) => {
+                state.status = "loading";
+            })
+            .addCase(uploadArticleImage.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                const index = state.articles.findIndex((article) => article._id === action.payload.article._id);
+                if (index !== -1) {
+                    state.articles[index] = action.payload.article;
+                }
+            })
+            .addCase(uploadArticleImage.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.error.message;
             });

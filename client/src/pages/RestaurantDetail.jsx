@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { fetchRestaurantById, updateRestaurant, uploadRestaurantImage } from '../redux/slice/restaurantSlice';
-import { updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId } from '../redux/slice/articleSlice';
+import { updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId, uploadArticleImage } from '../redux/slice/articleSlice';
 import { fetchMenusByRestaurantId, createMenu } from '../redux/slice/menuSlice';
 import CardCarousel from '../components/CardCarousel';
 import ArticleDialog from '../components/ArticleDialog';
@@ -152,6 +152,30 @@ const RestaurantDetail = () => {
             });
     };
 
+ 
+    const handleArticleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('img', file);
+
+        dispatch(uploadArticleImage({ id: selectedArticle.id, formData }))
+            .unwrap()
+            .then((response) => {
+                if (response.error) {
+                    notifier.alert(response.error);
+                } else {
+                    notifier.success('Image uploaded successfully!');
+                    dispatch(fetchArticlesByRestaurantId(id)); // Refetch the articles to get the latest updates
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                notifier.alert('An unexpected error occurred. Please try again.');
+            });
+    };
+
     const handleSaveChanges = () => {
         if (!formData.name || !formData.address || !formData.phone || !formData.workingHours || !formData.category) {
             notifier.alert('Please fill in all fields to update the restaurant.');
@@ -198,6 +222,7 @@ const RestaurantDetail = () => {
                     setEditArticleMode(false);
                     setSelectedArticle(null);
                     dispatch(fetchRestaurantById(id)); // Refetch the restaurant details to get the latest updates
+                    window.location.reload();
                 }
             })
             .catch((error) => {
@@ -205,6 +230,7 @@ const RestaurantDetail = () => {
                 console.error('Error:', error);
                 notifier.alert('An unexpected error occurred. Please try again.');
             });
+          
     };
 
     const handleViewArticle = (article) => {
@@ -214,9 +240,9 @@ const RestaurantDetail = () => {
 
     const handleEditArticle = () => {
         setArticleFormData({
-            name: selectedArticle.name,
+            name: selectedArticle.title,
             price: selectedArticle.price.replace(' €', ''), // Remove the Euro symbol for editing
-            description: selectedArticle.description,
+            description: selectedArticle.content,
             category: selectedArticle.category || ''
         });
         setViewArticleMode(false);
@@ -322,7 +348,7 @@ const RestaurantDetail = () => {
             });
     };
 
-    if (status === 'loading' || isSaving) {
+    if (!showContent) {
         return <LoadingScreen />;
     }
 
@@ -336,6 +362,26 @@ const RestaurantDetail = () => {
 
     return (
         <div className="restaurant-detail-container fade-in">
+             <div className="profile-image-container">
+                {isUploading ? (
+                    <div className="loader-container">
+                        <TailSpin color="#007bff" height={40} width={40} />
+                    </div>
+                ) : (
+                    <>
+                        <img src={restaurant.img} alt="Restaurant" className="profile-img" />
+                        <label htmlFor="upload-img" className="camera-icon">
+                            <FontAwesomeIcon icon={faCamera} />
+                        </label>
+                        <input
+                            type="file"
+                            id="upload-img"
+                            style={{ display: 'none' }}
+                            onChange={handleImageUpload}
+                        />
+                    </>
+                )}
+            </div>
             {editMode ? (
                 <Dialog open={editMode} onClose={() => setEditMode(false)}>
                     <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -404,26 +450,7 @@ const RestaurantDetail = () => {
                 />
             )}
 
-            <div className="profile-image-container">
-                {isUploading ? (
-                    <div className="loader-container">
-                        <TailSpin color="#007bff" height={40} width={40} />
-                    </div>
-                ) : (
-                    <>
-                        <img src={restaurant.img} alt="Restaurant" className="profile-img" />
-                        <label htmlFor="upload-img" className="camera-icon">
-                            <FontAwesomeIcon icon={faCamera} />
-                        </label>
-                        <input
-                            type="file"
-                            id="upload-img"
-                            style={{ display: 'none' }}
-                            onChange={handleImageUpload}
-                        />
-                    </>
-                )}
-            </div>
+           
 
             <h2 className="carousel-title">Menus</h2>
             {restaurant.menus && restaurant.menus.length > 0 ? (
@@ -466,6 +493,7 @@ const RestaurantDetail = () => {
                     onAddToCart={handleAddToCart}
                     user={user}
                     restaurant={restaurant}
+                    onImageUpload={handleArticleImageUpload} // Pass the function here
                 />
             )}
 

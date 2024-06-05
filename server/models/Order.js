@@ -21,11 +21,11 @@ orderSchema.methods.getAddress = function() {
     return this.orderaddress;
 };
 //fonction pour recup le téléphone de la commander
-OrderSchema.methods.getdescription = function() {
+orderSchema.methods.getdescription = function() {
     return this.OrderPhone;
 };
 //fonction pour recup les articles d'une commande (return array)
-OrderSchema.methods.getOrderarrayArticles = function() {
+orderSchema.methods.getOrderarrayArticles = function() {
     return this.OrderarrayArticles;
 };
 /* fonction pour crée un article 

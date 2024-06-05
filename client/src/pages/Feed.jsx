@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Carousel from '../components/Carousel';
 import CardCarousel from '../components/CardCarousel'; // Import CardCarousel
 import { fetchAllRestaurants } from '../redux/slice/restaurantSlice';
+import LoadingScreen from '../components/LoadingScreen'; // Import LoadingScreen
 import '../styles/feed.css';
 
 const Feed = () => {
@@ -30,14 +31,14 @@ const Feed = () => {
     };
 
     if (status === "loading") {
-        return <div>Loading...</div>;
+        return <LoadingScreen />;
     }
 
     const items1 = generateItems(restaurants.slice(0, 5));
     const items2 = generateItems(restaurants.slice(5, 10));
 
     return (
-        <div className="feed-container">
+        <div className="feed-container fade-in">
             <h2 className='carousel-title'>Commandez de nouveau</h2>
             <Carousel items={items1} carouselId="carousel1" />
             <h2 className='carousel-title'>Discover More</h2>

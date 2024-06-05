@@ -196,30 +196,6 @@ userRouter.post("/upload-image", isAuth(), upload.single("img"), async (req, res
     }
 });
 
-// Data upload (example, assuming it requires authentication and specific roles)
-userRouter.post("/data", isAuth(), upload.single("file"), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).send("No file uploaded.");
-    }
 
-    const { buffer, originalname } = req.file;
-
-    try {
-        const data = await Data.create({ file: buffer, filename: originalname });
-        res.send({ data: data, msg: "Data is saved" });
-    } catch (error) {
-        console.log(error);
-        res.status(500).send("Cannot save the data");
-    }
-});
-
-userRouter.get("/data", isAuth(), async (req, res) => {
-    try {
-        let result = await Data.find();
-        res.send({ data: result, msg: "All data" });
-    } catch (error) {
-        console.log(error);
-    }
-});
 
 module.exports = userRouter;

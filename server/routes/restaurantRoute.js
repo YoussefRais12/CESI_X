@@ -4,9 +4,9 @@ const Restaurant = require('../models/restaurant');
 const Article = require('../models/article');
 const Menu = require('../models/menu');
 const isAuth = require("../middleware/passport");
+
 const multer = require("multer");
 const cloudinary = require("../config/cloudinary"); // Import your cloudinary configuration
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 

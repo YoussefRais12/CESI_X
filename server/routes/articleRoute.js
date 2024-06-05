@@ -6,6 +6,11 @@ const Restaurant = require('../models/restaurant');
 const isAuth = require("../middleware/passport");
 const checkRole = require("../middleware/checkRole");
 
+const multer = require("multer");
+const cloudinary = require("../config/cloudinary"); // Import your cloudinary configuration
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
 // Create a new article
 articleRoute.post('/add', async (req, res) => {
     const { name, price, description, restaurantId, category } = req.body; // Include category in the request body
@@ -21,6 +26,39 @@ articleRoute.post('/add', async (req, res) => {
         res.status(201).json(newArticle);
     } catch (error) {
         res.status(400).json({ error: error.message });
+    }
+});
+
+// Upload article image
+articleRoute.post('/upload-image/:id', isAuth(), upload.single("img"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).send("No file uploaded.");
+        }
+
+        const article = await Article.findById(req.params.id);
+        if (article.imgPublicId) {
+            // Delete the old image from Cloudinary
+            await cloudinary.uploader.destroy(article.imgPublicId);
+        }
+
+        const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream((error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            });
+            uploadStream.end(req.file.buffer);
+        });
+
+        // Update article with image URL and public ID
+        article.img = uploadResult.secure_url;
+        article.imgPublicId = uploadResult.public_id;
+        await article.save();
+
+        res.send({ article, msg: "Image uploaded successfully" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
     }
 });
 

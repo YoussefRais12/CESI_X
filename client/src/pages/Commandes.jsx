@@ -48,7 +48,7 @@ function Commandes() {
 
   return (
     <div className="wrapper">
-      <h3> {languageData.orders || 'Commandes'} </h3>
+      <h3> {languageData.Commandes || 'order'} </h3>
     </div>
   );
 }

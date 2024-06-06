@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { array } = require("../middleware/multer");
 const schema = mongoose.Schema;
 
 const userSchema = new schema({
@@ -10,6 +11,7 @@ const userSchema = new schema({
     langUser: { type: String },
     img: { type: String },
     imgPublicId: { type: String },
+    orders : [{ type: schema.Types.ObjectId, ref: 'Order' }]
 });
 
 const User = mongoose.model("User", userSchema);

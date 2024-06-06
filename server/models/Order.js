@@ -6,6 +6,7 @@ const orderSchema = new Schema({
     orderaddress: { type: String, required: true },
     orderPhone: { type: String, required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    DeliveryPersonId: { type: mongoose.Schema.Types.ObjectId, ref: 'DeliveryPerson', required: true },
     orderarrayArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true }]
 });
 
@@ -28,12 +29,12 @@ orderSchema.methods.getdescription = function() {
 orderSchema.methods.getOrderarrayArticles = function() {
     return this.OrderarrayArticles;
 };
-/* fonction pour crée un article 
-OrderSchema.statics.Addarticle = async function(restaurantId) {
-    try {
-        const articles = await articleRoutes.findByRestaurantId(restaurantId);
-        return articles;
-    } catch (error) {
-        throw new Error(error.message);
-    }
-};*/
+//fonction pour recup le DeliveryPersonId
+orderSchema.methods.getDeliveryPersonId = function() {
+    return this.DeliveryPersonId;
+};
+//fonction pour ajouter un article dans la commande 
+orderSchema.methods.Addarticle = async function(articleId) {
+    this.orderarrayArticles.push(articleId);
+    await this.save();
+};

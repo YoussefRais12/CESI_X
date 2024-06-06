@@ -21,7 +21,7 @@ const LoginContainer = ({ ping, setPing }) => {
 
     useEffect(() =>{
         const searchParams= new URLSearchParams(location.search);
-        const lang = searchParams.get('lang')||'fr';
+        const lang = searchParams.get('lang')||'en';
         import(`../lang/${lang}.json`) 
         .then((data) =>{
             setLanguageData(data);
@@ -124,7 +124,7 @@ const LoginContainer = ({ ping, setPing }) => {
     return (
         <div className="login-page">
             <div className="text-container">
-                <h1 className="headline">Your favorite meals</h1>
+                <h1 className="headline">{languageData.meals ||"Your favorite meals"}</h1>
                 <h2 className="subheadline">Delivred to you</h2>
                 <div className="button-container">
                     <button className="sign-in" onClick={() => setShowSignInModal(true)}>Sign in</button>

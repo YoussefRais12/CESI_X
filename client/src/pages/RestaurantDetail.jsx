@@ -362,15 +362,15 @@ const RestaurantDetail = () => {
 
     return (
         <div className="restaurant-detail-container fade-in">
-             <div className="profile-image-container">
+             <div className="restaurant-image-container">
                 {isUploading ? (
                     <div className="loader-container">
                         <TailSpin color="#007bff" height={40} width={40} />
                     </div>
                 ) : (
                     <>
-                        <img src={restaurant.img} alt="Restaurant" className="profile-img" />
-                        <label htmlFor="upload-img" className="camera-icon">
+                        <img src={restaurant.img} alt="Restaurant" className="restaurant-img" />
+                        <label htmlFor="upload-img" className="restaurant-camera-icon">
                             <FontAwesomeIcon icon={faCamera} />
                         </label>
                         <input

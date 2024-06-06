@@ -121,7 +121,7 @@ const Navbar = ({ setPing, ping }) => {
         <>
             <div className={`navbar`}>
                 <button className="menu-button" onClick={toggleMenu}>☰</button>
-                <Link to="/feed">
+                <Link to={"/feed?lang="+lang}>
                     <img src="/logo.svg" alt="App Logo" className="app-logo" />
                 </Link>
                 <div className="spacer"></div>

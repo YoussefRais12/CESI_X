@@ -118,6 +118,7 @@ const initialState = {
   user: null,
   users: [],
   status: null,
+  error: null, // Add an error field to the state
 };
 
 export const userSlice = createSlice({
@@ -134,87 +135,109 @@ export const userSlice = createSlice({
       // login extra reducers
       .addCase(userLogin.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(userLogin.fulfilled, (state, action) => {
         state.status = "success";
+        state.error = null;
         if (action.payload && action.payload.user && action.payload.token) {
           state.user = action.payload.user;
           localStorage.setItem("token", action.payload.token);
         } else {
           console.error("Invalid payload structure:", action.payload);
+          state.error = "Invalid login response structure";
         }
       })
-      .addCase(userLogin.rejected, (state) => {
+      .addCase(userLogin.rejected, (state, action) => {
         state.status = "fail";
+        state.error = action.error.message;
       })
       // current user cases
       .addCase(userCurrent.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(userCurrent.fulfilled, (state, action) => {
         state.status = "success";
+        state.error = null;
         state.user = action.payload?.user;
       })
-      .addCase(userCurrent.rejected, (state) => {
+      .addCase(userCurrent.rejected, (state, action) => {
         state.status = "fail";
+        state.error = action.error.message;
       })
       // fetch all users cases
       .addCase(fetchAllUsers.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(fetchAllUsers.fulfilled, (state, action) => {
         state.status = "success";
+        state.error = null;
         state.users = action.payload;
       })
-      .addCase(fetchAllUsers.rejected, (state) => {
+      .addCase(fetchAllUsers.rejected, (state, action) => {
         state.status = "fail";
+        state.error = action.error.message;
       })
       // user edit cases
       .addCase(userEdit.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(userEdit.fulfilled, (state, action) => {
         state.status = "success";
+        state.error = null;
         const updatedUserIndex = state.users.findIndex(user => user._id === action.payload._id);
         if (updatedUserIndex >= 0) {
           state.users[updatedUserIndex] = action.payload;
         }
       })
-      .addCase(userEdit.rejected, (state) => {
+      .addCase(userEdit.rejected, (state, action) => {
         state.status = "fail";
+        state.error = action.error.message;
       })
       // user delete cases
       .addCase(userDelete.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(userDelete.fulfilled, (state, action) => {
         state.status = "success";
+        state.error = null;
         state.users = state.users.filter(user => user._id !== action.payload);
       })
-      .addCase(userDelete.rejected, (state) => {
+      .addCase(userDelete.rejected, (state, action) => {
         state.status = "fail";
+        state.error = action.error.message;
       })
       // user add cases
       .addCase(userAdd.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(userAdd.fulfilled, (state, action) => {
         state.status = "success";
+        state.error = null;
         state.users.push(action.payload);
       })
-      .addCase(userAdd.rejected, (state) => {
+      .addCase(userAdd.rejected, (state, action) => {
         state.status = "fail";
+        state.error = action.error.message;
       })
       // upload user image cases
       .addCase(uploadUserImage.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(uploadUserImage.fulfilled, (state, action) => {
         state.status = "success";
+        state.error = null;
         state.user = { ...state.user, img: action.payload.img };
       })
-      .addCase(uploadUserImage.rejected, (state) => {
+      .addCase(uploadUserImage.rejected, (state, action) => {
         state.status = "fail";
+        state.error = action.error.message;
       });
   },
 });

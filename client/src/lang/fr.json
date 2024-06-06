@@ -18,7 +18,7 @@
   "changePassword": "Changer le mot de passe",
   "userAccount": "Compte utilisateur",
   "Favoris":"Favoris",
-  "Commandes":"Commandes",
+  "Commandes":"Commandez de nouveau",
   "Wallet":"mon portefeuille",
   "Dashboard":"menu principal",
   "Chef_Service_HSE":"Chef_Service_HSE",
@@ -26,7 +26,7 @@
   "Chef_Securite":"Chef_Securite",
   "basic" : "client",
   "Add_User":"ajouter",
-  "Article_Details":"Article Details",
-  "order":"Commandez de nouveau",
-  "discover":"En savoir plus"
+  "discover": "Découvrez en plus",
+  "meals": "Ton plat favoris",
+  "Article_Details":"Article Details"
 }

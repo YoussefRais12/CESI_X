@@ -18,7 +18,7 @@
   "changePassword": "Cambia password",
   "userAccount": "Account utente",
   "Favoris":"preferiti",
-  "Commandes":"miei Ordini",
+  "Commandes":"Ordina di più",
   "Wallet":"portfolio",
   "Dashboard":"menu principal",
   "Chef_Service_HSE":"Capo_servizio_HSE",
@@ -26,7 +26,8 @@
   "Chef_Securite":"Responsabile della sicurezza",
   "basic" : "cliento",
   "Add_User":"ajoutado",
+  "discover": "Scopri di più",
+  "meals": "I tuoi piatti preferiti",
   "Article_Details":"dettagli degli articoli",
-  "order":"Riordino",
-  "discover":"Per saperne di più"
+  "order":"Riordino"
 }

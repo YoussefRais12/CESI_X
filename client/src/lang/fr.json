@@ -18,12 +18,14 @@
   "changePassword": "Changer le mot de passe",
   "userAccount": "Compte utilisateur",
   "Favoris":"Favoris",
-  "Commandes":"Commandes",
+  "Commandes":"Commandez de nouveau",
   "Wallet":"mon portefeuille",
   "Dashboard":"menu principal",
   "Chef_Service_HSE":"Chef_Service_HSE",
   "Add_New_User":"Ajouter un nouvel utilisateur",
   "Chef_Securite":"Chef_Securite",
   "basic" : "client",
-  "Add_User":"ajouter"
+  "Add_User":"ajouter",
+  "discover": "Découvrez en plus",
+  "meals": "Ton plat favoris"
 }

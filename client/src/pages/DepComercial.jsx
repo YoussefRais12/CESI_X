@@ -34,7 +34,7 @@ const DepComercial = () => {
 
   return (
     <div className="DepComercial-container">
-      <h1 className="DepComercial-title">{languageData.DepComercial || 'Département Commercial'}</h1>
+      <h1 className="DepComercial-title"> {languageData.DepComercial || 'Département Commercial'} </h1>
       <iframe
         className="DepComercial-iframe"
         title="Rapport Power BI - Département Commercial"

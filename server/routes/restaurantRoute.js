@@ -178,4 +178,19 @@ restaurantRoute.get('/:id/articles/category/:category', async (req, res) => {
     }
 });
 
+// Get restaurants by category
+restaurantRoute.get('/category/:category', async (req, res) => {
+    const { category } = req.params;
+    try {
+        const restaurants = await Restaurant.find({ category });
+        if (!restaurants || restaurants.length === 0) {
+            return res.status(404).json({ error: 'No restaurants found for this category' });
+        }
+        res.status(200).json(restaurants);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 module.exports = restaurantRoute;

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Carousel from '../components/Carousel';
 import CardCarousel from '../components/CardCarousel'; // Import CardCarousel
 import { fetchAllRestaurants } from '../redux/slice/restaurantSlice';
@@ -12,6 +12,22 @@ const Feed = () => {
     const navigate = useNavigate();
     const restaurants = useSelector((state) => state.restaurant.restaurants);
     const status = useSelector((state) => state.restaurant.status);
+
+    const location = useLocation();
+    const [languageData, setLanguageData]= useState({});
+
+    useEffect (() => {
+        const searchParams = new URLSearchParams(location.search);
+        const lang = searchParams.get("lang") || "fr";
+        import(`../lang/${lang}.json`)
+          .then((data) => {
+            setLanguageData(data);
+          })
+          .catch((error) => {
+            console.error("Let's try again buddy:", error);
+          });
+      }, [location.search]);
+
 
     useEffect(() => {
         dispatch(fetchAllRestaurants());
@@ -39,9 +55,9 @@ const Feed = () => {
 
     return (
         <div className="feed-container fade-in">
-            <h2 className='carousel-title'>Commandez de nouveau</h2>
+            <h2 className='carousel-title'>{languageData.Commandes || "Commandez de nouveau"}</h2>
             <Carousel items={items1} carouselId="carousel1" />
-            <h2 className='carousel-title'>Discover More</h2>
+            <h2 className='carousel-title'>{languageData.discover || "Discover More"} </h2>
             <CardCarousel items={items1} carouselId="cardcarousel1" className="cardcarousel-container" />
             <CardCarousel items={items2} carouselId="cardcarousel2" className="cardcarousel-container" />
         </div>

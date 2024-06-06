@@ -19,6 +19,12 @@ export const fetchRestaurantsByOwnerId = createAsyncThunk("restaurant/fetchResta
   return response.data;
 });
 
+// Fetch restaurants by category
+export const fetchRestaurantsByCategory = createAsyncThunk("restaurant/fetchRestaurantsByCategory", async (category) => {
+  const response = await axios.get(`http://localhost:5000/restaurant/category/${category}`);
+  return response.data;
+});
+
 // Add new restaurant
 export const addRestaurant = createAsyncThunk("restaurant/addRestaurant", async (newRestaurant) => {
   try {
@@ -156,6 +162,17 @@ const restaurantSlice = createSlice({
         state.ownedRestaurants = action.payload;
       })
       .addCase(fetchRestaurantsByOwnerId.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(fetchRestaurantsByCategory.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchRestaurantsByCategory.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.restaurants = action.payload;
+      })
+      .addCase(fetchRestaurantsByCategory.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       })

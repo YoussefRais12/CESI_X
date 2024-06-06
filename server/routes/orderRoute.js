@@ -2,6 +2,7 @@ const express = require('express');
 const orderRoute = express.Router();
 const Order = require('../models/Order');
 const User = require('../models/user');
+const Article = require('../models/article');
 const isAuth = require("../middleware/passport");
 const checkRole = require("../middleware/checkRole");
 
@@ -14,8 +15,19 @@ orderRoute.post('/add', async (req, res) => {
     const { orderaddress, orderPhone, userId, DeliveryPersonId, orderarrayArticles } = req.body; // Include category in the request body
     try {
         const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, orderarrayArticles }); // Add category to the new order
-        await newOrder.save();
-
+        let allArticlesExist = true;
+        for (const articleId of orderarrayArticles) {
+            const article = await Article.findById(articleId);
+            if (!article) {
+                allArticlesExist = false;
+                break; // Sortir de la boucle dès qu'un article n'existe pas
+            }
+        }
+        if (allArticlesExist) {
+            await newOrder.save();
+        }else{
+            res.status(400).json({ error: 'At least one of the articles does not exist' });
+        }
         // Add the order to the order array for user
         const user = await User.findById(userId);
         if (user) {

@@ -12,8 +12,8 @@ const userSchema = new schema({
     imgPublicId: { type: String },
     orders: [{ type: schema.Types.ObjectId, ref: 'Order' }],
     referralCode: { type: String, unique: true },
-    referredBy: { type: String },
-    referralCount: { type: Number, default: 0 }
+    referredBy: { type: schema.Types.ObjectId, ref: 'User' },  // User who referred this user
+    hasUsedReferral: { type: Boolean, default: false }  // Whether the user has used the referral discount
 });
 
 const User = mongoose.model("User", userSchema);

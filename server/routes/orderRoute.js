@@ -14,14 +14,12 @@ orderRoute.post('/add', async (req, res) => {
     const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles } = req.body;
 
     try {
-
         let allArticlesExist = true;
         let totalOrderPrice = 0; 
         const articlesByRestaurant = {};
 
         for (const item of Articles) {
             const article = await Article.findById(item.articleId);
-            console.log(article)
             if (!article || item.quantity <= 0) {
                 allArticlesExist = false;
                 break;
@@ -57,19 +55,35 @@ orderRoute.post('/add', async (req, res) => {
 
                 orders.push(order);
             }
-            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Orders: orders, OrderPrice: totalOrderPrice, OrderStatus:"crée" });
-            await newOrder.save();
 
-            // add order for  user
             const user = await User.findById(userId);
-            if (user) {
-                user.orders.push(newOrder._id);
-                await user.save();
-            } else {
+            if (!user) {
                 throw new Error('User not found');
             }
 
-            // Supprimer les _id de la commande et des articles dans la réponse
+            // Apply a discount if this is the user's first order and they were referred by another user
+            if (user.orders.length === 0 && user.referredBy && !user.hasUsedReferral) {
+                const discountRate = 0.10; // 10% discount
+                totalOrderPrice = totalOrderPrice * (1 - discountRate);
+                user.hasUsedReferral = true; // Mark the referral as used
+                await user.save();
+
+                // Apply discount to the referrer as well
+                const referrer = await User.findById(user.referredBy);
+                if (referrer) {
+                    referrer.hasUsedReferral = true;
+                    await referrer.save();
+                }
+            }
+
+            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Orders: orders, OrderPrice: totalOrderPrice, OrderStatus: "crée" });
+            await newOrder.save();
+
+            // Add order for user
+            user.orders.push(newOrder._id);
+            await user.save();
+
+            // Remove the _id from the order and articles in the response
             const orderWithoutId = JSON.parse(JSON.stringify(newOrder));
             orderWithoutId.Orders.forEach(order => {
                 order.Articles.forEach(article => {
@@ -86,6 +100,7 @@ orderRoute.post('/add', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 // Get a order by ID
 orderRoute.get('/:id', async (req, res) => {

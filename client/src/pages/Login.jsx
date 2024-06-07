@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const LoginContainer = ({ ping, setPing }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const location = useLocation();
+    const location= useLocation();
     const [login, setLogin] = useState({ email: '', password: '', showPassword: false });
     const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '', referralCode: '' });
     const [error, setError] = useState('');
@@ -19,17 +19,19 @@ const LoginContainer = ({ ping, setPing }) => {
     const [languageData, setLanguageData] = useState({});
     const passwordRef = useRef(null);
 
-    useEffect(() => {
-        const searchParams = new URLSearchParams(location.search);
-        const lang = searchParams.get('lang') || 'en';
-        import(`../lang/${lang}.json`)
-            .then((data) => {
-                setLanguageData(data);
-            })
-            .catch((error) => {
-                console.error("Let's try again buddy:", error);
-            });
-    }, [location.search]);
+    useEffect(() =>{
+        const searchParams= new URLSearchParams(location.search);
+        const lang = searchParams.get('lang')||'en';
+        import(`../lang/${lang}.json`) 
+        .then((data) =>{
+            setLanguageData(data);
+        })
+        .catch((error)=>{
+            console.error("Let's try again buddy:", error);
+    
+        });
+
+    },[location.search]);
 
     const togglePasswordVisibility = () => {
         setLogin({ ...login, showPassword: !login.showPassword });
@@ -115,7 +117,7 @@ const LoginContainer = ({ ping, setPing }) => {
     };
 
     const selectRole = (role) => {
-        setNewUser({ ...newUser, role });
+        setNewUser({ ...newUser, role: role });
         handleRegister();
     };
 
@@ -199,14 +201,6 @@ const LoginContainer = ({ ping, setPing }) => {
                                             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                                         />
                                     </div>
-                                    <div className="input-container">
-                                        <input
-                                            type="text"
-                                            placeholder="Referral Code (optional)"
-                                            value={newUser.referralCode}
-                                            onChange={(e) => setNewUser({ ...newUser, referralCode: e.target.value })}
-                                        />
-                                    </div>
                                 </div>
                             )}
                             {currentStep === 2 && (
@@ -222,15 +216,25 @@ const LoginContainer = ({ ping, setPing }) => {
                                 </div>
                             )}
                             {currentStep === 3 && (
-                                <div className="role-selection-container">
-                                    <button className="role-button" onClick={() => selectRole('client')}>
-                                        Client
-                                        <FontAwesomeIcon icon={faHamburger} className="role-icon" />
-                                    </button>
-                                    <button className="role-button" onClick={() => selectRole('entreprise')}>
-                                        Entreprise
-                                        <FontAwesomeIcon icon={faBuilding} className="role-icon" />
-                                    </button>
+                                <div>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            placeholder="Referral Code (Optional)"
+                                            value={newUser.referralCode}
+                                            onChange={(e) => setNewUser({ ...newUser, referralCode: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="role-selection-container">
+                                        <button className="role-button" onClick={() => selectRole('client')}>
+                                            Client
+                                            <FontAwesomeIcon icon={faHamburger} className="role-icon" />
+                                        </button>
+                                        <button className="role-button" onClick={() => selectRole('entreprise')}>
+                                            Entreprise
+                                            <FontAwesomeIcon icon={faBuilding} className="role-icon" />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                             {currentStep < 3 && (

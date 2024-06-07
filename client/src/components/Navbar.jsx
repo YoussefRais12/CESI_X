@@ -126,11 +126,20 @@ const Navbar = ({ setPing, ping }) => {
         }
     };
 
+    const handleNotificationClick = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/notifications/${id}`);
+            setNotifications(notifications.filter(notification => notification._id !== id));
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+        }
+    };
+
     const renderNotifications = () => (
         <div className="notification-dropdown">
             {notifications.length > 0 ? (
                 notifications.map((notification, index) => (
-                    <div key={index} className="notification-item">
+                    <div key={notification._id} className="notification-item" onClick={() => handleNotificationClick(notification._id)}>
                         {notification.message}
                     </div>
                 ))

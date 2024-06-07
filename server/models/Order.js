@@ -14,6 +14,7 @@ const orderSchema = new Schema({
             quantity: { type: Number, required: true }
         }]
     }],
+    OrderPrice : {type : Number},
     OrderStatus : {type :String}
 });
 
@@ -37,8 +38,11 @@ orderSchema.methods.getOrderarrayArticles = function() {
     return this.OrderarrayArticles;
 };
 //fonction pour recup le DeliveryPersonId
-orderSchema.methods.getDeliveryPersonId = function() {
-    return this.DeliveryPersonId;
+orderSchema.methods.getOrderprice  = function() {
+    return this.Orderprice;
+};
+orderSchema.methods.getOrderStatus = function() {
+    return this.OrderStatus;
 };
 //fonction pour ajouter un article dans la commande 
 orderSchema.methods.Addarticle = async function(articleId) {

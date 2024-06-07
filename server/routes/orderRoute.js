@@ -16,6 +16,7 @@ orderRoute.post('/add', async (req, res) => {
     try {
 
         let allArticlesExist = true;
+        let totalOrderPrice = 0; 
         const articlesByRestaurant = {};
 
         for (const item of Articles) {
@@ -27,7 +28,8 @@ orderRoute.post('/add', async (req, res) => {
             }
 
             const restaurantId = article.restaurantId;
-
+            const articlePrice = article.price * item.quantity; // Calculate the price for the quantity of the article
+            totalOrderPrice += articlePrice;
             if (!articlesByRestaurant[restaurantId]) {
                 articlesByRestaurant[restaurantId] = [];
             }
@@ -55,8 +57,7 @@ orderRoute.post('/add', async (req, res) => {
 
                 orders.push(order);
             }
-
-            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Orders: orders, OrderStatus:"crée" });
+            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Orders: orders, OrderPrice: totalOrderPrice, OrderStatus:"crée" });
             await newOrder.save();
 
             // add order for  user
@@ -145,6 +146,7 @@ orderRoute.put('/:id', isAuth(), async (req, res) => {
         order.userId = userId !== undefined ? userId : order.userId;
         order.DeliveryPersonId = DeliveryPersonId !== undefined ? DeliveryPersonId : order.DeliveryPersonId;
         order.Orders = Orders !== undefined ? Orders : order.Orders;
+        order.OrderPrice = OrderPrice !== undefined ? OrderPrice : order.OrderPrice;
         order.OrderStatus = OrderStatus !== undefined ? OrderStatus : order.OrderStatus;
 
         await order.save();
@@ -175,6 +177,8 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
             throw new Error('Order not found');
         }
 
+        const articleTotalPrice = article.price * quantity;
+
         const orderIndex = order.Orders.findIndex(orderItem => 
             orderItem.restaurantId.toString() === article.restaurantId.toString()
         );
@@ -195,6 +199,8 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
             order.Orders.push(newOrder);
         }
 
+        order.OrderPrice = (order.OrderPrice || 0) + articleTotalPrice;
+
         await order.save();
 
         console.log('Order after update:', order);
@@ -205,40 +211,47 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     }
 });
 
-
 // Delete article in an order by ID
 orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     const { idorder, idarticle } = req.params;
 
     try {
-        // Recherchez la commande
         const order = await Order.findById(idorder);
         if (!order) {
             throw new Error('Order not found');
         }
 
-        // Recherchez l'index de la commande dans le tableau Orders
-        const orderIndex = order.Orders.findIndex(order => order.Articles.some(article => article.articleId.toString() === idarticle));
+        const orderIndex = order.Orders.findIndex(orderItem => 
+            orderItem.Articles.some(article => article.articleId.toString() === idarticle)
+        );
         if (orderIndex === -1) {
             throw new Error('Order not found in order');
         }
-
-        // Recherchez l'index de l'article dans le tableau Articles de la commande
         const articleIndex = order.Orders[orderIndex].Articles.findIndex(item => item.articleId.toString() === idarticle);
-
         if (articleIndex === -1) {
             throw new Error('Article not found in order');
         }
 
-        // Diminuez la quantité de l'article de 1 s'il est supérieur à 1
-        if (order.Orders[orderIndex].Articles[articleIndex].quantity > 1) {
-            order.Orders[orderIndex].Articles[articleIndex].quantity--;
-        } else {
-            // Si la quantité est égale à 1, supprimez complètement l'article
-            order.Orders[orderIndex].Articles.splice(articleIndex, 1);
+        const article = await Article.findById(idarticle);
+        if (!article) {
+            throw new Error('Article not found');
         }
 
-        // Enregistrez les modifications de la commande
+        const quantity = order.Orders[orderIndex].Articles[articleIndex].quantity;
+        const articleTotalPrice = article.price * quantity;
+
+        if (quantity > 1) {
+            order.Orders[orderIndex].Articles[articleIndex].quantity--;
+            order.OrderPrice = (order.OrderPrice) - article.price;
+        } else {
+            order.Orders[orderIndex].Articles.splice(articleIndex, 1);
+            order.OrderPrice = (order.OrderPrice || 0) - articleTotalPrice;
+
+            if (order.Orders[orderIndex].Articles.length === 0) {
+                order.Orders.splice(orderIndex, 1);
+            }
+        }
+
         await order.save();
 
         console.log('Order after update:', order);
@@ -248,6 +261,5 @@ orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => 
         res.status(400).json({ error: error.message });
     }
 });
-
 
 module.exports = orderRoute;

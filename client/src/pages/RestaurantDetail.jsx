@@ -364,9 +364,11 @@ const RestaurantDetail = () => {
                 ) : (
                     <>
                         <img src={restaurant.img} alt="Restaurant" className="restaurant-img" />
-                        <label htmlFor="upload-img" className="restaurant-camera-icon">
-                            <FontAwesomeIcon icon={faCamera} />
-                        </label>
+                        {user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId && (
+                            <label htmlFor="upload-img" className="restaurant-camera-icon">
+                                <FontAwesomeIcon icon={faCamera} />
+                            </label>
+                        )}
                         <input
                             type="file"
                             id="upload-img"

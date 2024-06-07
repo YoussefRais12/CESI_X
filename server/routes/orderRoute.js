@@ -161,38 +161,38 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     const { quantity } = req.body;
 
     try {
-        // Vérifiez que la quantité est valide
         if (quantity <= 0) {
             throw new Error('Quantity must be greater than zero');
         }
 
-        // Vérifiez que l'article existe
         const article = await Article.findById(idarticle);
         if (!article) {
             throw new Error('Article not found');
         }
 
-        // Recherchez la commande et vérifiez si l'article existe déjà
         const order = await Order.findById(idorder);
         if (!order) {
             throw new Error('Order not found');
         }
 
-        // Recherchez l'index de la commande dans le tableau Orders
-        const orderIndex = order.Orders.findIndex(order => order.restaurantId.toString() === idarticle);
-        if (orderIndex === -1) {
-            throw new Error('Order not found in order');
-        }
+        const orderIndex = order.Orders.findIndex(orderItem => 
+            orderItem.restaurantId.toString() === article.restaurantId.toString()
+        );
 
-        // Recherchez l'index de l'article dans le tableau Articles de la commande
-        const articleIndex = order.Orders[orderIndex].Articles.findIndex(item => item.articleId.toString() === idarticle);
+        if (orderIndex !== -1) {
+            const articleIndex = order.Orders[orderIndex].Articles.findIndex(item => item.articleId.toString() === idarticle);
 
-        if (articleIndex !== -1) {
-            // Si l'article existe déjà, incrémentez la quantité
-            order.Orders[orderIndex].Articles[articleIndex].quantity += quantity;
+            if (articleIndex !== -1) {
+                order.Orders[orderIndex].Articles[articleIndex].quantity += quantity;
+            } else {
+                order.Orders[orderIndex].Articles.push({ articleId: idarticle, quantity: quantity });
+            }
         } else {
-            // Sinon, ajoutez le nouvel article avec la quantité spécifiée
-            order.Orders[orderIndex].Articles.push({ articleId: idarticle, quantity: quantity });
+            const newOrder = {
+                restaurantId: article.restaurantId,
+                Articles: [{ articleId: idarticle, quantity: quantity }]
+            };
+            order.Orders.push(newOrder);
         }
 
         await order.save();
@@ -204,6 +204,7 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 // Delete article in an order by ID
 orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
@@ -218,7 +219,6 @@ orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => 
 
         // Recherchez l'index de la commande dans le tableau Orders
         const orderIndex = order.Orders.findIndex(order => order.Articles.some(article => article.articleId.toString() === idarticle));
-        console.log(orderIndex)
         if (orderIndex === -1) {
             throw new Error('Order not found in order');
         }

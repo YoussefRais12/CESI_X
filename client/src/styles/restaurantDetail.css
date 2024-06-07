@@ -9,19 +9,56 @@
     margin: auto;
 }
 
+.restaurant-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.restaurant-img {
+    max-width: 100%;
+    max-height: 300px; /* Ensure the image doesn't surpass the card size */
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.restaurant-info-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.restaurant-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex: 1;
+}
+
 .restaurant-name {
     font-size: 2.5rem;
     font-weight: bold;
     margin-bottom: 10px;
     color: #333;
-    text-align: center;
+    text-align: left;
 }
 
 .restaurant-address {
     font-size: 1.2rem;
     color: #777;
-    text-align: center;
+    text-align: left;
     margin-bottom: 20px;
+}
+
+.restaurant-rating {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: right;
+    margin-left: auto; /* Ensure the rating is on the right alone */
 }
 
 .carousel-title {
@@ -145,22 +182,20 @@
 .profile-image-container {
     position: relative;
     width: 100%;
-    max-width: 100%; /* Make sure it takes the full width of its container */
+    max-width: 100%;
     margin: 0 auto;
     text-align: center;
-    overflow: hidden; /* Ensure that the image does not overflow the container */
+    overflow: hidden;
 }
 
-/* Style for the profile image */
 .profile-img {
     width: 100%;
     height: auto;
     display: block;
-    object-fit: cover; /* Ensures the image covers the entire container */
+    object-fit: cover;
     border-radius: 10px;
 }
 
-/* Style for the camera icon overlay */
 .camera-icon {
     position: absolute;
     bottom: 10px;
@@ -181,17 +216,3 @@
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.8);
 }
-
-.fade-in {
-    animation: fadeIn 1s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-  

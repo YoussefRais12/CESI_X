@@ -90,10 +90,6 @@ const RestaurantDetail = () => {
         }
     }, [restaurant]);
 
-    useEffect(() => {
-        document.body.classList.add('fade-in');
-    }, []);
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -152,7 +148,6 @@ const RestaurantDetail = () => {
             });
     };
 
- 
     const handleArticleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -230,7 +225,6 @@ const RestaurantDetail = () => {
                 console.error('Error:', error);
                 notifier.alert('An unexpected error occurred. Please try again.');
             });
-          
     };
 
     const handleViewArticle = (article) => {
@@ -361,8 +355,8 @@ const RestaurantDetail = () => {
         : 0;
 
     return (
-        <div className="restaurant-detail-container fade-in">
-             <div className="restaurant-image-container">
+        <div className="restaurant-detail-container">
+            <div className="restaurant-image-container">
                 {isUploading ? (
                     <div className="loader-container">
                         <TailSpin color="#007bff" height={40} width={40} />
@@ -446,11 +440,9 @@ const RestaurantDetail = () => {
                     averageRating={averageRating}
                     onEdit={() => setEditMode(true)}
                     onCreateArticle={() => setCreateArticleMode(true)}
-                    onCreateMenu={() => setCreateMenuMode(true)} // Add this line
+                    onCreateMenu={() => setCreateMenuMode(true)}
                 />
             )}
-
-           
 
             <h2 className="carousel-title">Menus</h2>
             {restaurant.menus && restaurant.menus.length > 0 ? (
@@ -493,7 +485,7 @@ const RestaurantDetail = () => {
                     onAddToCart={handleAddToCart}
                     user={user}
                     restaurant={restaurant}
-                    onImageUpload={handleArticleImageUpload} // Pass the function here
+                    onImageUpload={handleArticleImageUpload}
                 />
             )}
 

@@ -30,7 +30,7 @@
   padding: 10px;
   border-radius: 10px;
   background-color: transparent;
-  margin: 0 -1%; /* Adjust margin to make slides closer */
+  margin: 0 10px; /* Add margin to make slides closer */
 }
 
 .slide-content {
@@ -40,7 +40,7 @@
   justify-content: center;
   padding: 20px;
   border-radius: 10px;
-  text-align: center;
+  text-align: left; /* Align text to the left */
   cursor: pointer;
   box-shadow: none;
 }
@@ -65,6 +65,8 @@
   max-width: 100%;
   border-radius: 10px;
   margin-bottom: 10px;
+  max-height: 200px; /* Restrict the height of the images */
+  object-fit: cover; /* Ensure the image covers the area */
 }
 
 .button-container .text {
@@ -94,7 +96,7 @@
 /* Additional feed-container adjustments */
 .carousel-title {
   font-size: 1.5rem;
-  margin-bottom: -2%;
+  margin-bottom: 20px;
   text-align: start;
   align-self: flex-start;
 }
@@ -108,6 +110,6 @@
 }
 
 .cardcarousel-container {
-  width: 80%;
+  width: 90%;
   margin: 20px auto;
 }

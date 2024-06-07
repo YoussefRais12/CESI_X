@@ -41,24 +41,24 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
             return res.status(400).send({ msg: "Email already exists" });
         }
 
+        // Handle referral code
+        if (referralCode) {
+            const referringUser = await User.findOne({ referralCode });
+            if (referringUser) {
+                newUser.referredBy = referringUser._id;
+            } else {
+                return res.status(400).send({ msg: "Invalid referral code" });
+            }
+        }
+
+        // Generate a unique referral code for the new user
+        newUser.referralCode = new mongoose.Types.ObjectId().toString();
+
         // Hash password
         const salt = 10;
         const genSalt = await bcrypt.genSalt(salt);
         const hashedPassword = await bcrypt.hash(password, genSalt);
         newUser.password = hashedPassword;
-
-        // Generate a referral code for the new user
-        newUser.referralCode = generateReferralCode();
-
-        // If a referral code is provided, update the referrer's referral count and set the referredBy field
-        if (referralCode) {
-            const referrer = await User.findOne({ referralCode });
-            if (referrer) {
-                referrer.referralCount += 1;
-                await referrer.save();
-                newUser.referredBy = referrer.referralCode;
-            }
-        }
 
         // Save user
         const result = await newUser.save();
@@ -74,6 +74,7 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         console.log(error);
     }
 });
+
 
 // Validate referral code
 userRouter.post("/validate-referral", async (req, res) => {

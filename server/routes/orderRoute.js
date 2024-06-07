@@ -14,22 +14,52 @@ orderRoute.post('/add', async (req, res) => {
     const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles } = req.body;
 
     try {
-        // Vérification des articles et des quantités
+
         let allArticlesExist = true;
+        const articlesByRestaurant = {};
+
         for (const item of Articles) {
             const article = await Article.findById(item.articleId);
+            console.log(article)
             if (!article || item.quantity <= 0) {
                 allArticlesExist = false;
-                break; // Sortir de la boucle dès qu'un article n'existe pas ou si la quantité est invalide
+                break;
             }
+
+            const restaurantId = article.restaurantId;
+
+            if (!articlesByRestaurant[restaurantId]) {
+                articlesByRestaurant[restaurantId] = [];
+            }
+
+            const newArticle = {
+                articleId: article._id, 
+                quantity: item.quantity
+            };
+
+            articlesByRestaurant[restaurantId].push(newArticle);
         }
 
         if (allArticlesExist) {
-            // Tous les articles existent et les quantités sont valides, enregistrer la nouvelle commande
-            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Articles });
+            const orders = [];
+            for (const restaurantId in articlesByRestaurant) {
+                const articlesWithoutId = articlesByRestaurant[restaurantId].map(article => ({
+                    articleId: article.articleId,
+                    quantity: article.quantity
+                }));
+
+                const order = {
+                    restaurantId,
+                    Articles: articlesWithoutId
+                };
+
+                orders.push(order);
+            }
+
+            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Orders: orders, OrderStatus:"crée" });
             await newOrder.save();
 
-            // Ajouter la commande à l'utilisateur
+            // add order for  user
             const user = await User.findById(userId);
             if (user) {
                 user.orders.push(newOrder._id);
@@ -38,7 +68,16 @@ orderRoute.post('/add', async (req, res) => {
                 throw new Error('User not found');
             }
 
-            res.status(201).json({ message: "Commande ajoutée avec succès", order: newOrder });
+            // Supprimer les _id de la commande et des articles dans la réponse
+            const orderWithoutId = JSON.parse(JSON.stringify(newOrder));
+            orderWithoutId.Orders.forEach(order => {
+                order.Articles.forEach(article => {
+                    delete article._id;
+                });
+                delete order._id;
+            });
+
+            res.status(201).json({ message: "Commande ajoutée avec succès", order: orderWithoutId });
         } else {
             res.status(400).json({ error: 'At least one of the articles does not exist or has an invalid quantity' });
         }
@@ -46,7 +85,6 @@ orderRoute.post('/add', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
-
 
 // Get a order by ID
 orderRoute.get('/:id', async (req, res) => {
@@ -62,21 +100,21 @@ orderRoute.get('/:id', async (req, res) => {
     }
 });
 
-// Delete an order by ID
+// Supprimer une commande par ID
 orderRoute.delete('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
     try {
-        // Supprimer la commande de la collection Order
+      
         const deletedOrder = await Order.findByIdAndDelete(id);
         if (!deletedOrder) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        // Supprimer la commande de la liste d'ordres de l'utilisateur
+      
         const user = await User.findOneAndUpdate(
-            { orders: id }, // Recherche de l'utilisateur ayant cette commande
-            { $pull: { orders: id } }, // Supprimer l'ID de commande du tableau d'ordres de l'utilisateur
-            { new: true } // Retourner l'utilisateur mis à jour après la modification
+            { orders: id }, 
+            { $pull: { orders: id } }, 
+            { new: true } 
         );
 
         if (!user) {
@@ -92,21 +130,22 @@ orderRoute.delete('/:id', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
-// Update an order by ID
+// Mettre à jour une commande par ID
 orderRoute.put('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
-    const { orderaddress, orderPhone, userId, DeliveryPersonId, orderarrayArticles } = req.body;
+    const { orderaddress, orderPhone, userId, DeliveryPersonId, Orders,OrderStatus } = req.body;
     try {
         const order = await Order.findById(id);
         if (!order) {
-            return res.status(404).json({ error: 'order not found' });
+            return res.status(404).json({ error: 'Order not found' });
         }
 
         order.orderaddress = orderaddress !== undefined ? orderaddress : order.orderaddress;
         order.orderPhone = orderPhone !== undefined ? orderPhone : order.orderPhone;
         order.userId = userId !== undefined ? userId : order.userId;
         order.DeliveryPersonId = DeliveryPersonId !== undefined ? DeliveryPersonId : order.DeliveryPersonId;
-        order.orderarrayArticles = orderarrayArticles !== undefined ? orderarrayArticles : order.orderarrayArticles;
+        order.Orders = Orders !== undefined ? Orders : order.Orders;
+        order.OrderStatus = OrderStatus !== undefined ? OrderStatus : order.OrderStatus;
 
         await order.save();
         console.log('Updated order:', order);
@@ -139,14 +178,21 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
             throw new Error('Order not found');
         }
 
-        const articleIndex = order.Articles.findIndex(item => item.articleId.toString() === idarticle);
+        // Recherchez l'index de la commande dans le tableau Orders
+        const orderIndex = order.Orders.findIndex(order => order.restaurantId.toString() === idarticle);
+        if (orderIndex === -1) {
+            throw new Error('Order not found in order');
+        }
+
+        // Recherchez l'index de l'article dans le tableau Articles de la commande
+        const articleIndex = order.Orders[orderIndex].Articles.findIndex(item => item.articleId.toString() === idarticle);
 
         if (articleIndex !== -1) {
             // Si l'article existe déjà, incrémentez la quantité
-            order.Articles[articleIndex].quantity += quantity;
+            order.Orders[orderIndex].Articles[articleIndex].quantity += quantity;
         } else {
             // Sinon, ajoutez le nouvel article avec la quantité spécifiée
-            order.Articles.push({ articleId: idarticle, quantity: quantity });
+            order.Orders[orderIndex].Articles.push({ articleId: idarticle, quantity: quantity });
         }
 
         await order.save();
@@ -158,6 +204,7 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 // Delete article in an order by ID
 orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     const { idorder, idarticle } = req.params;
@@ -169,19 +216,26 @@ orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => 
             throw new Error('Order not found');
         }
 
-        // Recherchez l'index de l'article dans le tableau Articles
-        const articleIndex = order.Articles.findIndex(item => item.articleId.toString() === idarticle);
+        // Recherchez l'index de la commande dans le tableau Orders
+        const orderIndex = order.Orders.findIndex(order => order.Articles.some(article => article.articleId.toString() === idarticle));
+        console.log(orderIndex)
+        if (orderIndex === -1) {
+            throw new Error('Order not found in order');
+        }
+
+        // Recherchez l'index de l'article dans le tableau Articles de la commande
+        const articleIndex = order.Orders[orderIndex].Articles.findIndex(item => item.articleId.toString() === idarticle);
 
         if (articleIndex === -1) {
             throw new Error('Article not found in order');
         }
 
         // Diminuez la quantité de l'article de 1 s'il est supérieur à 1
-        if (order.Articles[articleIndex].quantity > 1) {
-            order.Articles[articleIndex].quantity--;
+        if (order.Orders[orderIndex].Articles[articleIndex].quantity > 1) {
+            order.Orders[orderIndex].Articles[articleIndex].quantity--;
         } else {
             // Si la quantité est égale à 1, supprimez complètement l'article
-            order.Articles.splice(articleIndex, 1);
+            order.Orders[orderIndex].Articles.splice(articleIndex, 1);
         }
 
         // Enregistrez les modifications de la commande

@@ -10,38 +10,44 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Create a new Order
 orderRoute.post('/add', async (req, res) => {
-    const { orderaddress, orderPhone, userId, DeliveryPersonId, orderarrayArticles } = req.body; // Include category in the request body
+    const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles } = req.body;
+
     try {
-        const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, orderarrayArticles }); // Add category to the new order
+        // Vérification des articles et des quantités
         let allArticlesExist = true;
-        for (const articleId of orderarrayArticles) {
-            const article = await Article.findById(articleId);
-            if (!article) {
+        for (const item of Articles) {
+            const article = await Article.findById(item.articleId);
+            if (!article || item.quantity <= 0) {
                 allArticlesExist = false;
-                break; // Sortir de la boucle dès qu'un article n'existe pas
+                break; // Sortir de la boucle dès qu'un article n'existe pas ou si la quantité est invalide
             }
         }
+
         if (allArticlesExist) {
+            // Tous les articles existent et les quantités sont valides, enregistrer la nouvelle commande
+            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Articles });
             await newOrder.save();
-        }else{
-            res.status(400).json({ error: 'At least one of the articles does not exist' });
-        }
-        // Add the order to the order array for user
-        const user = await User.findById(userId);
-        if (user) {
-            user.orders.push(newOrder._id);
-            await user.save();
+
+            // Ajouter la commande à l'utilisateur
+            const user = await User.findById(userId);
+            if (user) {
+                user.orders.push(newOrder._id);
+                await user.save();
+            } else {
+                throw new Error('User not found');
+            }
+
+            res.status(201).json({ message: "Commande ajoutée avec succès", order: newOrder });
         } else {
-            throw new Error('User not found');
+            res.status(400).json({ error: 'At least one of the articles does not exist or has an invalid quantity' });
         }
-        
-        res.status(201).json("commande ajouté");
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
+
+
 // Get a order by ID
 orderRoute.get('/:id', async (req, res) => {
     const { id } = req.params;
@@ -110,7 +116,84 @@ orderRoute.put('/:id', isAuth(), async (req, res) => {
     }
 });
 
+// Add or update article in an order by ID
+orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
+    const { idorder, idarticle } = req.params;
+    const { quantity } = req.body;
 
+    try {
+        // Vérifiez que la quantité est valide
+        if (quantity <= 0) {
+            throw new Error('Quantity must be greater than zero');
+        }
+
+        // Vérifiez que l'article existe
+        const article = await Article.findById(idarticle);
+        if (!article) {
+            throw new Error('Article not found');
+        }
+
+        // Recherchez la commande et vérifiez si l'article existe déjà
+        const order = await Order.findById(idorder);
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        const articleIndex = order.Articles.findIndex(item => item.articleId.toString() === idarticle);
+
+        if (articleIndex !== -1) {
+            // Si l'article existe déjà, incrémentez la quantité
+            order.Articles[articleIndex].quantity += quantity;
+        } else {
+            // Sinon, ajoutez le nouvel article avec la quantité spécifiée
+            order.Articles.push({ articleId: idarticle, quantity: quantity });
+        }
+
+        await order.save();
+
+        console.log('Order after update:', order);
+        res.status(200).json({ message: 'Article added/updated successfully', order });
+    } catch (error) {
+        console.error('Error adding/updating article in order:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+// Delete article in an order by ID
+orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
+    const { idorder, idarticle } = req.params;
+
+    try {
+        // Recherchez la commande
+        const order = await Order.findById(idorder);
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Recherchez l'index de l'article dans le tableau Articles
+        const articleIndex = order.Articles.findIndex(item => item.articleId.toString() === idarticle);
+
+        if (articleIndex === -1) {
+            throw new Error('Article not found in order');
+        }
+
+        // Diminuez la quantité de l'article de 1 s'il est supérieur à 1
+        if (order.Articles[articleIndex].quantity > 1) {
+            order.Articles[articleIndex].quantity--;
+        } else {
+            // Si la quantité est égale à 1, supprimez complètement l'article
+            order.Articles.splice(articleIndex, 1);
+        }
+
+        // Enregistrez les modifications de la commande
+        await order.save();
+
+        console.log('Order after update:', order);
+        res.status(200).json({ message: 'Article deleted successfully', order });
+    } catch (error) {
+        console.error('Error deleting article from order:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
 
 
 module.exports = orderRoute;

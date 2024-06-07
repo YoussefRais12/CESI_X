@@ -1,3 +1,4 @@
+// userSlice.js
 import axios from "axios";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
@@ -118,7 +119,7 @@ const initialState = {
   user: null,
   users: [],
   status: null,
-  error: null, // Add an error field to the state
+  error: null,
 };
 
 export const userSlice = createSlice({

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Carousel from '../components/Carousel';
-import CardCarousel from '../components/CardCarousel';
 import { fetchAllRestaurants, fetchRestaurantsByCategory } from '../redux/slice/restaurantSlice';
 import LoadingScreen from '../components/LoadingScreen';
 import { Box, Typography } from '@mui/material';
 import CategorySelector from '../components/CategorySelector'; // Import CategorySelector
+import GridDisplay from '../components/GridDisplay'; // Import GridDisplay
 import '../styles/feed.css';
 import '../styles/categorySelector.css'; // Import the CSS file
 
@@ -29,7 +28,7 @@ const Feed = () => {
             .catch((error) => {
                 console.error("Let's try again buddy:", error);
             });
-    }, [lang,dispatch]);
+    }, [lang, dispatch]);
   
     const [category, setCategory] = useState('All');
 
@@ -73,17 +72,12 @@ const Feed = () => {
         );
     }
 
-    const items1 = generateItems(restaurants.slice(0, 5));
-    const items2 = generateItems(restaurants.slice(5, 10));
+    const items = generateItems(restaurants);
 
     return (
         <div className="feed-container fade-in">
             <CategorySelector onSelectCategory={handleCategoryChange} />
-            {/* <h2 className='carousel-title'>Commandez de nouveau</h2> */}
-            {/* <Carousel items={items1} carouselId="carousel1" /> */}
-            <h2 className='carousel-title'>Discover More</h2>
-            <CardCarousel items={items1} carouselId="cardcarousel1" className="cardcarousel-container" />
-            <CardCarousel items={items2} carouselId="cardcarousel2" className="cardcarousel-container" />
+            <GridDisplay items={items} title="Discover More" />
         </div>
     );
 };

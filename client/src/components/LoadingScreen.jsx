@@ -1,17 +1,19 @@
 import React from 'react';
-import { CircularProgress, Box } from '@mui/material';
+import { Box } from '@mui/material';
+import pizzaLoader from '../assets/pizza-loader.gif'; // Adjust the path as necessary
 
-const LoadingScreen = () => (
+const LoadingScreen = ({ fullPage = true }) => (
     <Box
         sx={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '100vh',
-            backgroundColor: '#f5f5f5',
+            height: fullPage ? '100vh' : '100%',
+            width: '100%',
+            backgroundColor: fullPage ? '#f5f5f5' : 'transparent',
         }}
     >
-        <CircularProgress />
+        <img src={pizzaLoader} alt="Loading..." style={{ width: '200px', height: '200px' }} />
     </Box>
 );
 

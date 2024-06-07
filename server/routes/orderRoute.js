@@ -115,45 +115,77 @@ orderRoute.put('/:id', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
-// Add article to an order by ID
+
+// Add or update article in an order by ID
 orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     const { idorder, idarticle } = req.params;
+    const { quantity } = req.body;
 
     try {
-        const order = await Order.findOneAndUpdate(
-            { _id: idorder },
-            { $push: { orderarrayArticles: idarticle } },
-            { new: true } 
-        );
+        // Vérifiez que la quantité est valide
+        if (quantity <= 0) {
+            throw new Error('Quantity must be greater than zero');
+        }
 
+        // Vérifiez que l'article existe
+        const article = await Article.findById(idarticle);
+        if (!article) {
+            throw new Error('Article not found');
+        }
+
+        // Recherchez la commande et vérifiez si l'article existe déjà
+        const order = await Order.findById(idorder);
         if (!order) {
-            console.error('Order not found');
             throw new Error('Order not found');
         }
 
+        const articleIndex = order.Articles.findIndex(item => item.articleId.toString() === idarticle);
+
+        if (articleIndex !== -1) {
+            // Si l'article existe déjà, incrémentez la quantité
+            order.Articles[articleIndex].quantity += quantity;
+        } else {
+            // Sinon, ajoutez le nouvel article avec la quantité spécifiée
+            order.Articles.push({ articleId: idarticle, quantity: quantity });
+        }
+
+        await order.save();
+
         console.log('Order after update:', order);
-        res.status(200).json({ message: 'Article added successfully', order });
+        res.status(200).json({ message: 'Article added/updated successfully', order });
     } catch (error) {
-        console.error('Error adding article to order:', error);
+        console.error('Error adding/updating article in order:', error);
         res.status(400).json({ error: error.message });
     }
 });
-
 // Delete article in an order by ID
 orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     const { idorder, idarticle } = req.params;
 
     try {
-        const order = await Order.findOneAndUpdate(
-            { _id: idorder },
-            { $pull: { orderarrayArticles: idarticle } }, 
-            { new: true } 
-        );
-
+        // Recherchez la commande
+        const order = await Order.findById(idorder);
         if (!order) {
-            console.error('Order not found or article not associated with this order');
-            throw new Error('Order not found or article not associated with this order');
+            throw new Error('Order not found');
         }
+
+        // Recherchez l'index de l'article dans le tableau Articles
+        const articleIndex = order.Articles.findIndex(item => item.articleId.toString() === idarticle);
+
+        if (articleIndex === -1) {
+            throw new Error('Article not found in order');
+        }
+
+        // Diminuez la quantité de l'article de 1 s'il est supérieur à 1
+        if (order.Articles[articleIndex].quantity > 1) {
+            order.Articles[articleIndex].quantity--;
+        } else {
+            // Si la quantité est égale à 1, supprimez complètement l'article
+            order.Articles.splice(articleIndex, 1);
+        }
+
+        // Enregistrez les modifications de la commande
+        await order.save();
 
         console.log('Order after update:', order);
         res.status(200).json({ message: 'Article deleted successfully', order });

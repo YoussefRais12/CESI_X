@@ -19,25 +19,45 @@ const Feed = () => {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get('lang') || 'fr'; // Default language to 'fr'
+    const [loading, setLoading] = useState(true);
+    const [categoryLoading, setCategoryLoading] = useState(false);
+    const [category, setCategory] = useState('All');
+    const [showContent, setShowContent] = useState(false);
+
     useEffect(() => {
+        const loadTimeout = setTimeout(() => {
+            setLoading(false);
+            setShowContent(true); // Show content after initial load
+        }, 1500); // 1.5 seconds delay
+
         dispatch(fetchAllRestaurants());
         import(`../lang/${lang}.json`)
             .then((data) => {
                 setLanguageData(data);
             })
             .catch((error) => {
-                console.error("Let's try again buddy:", error);
+                console.error("Error loading language file:", error);
             });
+
+        return () => clearTimeout(loadTimeout); // Cleanup timeout on unmount
     }, [lang, dispatch]);
-  
-    const [category, setCategory] = useState('All');
 
     useEffect(() => {
-        if (category === 'All') {
-            dispatch(fetchAllRestaurants());
-        } else {
-            dispatch(fetchRestaurantsByCategory(category));
-        }
+        const loadCategoryData = async () => {
+            setCategoryLoading(true);
+            setShowContent(false); // Hide content while loading new category
+            if (category === 'All') {
+                await dispatch(fetchAllRestaurants());
+            } else {
+                await dispatch(fetchRestaurantsByCategory(category));
+            }
+            setTimeout(() => {
+                setCategoryLoading(false);
+                setShowContent(true); // Show content after category load
+            }, 1500); // 1.5 seconds delay for category change
+        };
+
+        loadCategoryData();
     }, [category, dispatch]);
 
     const handleCategoryChange = (category) => {
@@ -57,29 +77,32 @@ const Feed = () => {
         }));
     };
 
-    if (status === "loading") {
-        return <LoadingScreen />;
-    }
-
-    if (restaurants.length === 0) {
-        return (
-            <div className="feed-container fade-in">
-                <CategorySelector onSelectCategory={handleCategoryChange} />
-                <Typography variant="h6" align="center" style={{ marginTop: '20px' }}>
-                    {languageData.error || "No restaurants found for the selected category"}
-                </Typography>
-            </div>
-        );
-    }
-
     const items = generateItems(restaurants);
 
     return (
-        <div className="feed-container fade-in">
+        <div className="feed-container">
             <CategorySelector onSelectCategory={handleCategoryChange} />
-
-            <GridDisplay items={items} title="Discover More" />
-
+            {loading || status === "loading" ? (
+                <LoadingScreen fullPage />
+            ) : (
+                <>
+                    {categoryLoading ? (
+                        <div className="loader-container">
+                            <LoadingScreen fullPage={false} />
+                        </div>
+                    ) : (
+                        <div className={`fade-in ${showContent ? 'show' : ''}`}>
+                            {restaurants.length === 0 ? (
+                                <Typography variant="h6" align="center" style={{ marginTop: '20px' }}>
+                                    No restaurants found for the selected category.
+                                </Typography>
+                            ) : (
+                                <GridDisplay items={items} title="Discover More" />
+                            )}
+                        </div>
+                    )}
+                </>
+            )}
         </div>
     );
 };

@@ -28,5 +28,10 @@
   "Add_User":"ajouter",
   "discover": "Découvrez en plus",
   "meals": "Ton plat favoris",
-  "Article_Details":"Article Details"
+  "Article_Details":"Article Details",
+  "error": "Aucun restaurant trouvé pour la catégorie selectionnée",
+  "erp": "Responsable ERP",
+  "commercial": "Responsable Commercial",
+  "energie": "Responsable Energie"
+
 }

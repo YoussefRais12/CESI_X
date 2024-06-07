@@ -14,6 +14,7 @@
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
+    position: relative;
 }
 
 .restaurant-img {
@@ -21,6 +22,17 @@
     max-height: 300px; /* Ensure the image doesn't surpass the card size */
     object-fit: cover;
     border-radius: 10px;
+}
+
+.restaurant-camera-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 5px;
+    color: white;
+    cursor: pointer;
 }
 
 .restaurant-info-container {

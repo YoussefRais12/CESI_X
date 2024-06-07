@@ -10,38 +10,44 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Create a new Order
 orderRoute.post('/add', async (req, res) => {
-    const { orderaddress, orderPhone, userId, DeliveryPersonId, orderarrayArticles } = req.body; // Include category in the request body
+    const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles } = req.body;
+
     try {
-        const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, orderarrayArticles }); // Add category to the new order
+        // Vérification des articles et des quantités
         let allArticlesExist = true;
-        for (const articleId of orderarrayArticles) {
-            const article = await Article.findById(articleId);
-            if (!article) {
+        for (const item of Articles) {
+            const article = await Article.findById(item.articleId);
+            if (!article || item.quantity <= 0) {
                 allArticlesExist = false;
-                break; // Sortir de la boucle dès qu'un article n'existe pas
+                break; // Sortir de la boucle dès qu'un article n'existe pas ou si la quantité est invalide
             }
         }
+
         if (allArticlesExist) {
+            // Tous les articles existent et les quantités sont valides, enregistrer la nouvelle commande
+            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Articles });
             await newOrder.save();
-        }else{
-            res.status(400).json({ error: 'At least one of the articles does not exist' });
-        }
-        // Add the order to the order array for user
-        const user = await User.findById(userId);
-        if (user) {
-            user.orders.push(newOrder._id);
-            await user.save();
+
+            // Ajouter la commande à l'utilisateur
+            const user = await User.findById(userId);
+            if (user) {
+                user.orders.push(newOrder._id);
+                await user.save();
+            } else {
+                throw new Error('User not found');
+            }
+
+            res.status(201).json({ message: "Commande ajoutée avec succès", order: newOrder });
         } else {
-            throw new Error('User not found');
+            res.status(400).json({ error: 'At least one of the articles does not exist or has an invalid quantity' });
         }
-        
-        res.status(201).json("commande ajouté");
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
+
+
 // Get a order by ID
 orderRoute.get('/:id', async (req, res) => {
     const { id } = req.params;
@@ -109,8 +115,53 @@ orderRoute.put('/:id', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+// Add article to an order by ID
+orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
+    const { idorder, idarticle } = req.params;
 
+    try {
+        const order = await Order.findOneAndUpdate(
+            { _id: idorder },
+            { $push: { orderarrayArticles: idarticle } },
+            { new: true } 
+        );
 
+        if (!order) {
+            console.error('Order not found');
+            throw new Error('Order not found');
+        }
+
+        console.log('Order after update:', order);
+        res.status(200).json({ message: 'Article added successfully', order });
+    } catch (error) {
+        console.error('Error adding article to order:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Delete article in an order by ID
+orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
+    const { idorder, idarticle } = req.params;
+
+    try {
+        const order = await Order.findOneAndUpdate(
+            { _id: idorder },
+            { $pull: { orderarrayArticles: idarticle } }, 
+            { new: true } 
+        );
+
+        if (!order) {
+            console.error('Order not found or article not associated with this order');
+            throw new Error('Order not found or article not associated with this order');
+        }
+
+        console.log('Order after update:', order);
+        res.status(200).json({ message: 'Article deleted successfully', order });
+    } catch (error) {
+        console.error('Error deleting article from order:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
 
 
 module.exports = orderRoute;

@@ -29,6 +29,11 @@
   "Article_Details":"item details",
   "order":"Order again",
   "discover":"Discover More",
-  "meals": "Your favorite meals"
+  "meals": "Your favorite meals",
+  "error": "No restaurants found for the selected category",
+  "erp": "ERP Manager",
+  "commercial": " Commercial Manager",
+  "energie": "Energie Manager"
+  
 
 }

@@ -29,5 +29,11 @@
   "discover": "Scopri di più",
   "meals": "I tuoi piatti preferiti",
   "Article_Details":"dettagli degli articoli",
-  "order":"Riordino"
+  "order":"Riordino",
+  "error": "Nessun ristorante trovato per la categoria selezionata",
+  "erp": "Responsabile  ERP",
+  "commercial": "Responsabile  Commercial",
+  "energie": "Responsabile  Energie"
+
+
 }

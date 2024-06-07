@@ -71,9 +71,9 @@ const Dashboard = () => {
             <div className="users-list">
                 {users && users.map((user) => (
                     <div key={user._id} className="user-card">
-                        <p><strong>Name:</strong> {user.name}</p>
-                        <p><strong>Email:</strong> {user.email}</p>
-                        <p><strong>Role:</strong></p>
+                        <p><strong>{ languageData.name || "Name:"}</strong> {user.name}</p>
+                        <p><strong>{ languageData.email || "Email:"}</strong> {user.email}</p>
+                        <p><strong>{ languageData.Role || "Rôle:"}</strong></p>
                         {user._id !== currentUser._id ? (
                             <select
                                 value={user.role}
@@ -81,15 +81,15 @@ const Dashboard = () => {
                             >
                                 <option value="chef service hse">{languageData.Chef_Service_HSE}</option>
                                 <option value="chef securité">{languageData.Chef_Securite}</option>
-                                <option value="responsable erp">Responsable ERP</option>
-                                <option value="responsable commercial">Responsable Commercial</option>
-                                <option value="responsable energie">Responsable Energie</option>
+                                <option value="responsable erp">{languageData.erp || "Responsable ERP" }</option>
+                                <option value="responsable commercial">{languageData.commercial || "Responsable Commercial"}</option>
+                                <option value="responsable energie">{languageData.energie || "Responsable Energie"}</option>
                             </select>
                         ) : (
                             <span>{user.role}</span>
                         )}
                         {user._id !== currentUser._id && (
-                            <button onClick={() => handleDeleteUser(user._id)}>test</button>
+                            <button onClick={() => handleDeleteUser(user._id)}>{languageData.test || "test" }</button>
                         )}
                     </div>
                 ))}
@@ -121,9 +121,9 @@ const Dashboard = () => {
                     <option value="">{languageData.basic}</option>
                     <option value="chef service hse">{languageData.Chef_Service_HSE}</option>
                     <option value="chef securité">{languageData.Chef_Securite}</option>
-                    <option value="responsable erp">Responsable ERP</option>
-                    <option value="responsable commercial">Responsable Commercial</option>
-                    <option value="responsable energie">Responsable Energie</option>
+                    <option value="responsable erp">{languageData.erp || "Responsable ERP" }</option>
+                    <option value="responsable commercial">{languageData.commercial || "Responsable Commercial"}</option>
+                    <option value="responsable energie">{languageData.energie || "Responsable Energie"}</option>
                 </select>
                 <button onClick={handleAddUser}>{languageData.Add_User}</button>
             </div>

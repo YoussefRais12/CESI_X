@@ -84,6 +84,16 @@ app.get('/notifications', async (req, res) => {
   }
 });
 
+app.delete('/notifications/:id', async (req, res) => {
+  try {
+      const { id } = req.params;
+      await Notification.findByIdAndDelete(id);
+      res.status(200).send({ message: 'Notification deleted successfully' });
+  } catch (error) {
+      res.status(500).send({ error: error.message });
+  }
+});
+
 //test our server
 app.listen(PORT, (err) =>
   err ? console.log(err) : console.log("server is running")

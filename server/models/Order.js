@@ -7,7 +7,10 @@ const orderSchema = new Schema({
     orderPhone: { type: String, required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     DeliveryPersonId: { type: mongoose.Schema.Types.ObjectId, ref: 'DeliveryPerson', required: true },
-    orderarrayArticles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true }]
+    Articles: [{
+        articleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true },
+        quantity: { type: Number, required: true }
+    }]
 });
 
 const Order = mongoose.model("Order", orderSchema);

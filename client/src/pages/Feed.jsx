@@ -66,7 +66,7 @@ const Feed = () => {
             <div className="feed-container fade-in">
                 <CategorySelector onSelectCategory={handleCategoryChange} />
                 <Typography variant="h6" align="center" style={{ marginTop: '20px' }}>
-                    No restaurants found for the selected category.
+                    {languageData.error || "No restaurants found for the selected category"}
                 </Typography>
             </div>
         );
@@ -77,7 +77,15 @@ const Feed = () => {
     return (
         <div className="feed-container fade-in">
             <CategorySelector onSelectCategory={handleCategoryChange} />
+<<<<<<< HEAD
             <GridDisplay items={items} title="Discover More" />
+=======
+            {/* <h2 className='carousel-title'>Commandez de nouveau</h2> */}
+            {/* <Carousel items={items1} carouselId="carousel1" /> */}
+            <h2 className='carousel-title'>{ languageData.discover|| "Discover More"} </h2>
+            <CardCarousel items={items1} carouselId="cardcarousel1" className="cardcarousel-container" />
+            <CardCarousel items={items2} carouselId="cardcarousel2" className="cardcarousel-container" />
+>>>>>>> df23409e8d389f46b462e2476fea6a9cf2608898
         </div>
     );
 };

@@ -37,18 +37,6 @@ orderSchema.methods.getOrderPrice = function() {
 orderSchema.methods.getOrderStatus = function() {
     return this.OrderStatus;
 };
-orderSchema.methods.addArticle = async function(article) {
-    const order = this.Orders.find(order => order.restaurantId.equals(article.restaurantId));
-    if (order) {
-        order.Articles.push(article);
-    } else {
-        this.Orders.push({
-            restaurantId: article.restaurantId,
-            Articles: [article]
-        });
-    }
-    await this.save();
-};
 //  **************************************************************** models Route  **************************************************************** //
 // Méthode statique pour ajouter une commande en utilisant une route externe
 orderSchema.statics.addOrderUsingRoute = async function(orderData) {
@@ -83,18 +71,78 @@ orderSchema.statics.addOrderUsingRoute = async function(orderData) {
         throw error;
     }
 };
+// add Article in order
+orderSchema.methods.addArticle = async function(articleId, quantity) {
+    try {
+        const apiurl = process.env.REACT_APP_API_URL;
+        const requestData = {
+            quantity
+        };
+        const result = await axios.post(`${apiurl}/order/article/${articleId}`, requestData, {
+            headers: {
+                Authorization: localStorage.getItem("token"),
+            },
+        });
+        console.log(result)
+        // Mettre à jour le prix total de la commande
+        this.OrderPrice = result.Orderprice;
+        return this;
+    } catch (error) {
+        console.error('Error adding article to order:', error);
+        throw error;
+    }
+};
+
+// delete Article in order
+orderSchema.methods.deleteArticle = async function(articleId) {
+    try {
+        const apiurl = process.env.REACT_APP_API_URL;
+   
+        const result = await axios.delete(`${apiurl}/order/article/${articleId}`, {
+            headers: {
+                Authorization: localStorage.getItem("token"),
+            },
+        });
+        console.log(result)
+        // Mettre à jour le prix total de la commande
+        this.OrderPrice = result.Orderprice;
+        return this;
+    } catch (error) {
+        console.error('Error adding article to order:', error);
+        throw error;
+    }
+};
 
 //  **************************************************************** Constructeur de l'objet **************************************************************** //
 orderSchema.pre('save', async function(next) {
     if (this.isNew) {
         try {
             const result = await this.constructor.addOrderUsingRoute(this.toObject());
-            this.OrderPrice = result.OrderPrice; // Assurez-vous que c'est bien OrderPrice dans la réponse
+            this.OrderPrice = result.OrderPrice;
+            console.log(result.OrderPrice)
         } catch (error) {
             return next(error);
         }
     }
     next();
+});
+
+orderSchema.pre('remove', async function(next) {
+    try {
+        const apiurl = process.env.REACT_APP_API_URL;
+   
+        const result = await axios.delete(`${apiurl}/order/${this._id}`, {
+            headers: {
+                Authorization: localStorage.getItem("token"),
+            },
+        });
+
+        console.log(result);
+        next();
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        throw error;
+    }
 });
 
 const Order = mongoose.model("Order", orderSchema);

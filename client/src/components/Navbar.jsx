@@ -10,6 +10,7 @@ import { Input, Box, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import {useLocation } from "react-router-dom";
 import axios from 'axios';
+import moment from 'moment';
 
 const Navbar = ({ setPing, ping }) => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -138,14 +139,21 @@ const Navbar = ({ setPing, ping }) => {
     const renderNotifications = () => (
         <div className="notification-dropdown">
             {notifications.length > 0 ? (
-                notifications.map((notification, index) => (
+                notifications.map((notification) => (
                     <div key={notification._id} className="notification-item" onClick={() => handleNotificationClick(notification._id)}>
-                        {notification.message}
+                        <div>{notification.message}</div>
+                        <div className="notification-meta">
+                            <span>{moment(notification.createdAt).fromNow()}</span>
+                            <span>{moment(notification.createdAt).format('YYYY-MM-DD HH:mm')}</span>
+                        </div>
                     </div>
                 ))
             ) : (
                 <div className="notification-item">No notifications</div>
             )}
+            <button className="payment-history-button" onClick={() => navigate('/payment-history')}>
+                Historique des Paiements
+            </button>
         </div>
     );
 

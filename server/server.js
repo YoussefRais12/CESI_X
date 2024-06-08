@@ -2,19 +2,21 @@ const express = require("express");
 const Stripe = require('stripe');
 const cors = require("cors");
 require("dotenv").config();
+
+const mongoose = require("mongoose");
 const db_connect = require("./config/db_connect");
 
 const app = express();
 const stripe = Stripe('sk_test_51PMUzFKJ5LRFuT3XK0gGfYY7jtr2CUDbJP8mQt4IQyNjZq63GUXUDaq1qdGqLkN1UdUDSVm1eZXzNhz6bCFtef1j00tyTYOHs6');
 
 const Notification = require('./models/Notif');
+const Payment = require('./models/payment');
 
 db_connect();
 app.use(express.json());
 app.use(cors());
 
 // Define the schema for the data collection
-const mongoose = require("mongoose");
 
 const userRoute = require("./routes/userRoute");
 const articleRoute = require('./routes/articleRoute');
@@ -35,7 +37,7 @@ app.use('/menu', menuRoute);
 PORT = process.env.PORT || 5000;
 
 app.post('/create-payment-intent', async (req, res) => {
-  const { amount, currency, paymentMethodId } = req.body;
+  const { amount, currency, paymentMethodId, userId } = req.body;
 
   try {
       const paymentIntent = await stripe.paymentIntents.create({
@@ -48,12 +50,27 @@ app.post('/create-payment-intent', async (req, res) => {
             allow_redirects: 'never',
         },
     });
+    // Enregistrement du paiement dans la base de données
+    const payment = new Payment({
+      userId,
+      amount,
+      currency,
+      status: paymentIntent.status,
+      createdAt: new Date(),
+    });
+    await payment.save();
 
-      res.send({ paymentIntent });
+    res.send({ paymentIntent });
   } catch (error) {
-      res.status(500).send({
-          error: error.message,
-      });
+    const payment = new Payment({
+      userId,
+      amount,
+      currency,
+      status: 'failed',
+      createdAt: new Date(),
+    });
+    await payment.save();
+    res.status(500).send({ error: error.message });
   }
 });
 
@@ -89,6 +106,16 @@ app.delete('/notifications/:id', async (req, res) => {
       const { id } = req.params;
       await Notification.findByIdAndDelete(id);
       res.status(200).send({ message: 'Notification deleted successfully' });
+  } catch (error) {
+      res.status(500).send({ error: error.message });
+  }
+});
+
+app.get('/payments/:userId', async (req, res) => {
+  try {
+      const { userId } = req.params;
+      const payments = await Payment.find({ userId }).sort({ createdAt: -1 });
+      res.json(payments);
   } catch (error) {
       res.status(500).send({ error: error.message });
   }

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
+import axios from "axios";
 
 const orderSchema = new Schema({
     orderaddress: { type: String, required: true },
@@ -14,38 +14,88 @@ const orderSchema = new Schema({
             quantity: { type: Number, required: true }
         }]
     }],
-    OrderPrice : {type : Number},
-    OrderStatus : {type :String}
+    OrderPrice: { type: Number },
+    OrderStatus: { type: String }
 });
 
-const Order = mongoose.model("Order", orderSchema);
-module.exports = Order;
-
-//fonction pour recup l'id de la commande
-orderSchema.methods.getOwnerorderId = function() {
-    return this.OrderId;
+// **************************************************************** Instance methods **************************************************************** //
+orderSchema.methods.getOwnerOrderId = function() {
+    return this._id;
 };
-//fonction pour recup l'address du restaurant
 orderSchema.methods.getAddress = function() {
     return this.orderaddress;
 };
-//fonction pour recup le téléphone de la commander
-orderSchema.methods.getdescription = function() {
-    return this.OrderPhone;
+orderSchema.methods.getDescription = function() {
+    return this.orderPhone;
 };
-//fonction pour recup les articles d'une commande (return array)
-orderSchema.methods.getOrderarrayArticles = function() {
-    return this.OrderarrayArticles;
+orderSchema.methods.getOrderArrayArticles = function() {
+    return this.Orders.flatMap(order => order.Articles);
 };
-//fonction pour recup le DeliveryPersonId
-orderSchema.methods.getOrderprice  = function() {
-    return this.Orderprice;
+orderSchema.methods.getOrderPrice = function() {
+    return this.OrderPrice;
 };
 orderSchema.methods.getOrderStatus = function() {
     return this.OrderStatus;
 };
-//fonction pour ajouter un article dans la commande 
-orderSchema.methods.Addarticle = async function(articleId) {
-    this.orderarrayArticles.push(articleId);
+orderSchema.methods.addArticle = async function(article) {
+    const order = this.Orders.find(order => order.restaurantId.equals(article.restaurantId));
+    if (order) {
+        order.Articles.push(article);
+    } else {
+        this.Orders.push({
+            restaurantId: article.restaurantId,
+            Articles: [article]
+        });
+    }
     await this.save();
 };
+//  **************************************************************** models Route  **************************************************************** //
+// Méthode statique pour ajouter une commande en utilisant une route externe
+orderSchema.statics.addOrderUsingRoute = async function(orderData) {
+    try {
+        const apiurl = process.env.REACT_APP_API_URL;
+        const { orderaddress, orderPhone, userId, DeliveryPersonId, Orders } = orderData;
+
+        const Articles = Orders.flatMap(order =>
+            order.Articles.map(article => ({
+                articleId: article.articleId,
+                quantity: article.quantity
+            }))
+        );
+
+        const requestData = {
+            orderaddress,
+            orderPhone,
+            userId,
+            DeliveryPersonId,
+            Articles
+        };
+
+        const result = await axios.post(`${apiurl}/order/add`, requestData, {
+            headers: {
+                Authorization: localStorage.getItem("token"),
+            },
+        });
+
+        return result.data; // Assurez-vous que le résultat renvoyé contient Orderprice
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+//  **************************************************************** Constructeur de l'objet **************************************************************** //
+orderSchema.pre('save', async function(next) {
+    if (this.isNew) {
+        try {
+            const result = await this.constructor.addOrderUsingRoute(this.toObject());
+            this.OrderPrice = result.OrderPrice; // Assurez-vous que c'est bien OrderPrice dans la réponse
+        } catch (error) {
+            return next(error);
+        }
+    }
+    next();
+});
+
+const Order = mongoose.model("Order", orderSchema);
+module.exports = Order;

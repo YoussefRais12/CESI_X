@@ -36,7 +36,7 @@ const TestStripe = () => {
         } else {
             console.log('[PaymentMethod]', paymentMethod);
 
-            const response = await fetch('http://localhost:5000/create-payment-intent', { // Assurez-vous que le port correspond
+            const response = await fetch('http://localhost:5000/create-payment-intent', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -45,6 +45,7 @@ const TestStripe = () => {
                     amount: Math.round(amount * 100), // montant en cents
                     currency: currency,
                     paymentMethodId: paymentMethod.id,
+                    userId: user._id,
                 }),
             });
 

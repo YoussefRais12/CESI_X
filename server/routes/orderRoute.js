@@ -172,7 +172,7 @@ orderRoute.put('/:id', isAuth(), async (req, res) => {
     }
 });
 
-// Add or update article in an order by ID
+// Add article in an order by ID
 orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     const { idorder, idarticle } = req.params;
     const { quantity } = req.body;

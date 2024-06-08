@@ -10,7 +10,7 @@ export default class Order {
     orders;
     OrderPrice;
     OrderStatus;
-    initialized = false; // Ajout de la propriété `initialized`
+    initialized = false; 
 
     constructor(orderData) {
         this.initialize(orderData);
@@ -27,7 +27,7 @@ export default class Order {
             this.orders = result.order.Orders;
             this.OrderStatus = result.order.OrderStatus;
             this.OrderPrice = result.order.OrderPrice;
-            this.initialized = true; // Initialisation terminée
+            this.initialized = true; 
         } catch (error) {
             throw error;
         }

@@ -314,6 +314,10 @@ const RestaurantDetail = () => {
 
         const formattedPrice = parseFloat(newMenuData.price);
         const newMenu = { ...newMenuData, price: formattedPrice, restaurantId: restaurant._id };
+
+        console.log(restaurant._id);
+        console.log(newMenuData);
+
         dispatch(createMenu(newMenu))
             .unwrap()
             .then((response) => {

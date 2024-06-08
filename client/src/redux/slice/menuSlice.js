@@ -1,25 +1,22 @@
 import axios from "axios";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-const apiUrl = process.env.REACT_APP_API_URL;
-
 // Fetch all menus for a restaurant
 export const fetchMenusByRestaurantId = createAsyncThunk("menu/fetchMenusByRestaurantId", async (restaurantId) => {
-    const response = await axios.get(`${apiUrl}/menu/restaurant/${restaurantId}`);
+    const response = await axios.get(`http://localhost:5000/menu/restaurant/${restaurantId}`);
     return response.data;
 });
 
 // Fetch menu by ID
 export const fetchMenuById = createAsyncThunk("menu/fetchMenuById", async (id) => {
-    const response = await axios.get(`${apiUrl}/menu/${id}`);
+    const response = await axios.get(`http://localhost:5000/menu/${id}`);
     return response.data;
 });
 
 // Add new menu
 export const createMenu = createAsyncThunk("menu/createMenu", async (newMenu) => {
     try {
-        const apiurl = process.env.REACT_APP_API_URL;
-        let result = await axios.post("${apiUrl}/menu/", newMenu, {
+        let result = await axios.post("http://localhost:5000/menu/", newMenu, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -34,7 +31,7 @@ export const createMenu = createAsyncThunk("menu/createMenu", async (newMenu) =>
 // Update menu
 export const updateMenu = createAsyncThunk("menu/updateMenu", async ({ id, menuData }) => {
     try {
-        let result = await axios.put(`${apiUrl}/menu/${id}`, menuData, {
+        let result = await axios.put(`http://localhost:5000/menu/${id}`, menuData, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -49,7 +46,7 @@ export const updateMenu = createAsyncThunk("menu/updateMenu", async ({ id, menuD
 // Delete menu
 export const deleteMenu = createAsyncThunk("menu/deleteMenu", async (id) => {
     try {
-        await axios.delete(`${apiUrl}/menu/${id}`, {
+        await axios.delete(`http://localhost:5000/menu/${id}`, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -64,6 +61,7 @@ export const deleteMenu = createAsyncThunk("menu/deleteMenu", async (id) => {
 const initialState = {
     menus: [],
     menu: null,
+    restaurantMenus: [],
     status: null,
     error: null,
 };
@@ -79,7 +77,7 @@ const menuSlice = createSlice({
             })
             .addCase(fetchMenusByRestaurantId.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.menus = action.payload;
+                state.restaurantMenus = action.payload;
             })
             .addCase(fetchMenusByRestaurantId.rejected, (state, action) => {
                 state.status = "failed";
@@ -112,7 +110,7 @@ const menuSlice = createSlice({
             })
             .addCase(updateMenu.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                const index = state.menus.findIndex((menu) => menu.id === action.payload.id);
+                const index = state.menus.findIndex((menu) => menu._id === action.payload._id);
                 if (index !== -1) {
                     state.menus[index] = action.payload;
                 }
@@ -126,7 +124,7 @@ const menuSlice = createSlice({
             })
             .addCase(deleteMenu.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.menus = state.menus.filter((menu) => menu.id !== action.payload);
+                state.menus = state.menus.filter((menu) => menu._id !== action.payload);
             })
             .addCase(deleteMenu.rejected, (state, action) => {
                 state.status = "failed";

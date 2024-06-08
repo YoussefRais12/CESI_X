@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-import axios from "axios";
+// import axios from "axios";
 
 const orderSchema = new Schema({
     orderaddress: { type: String, required: true },

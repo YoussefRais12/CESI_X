@@ -13,7 +13,8 @@ const restaurantSchema = new schema({
     workingHours: { type: String, required: true }, // String to store working hours
     category: { type: String, required: true }, // Added category field
     img: { type: String }, // Image URL
-    imgPublicId: { type: String } // Public ID for Cloudinary
+    imgPublicId: { type: String }, // Public ID for Cloudinary
+    subOrders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SubOrder' }]
 });
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);

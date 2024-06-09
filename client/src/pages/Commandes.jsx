@@ -3,12 +3,7 @@ import * as XLSX from "xlsx";
 import "../styles/commandes.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchAllUsers,
-  userEdit,
-  userDelete,
-  userAdd,
-} from "../redux/slice/userSlice.js";
+import Order from '../class/order';
 
 function Commandes() {
   const [excelFile, setExcelFile] = useState(null);
@@ -23,16 +18,10 @@ function Commandes() {
   const [languageData, setLanguageData] = useState({});
   const user = useSelector((state) => state.user?.user); // Assuming user details include role
   const navigate = useNavigate();
+  const [orders, setOrders] = useState(null);
+  
 
-  // Check for permission
-  useEffect(() => {
-    const allowedRoles = ["client", "responsable erp", "admin"]; // Define appropriate roles that can access
-    if (currentUser && !allowedRoles.includes(currentUser.role)) {
-      navigate("/error");
-    } else {
-      dispatch(fetchAllUsers());
-    }
-  },[currentUser, dispatch, navigate]);
+
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);

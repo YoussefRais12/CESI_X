@@ -1,8 +1,10 @@
 const express = require('express');
 const orderRoute = express.Router();
 const Order = require('../models/Order');
+const SubOrder = require('../models/SubOrder');
 const User = require('../models/user');
 const Article = require('../models/article');
+const Restaurant = require('../models/restaurant');
 const isAuth = require("../middleware/passport");
 const checkRole = require("../middleware/checkRole");
 
@@ -26,7 +28,7 @@ orderRoute.post('/add', async (req, res) => {
             }
 
             const restaurantId = article.restaurantId;
-            const articlePrice = article.price * item.quantity; // Calculate the price for the quantity of the article
+            const articlePrice = article.price * item.quantity;
             totalOrderPrice += articlePrice;
             if (!articlesByRestaurant[restaurantId]) {
                 articlesByRestaurant[restaurantId] = [];
@@ -41,19 +43,30 @@ orderRoute.post('/add', async (req, res) => {
         }
 
         if (allArticlesExist) {
-            const orders = [];
+            const subOrders = [];
             for (const restaurantId in articlesByRestaurant) {
-                const articlesWithoutId = articlesByRestaurant[restaurantId].map(article => ({
-                    articleId: article.articleId,
-                    quantity: article.quantity
-                }));
+                const articles = articlesByRestaurant[restaurantId];
+                let subOrderPrice = 0;
+                for (const article of articles) {
+                    const articleData = await Article.findById(article.articleId);
+                    subOrderPrice += articleData.price * article.quantity;
+                }
 
-                const order = {
+                const subOrder = new SubOrder({
                     restaurantId,
-                    Articles: articlesWithoutId
-                };
+                    Articles: articles,
+                    OrderPrice: subOrderPrice,
+                    OrderStatus: "en cours"
+                });
 
-                orders.push(order);
+                await subOrder.save();
+
+                // Add subOrder to the corresponding restaurant
+                const restaurant = await Restaurant.findById(restaurantId);
+                restaurant.subOrders.push(subOrder._id);
+                await restaurant.save();
+
+                subOrders.push(subOrder);
             }
 
             const user = await User.findById(userId);
@@ -61,14 +74,12 @@ orderRoute.post('/add', async (req, res) => {
                 throw new Error('User not found');
             }
 
-            // Apply a discount if this is the user's first order and they were referred by another user
             if (user.orders.length === 0 && user.referredBy && !user.hasUsedReferral) {
-                const discountRate = 0.10; // 10% discount
+                const discountRate = 0.10;
                 totalOrderPrice = totalOrderPrice * (1 - discountRate);
-                user.hasUsedReferral = true; // Mark the referral as used
+                user.hasUsedReferral = true;
                 await user.save();
 
-                // Apply discount to the referrer as well
                 const referrer = await User.findById(user.referredBy);
                 if (referrer) {
                     referrer.hasUsedReferral = true;
@@ -76,19 +87,28 @@ orderRoute.post('/add', async (req, res) => {
                 }
             }
 
-            const newOrder = new Order({ orderaddress, orderPhone, userId, DeliveryPersonId, Orders: orders, OrderPrice: totalOrderPrice, OrderStatus: "crée" });
+            const newOrder = new Order({
+                orderaddress,
+                orderPhone,
+                userId,
+                DeliveryPersonId,
+                Orders: subOrders.map(subOrder => ({
+                    subOrderId: subOrder._id,
+                    restaurantId: subOrder.restaurantId,
+                    OrderPrice: subOrder.OrderPrice,
+                    OrderStatus: subOrder.OrderStatus
+                })),
+                OrderPrice: totalOrderPrice,
+                OrderStatus: "en cours"
+            });
+
             await newOrder.save();
 
-            // Add order for user
             user.orders.push(newOrder._id);
             await user.save();
 
-            // Remove the _id from the order and articles in the response
             const orderWithoutId = JSON.parse(JSON.stringify(newOrder));
             orderWithoutId.Orders.forEach(order => {
-                order.Articles.forEach(article => {
-                    delete article._id;
-                });
                 delete order._id;
             });
 
@@ -100,7 +120,6 @@ orderRoute.post('/add', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
-
 
 // Get a order by ID
 orderRoute.get('/:id', async (req, res) => {

@@ -46,13 +46,10 @@ export default function Test() {
             const orderData = {
                 orderaddress: '123 Main Street',
                 orderPhone: '555-1234',
-                userId: '664c6735ba5db559dd9a5484',
+                userId: '664c600fea3bf82611450fbd',
                 DeliveryPersonId: '664f0e247baafc94cf772754',
                 Articles: [
-                    { articleId: "6657697fcda8cf305abdcd3a", quantity: 1 },
-                    { articleId: "66576982cda8cf305abdcd3e", quantity: 2 },
-                    { articleId: "66576988cda8cf305abdcd42", quantity: 2 },
-                    { articleId: "6657698ecda8cf305abdcd46", quantity: 5 }
+                    { articleId: "6657697fcda8cf305abdcd3a", quantity: 10 }
                 ]
             };
 
@@ -65,8 +62,7 @@ export default function Test() {
                     }
                 }, 100);
             });
-
-
+            console.log(order);
             setOrder(order);
         } catch (error) {
             console.error('Error creating order:', error);
@@ -107,6 +103,7 @@ export default function Test() {
             console.error('No order to remove article from');
             return;
         }
+        console.log(order)
 
         try {
             const result = await order.removeArticle(articleIdToRemove);

@@ -12,12 +12,14 @@ import ViewArticleDialog from '../components/ViewArticleDialog';
 import ViewMenuDialog from '../components/ViewMenuDialog';
 import RestaurantInfo from '../components/RestaurantInfo';
 import LoadingScreen from '../components/LoadingScreen';
+import OrderDialog from '../components/OrderDialog';
 import AWN from "awesome-notifications";
 import "awesome-notifications/dist/style.css"; // Import the CSS for notifications
 import '../styles/restaurantDetail.css';
 import { TailSpin } from 'react-loader-spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera } from '@fortawesome/free-solid-svg-icons';
+import Order from '../class/order';
 
 const RestaurantDetail = () => {
     const { id } = useParams();
@@ -40,6 +42,12 @@ const RestaurantDetail = () => {
     const [viewMenuMode, setViewMenuMode] = useState(false);
     const [selectedMenu, setSelectedMenu] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [articleSelected,setArticleSelected] = useState(null);
+    const [order,setOrder]=useState(null);
+    const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
+    const [selectedQuantity, setSelectedQuantity] = useState(1);
+    
+
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -230,6 +238,7 @@ const RestaurantDetail = () => {
     const handleViewArticle = (article) => {
         setSelectedArticle(article);
         setViewArticleMode(true);
+        setArticleSelected(article)
     };
 
     const handleEditArticle = () => {
@@ -242,9 +251,42 @@ const RestaurantDetail = () => {
         setViewArticleMode(false);
         setEditArticleMode(true);
     };
+    const handleQuantityChange = (event) => {
+        setSelectedQuantity(event.target.value);
+    };
+    
+    const handleAddToCartConfirmed = async () => {
+            try {
+            const orderData = {
+                orderaddress: '123 Main Street',
+                orderPhone: '555-1234',
+                userId: user._id,
+                DeliveryPersonId: '664f0e247baafc94cf772754',
+                Articles: [
+                    { articleId: articleSelected.id, quantity: selectedQuantity },
+                ]
+            };
+            console.log(orderData)
+            const order = new Order(orderData);
+            await new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if (order.initialized) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 100);
+            });
 
-    const handleAddToCart = () => {
-        notifier.success('Article added to cart!');
+            setOrder(order);
+        } catch (error) {
+            console.error('Error creating order:', error);
+        }
+        setQuantityDialogOpen(false);
+        notifier.success('Item added to cart successfully!');
+    };
+    
+    const handleAddToCart = async () => {
+        setQuantityDialogOpen(true);
     };
 
     const handleCreateArticle = () => {
@@ -608,6 +650,13 @@ const RestaurantDetail = () => {
                     <Button onClick={() => setCreateMenuMode(false)} color="secondary">Cancel</Button>
                 </DialogActions>
             </Dialog>
+            <OrderDialog
+                open={quantityDialogOpen}
+                onClose={() => setQuantityDialogOpen(false)}
+                selectedQuantity={selectedQuantity}
+                onQuantityChange={handleQuantityChange}
+                onConfirm={handleAddToCartConfirmed}
+            />
         </div>
     );
 };

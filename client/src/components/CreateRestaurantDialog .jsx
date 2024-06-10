@@ -59,6 +59,8 @@ const CreateRestaurantDialog = ({ open, onClose }) => {
       });
   };
 
+  const restaurantOwners = users.filter(user => user.role === 'restaurantOwner');
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -108,7 +110,7 @@ const CreateRestaurantDialog = ({ open, onClose }) => {
             value={formData.ownerId}
             onChange={handleInputChange}
           >
-            {users.map((user) => (
+            {restaurantOwners.map((user) => (
               <MenuItem key={user._id} value={user._id}>
                 {user.name}
               </MenuItem>

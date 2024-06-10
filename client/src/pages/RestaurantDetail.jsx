@@ -732,7 +732,7 @@ const RestaurantDetail = () => {
                 onQuantityChange={handleQuantityChange}
                 onConfirm={handleAddToCartConfirmed}
             />
-                        {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
+                        { user?.role === 'admin' && (
                 <div className="admin-controls">
                     <h2> ⚠️ Delete  </h2>
                     <Button variant="contained" color="secondary" onClick={() => setDeleteDialogOpen(true)}>Delete Restaurant</Button>

@@ -33,7 +33,8 @@
   "error": "No restaurants found for the selected category",
   "erp": "ERP Manager",
   "commercial": " Commercial Manager",
-  "energie": "Energie Manager"
+  "energie": "Energie Manager",
+  "Commande" : "My orders"
   
 
 }

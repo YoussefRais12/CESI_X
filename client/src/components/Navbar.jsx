@@ -135,6 +135,9 @@ const Navbar = ({ setPing, ping }) => {
                         className="search-input"
                     />
                 </div>
+                <button className="dropdown-button" onClick={toggleMenu}>
+                        <FontAwesomeIcon icon={faStore} /> My orders
+                </button>
                 {renderCartOrAuthButtons()}
             </div>
     
@@ -174,6 +177,9 @@ const Navbar = ({ setPing, ping }) => {
                                 )}
                             </>
                         )}
+                        <Link to={'/Commandes?lang='+lang} onClick={toggleMenu}>
+                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" />{languageData.Commande}</h1>
+                        </Link>
                         <button className="logout-button" onClick={handleLogout}>Logout</button>
                     </div>
                 </>

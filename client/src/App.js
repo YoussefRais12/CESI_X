@@ -13,9 +13,11 @@ import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
 import Error from "./pages/Error";
 import Feed from "./pages/Feed";
-import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
+import RequireRole from "./routes/PrivateRoute"; 
 import Dashboard from "./pages/Dashboard";
-import RestaurantDetail from "./pages/RestaurantDetail"; // Import RestaurantDetail
+import RestaurantDetail from "./pages/RestaurantDetail"; 
+import UserManagement from './pages/UserManagement';
+import UserDetails from './pages/UserDetails';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 function App() {
@@ -28,7 +30,7 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-  const langUrl = userLang == undefined ? "fr" : userLang;
+  const langUrl = userLang === undefined ? "fr" : userLang;
   const lang = searchParams.get('lang') || langUrl;
 
   useEffect(() => {
@@ -59,12 +61,16 @@ function App() {
                   <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
                 </Route>
               </Route>
+
               <Route path="/commandes" element={<Commandes />} />
               <Route path="/depcomercial" element={<DepComercial />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/favoris" element={<Favoris />} />
               <Route path="/error" element={<Error />} />
               <Route path="/feed" element={<Feed />} />
+              <Route path="/usermanagement" element={<UserManagement />} />
+              <Route path="/user/:id" element={<UserDetails />} />
+
             </Routes>
           </CSSTransition>
         </TransitionGroup>

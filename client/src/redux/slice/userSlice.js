@@ -17,6 +17,36 @@ export const fetchAllUsers = createAsyncThunk("user/fetchAllUsers", async () => 
   }
 });
 
+// Fetch user by ID
+export const fetchUserById = createAsyncThunk("user/fetchUserById", async (userId) => {
+  try {
+    let result = await axios.get(`http://localhost:5000/user/find/${userId}`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return result.data.users;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+});
+
+// Fetch user logs
+export const fetchUserLogs = createAsyncThunk("user/fetchUserLogs", async (userId) => {
+  try {
+    let result = await axios.get(`http://localhost:5000/user/logs/${userId}`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return result.data.logs;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+});
+
 // Edit user role
 export const userEdit = createAsyncThunk("user/update", async (data) => {
   try {
@@ -118,6 +148,8 @@ export const uploadUserImage = createAsyncThunk("user/uploadImage", async (formD
 const initialState = {
   user: null,
   users: [],
+  selectedUser: null,
+  logs: [],
   status: null,
   error: null,
 };
@@ -178,6 +210,34 @@ export const userSlice = createSlice({
         state.users = action.payload;
       })
       .addCase(fetchAllUsers.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+      })
+      // fetch user by ID cases
+      .addCase(fetchUserById.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(fetchUserById.fulfilled, (state, action) => {
+        state.status = "success";
+        state.error = null;
+        state.selectedUser = action.payload;
+      })
+      .addCase(fetchUserById.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+      })
+      // fetch user logs cases
+      .addCase(fetchUserLogs.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(fetchUserLogs.fulfilled, (state, action) => {
+        state.status = "success";
+        state.error = null;
+        state.logs = action.payload;
+      })
+      .addCase(fetchUserLogs.rejected, (state, action) => {
         state.status = "fail";
         state.error = action.error.message;
       })

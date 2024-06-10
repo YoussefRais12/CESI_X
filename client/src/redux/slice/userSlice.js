@@ -104,13 +104,16 @@ export const userRegister = createAsyncThunk("user/register", async (newUser) =>
 });
 
 // Login user
-export const userLogin = createAsyncThunk("user/login", async (user) => {
+export const userLogin = createAsyncThunk("user/login", async (user, { rejectWithValue }) => {
   try {
     let result = await axios.post("http://localhost:5000/user/login", user);
     return result.data;
   } catch (error) {
-    console.log(error);
-    throw error;
+    if (error.response && error.response.data) {
+      return rejectWithValue(error.response.data);
+    } else {
+      return rejectWithValue(error.message);
+    }
   }
 });
 
@@ -136,6 +139,21 @@ export const uploadUserImage = createAsyncThunk("user/uploadImage", async (formD
       headers: {
         Authorization: localStorage.getItem("token"),
         "Content-Type": "multipart/form-data",
+      },
+    });
+    return result.data.user;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+});
+
+// Suspend user
+export const suspendUser = createAsyncThunk("user/suspend", async ({ id, suspend }) => {
+  try {
+    let result = await axios.put(`http://localhost:5000/user/suspend/${id}`, { suspend }, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
       },
     });
     return result.data.user;
@@ -299,7 +317,24 @@ export const userSlice = createSlice({
       .addCase(uploadUserImage.rejected, (state, action) => {
         state.status = "fail";
         state.error = action.error.message;
-      });
+      })
+        // suspend user cases
+        .addCase(suspendUser.pending, (state) => {
+          state.status = "loading";
+          state.error = null;
+        })
+        .addCase(suspendUser.fulfilled, (state, action) => {
+          state.status = "success";
+          state.error = null;
+          const updatedUserIndex = state.users.findIndex(user => user._id === action.payload._id);
+          if (updatedUserIndex >= 0) {
+            state.users[updatedUserIndex] = action.payload;
+          }
+        })
+        .addCase(suspendUser.rejected, (state, action) => {
+          state.status = "fail";
+          state.error = action.error.message;
+        });
   },
 });
 

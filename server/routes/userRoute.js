@@ -89,6 +89,11 @@ userRouter.post("/login", loginRules(), Validation, async (req, res) => {
             return res.status(400).send({ msg: "Bad credential" });
         }
 
+           // Check if the user is suspended
+           if (searchedUser.suspended) {
+            return res.status(403).send({ msg: "Account is suspended" });
+        }
+        
         // Check password
         const match = await bcrypt.compare(password, searchedUser.password);
         if (!match) {
@@ -232,6 +237,9 @@ userRouter.post("/upload-image", isAuth(), upload.single("img"), async (req, res
     }
 });
 
+//----------------------------------------------------------------------------------
+//--------------------------------- Admin only  ------------------------------------
+//----------------------------------------------------------------------------------
 
 // Fetch logs for a specific user (Admin only)
 userRouter.get("/logs/:id", isAuth(), checkRole(["admin"]), async (req, res) => {
@@ -244,6 +252,23 @@ userRouter.get("/logs/:id", isAuth(), checkRole(["admin"]), async (req, res) => 
     } catch (error) {
         console.log(error);
         res.status(500).send("Internal Server Error");
+    }
+});
+
+userRouter.put('/suspend/:id', isAuth(), checkRole(['admin']), async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { suspend } = req.body; // true to suspend, false to unsuspend
+
+        const user = await User.findByIdAndUpdate(userId, { suspended: suspend }, { new: true });
+        if (!user) {
+            return res.status(404).send({ msg: 'User not found' });
+        }
+
+        res.send({ user, msg: `User has been ${suspend ? 'suspended' : 'unsuspended'}` });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ msg: 'Internal Server Error' });
     }
 });
 

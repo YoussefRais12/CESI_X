@@ -116,6 +116,21 @@ export const uploadRestaurantImage = createAsyncThunk("restaurant/uploadImage", 
   }
 });
 
+// Rate a restaurant
+export const rateRestaurant = createAsyncThunk("restaurant/rateRestaurant", async ({ id, rating }) => {
+  try {
+    let response = await axios.post(`http://localhost:5000/restaurant/${id}/rate`, { rating }, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+});
+
 const initialState = {
   restaurants: [],
   restaurant: null,
@@ -245,6 +260,20 @@ const restaurantSlice = createSlice({
         }
       })
       .addCase(uploadRestaurantImage.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(rateRestaurant.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(rateRestaurant.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        const index = state.restaurants.findIndex((restaurant) => restaurant._id === action.payload._id);
+        if (index !== -1) {
+          state.restaurants[index].averageRating = action.payload.averageRating;
+        }
+      })
+      .addCase(rateRestaurant.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       });

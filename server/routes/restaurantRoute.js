@@ -138,6 +138,31 @@ restaurantRoute.post('/upload-image/:id', isAuth(), upload.single("img"), async 
     }
 });
 
+// Rate a restaurant
+restaurantRoute.post('/:id/rate', isAuth(), async (req, res) => {
+    const { id } = req.params;
+    const { rating } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: 'Rating must be a number between 1 and 5.' });
+    }
+
+    try {
+        const restaurant = await Restaurant.findById(id);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found.' });
+        }
+
+        await restaurant.addRating(rating);
+        const averageRating = restaurant.getAverageRating();
+
+        res.status(200).json({ message: 'Rating added successfully.', averageRating });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
 //-----------------------------------------------------------------
 //                    touskié menu / article
 //-----------------------------------------------------------------

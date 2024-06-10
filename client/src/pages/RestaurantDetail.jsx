@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, FormControl, InputLabel, Select, MenuItem, Rating } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { fetchRestaurantById, updateRestaurant, uploadRestaurantImage } from '../redux/slice/restaurantSlice';
+import { fetchRestaurantById, updateRestaurant, uploadRestaurantImage, rateRestaurant } from '../redux/slice/restaurantSlice';
 import { updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId, uploadArticleImage } from '../redux/slice/articleSlice';
 import { fetchMenusByRestaurantId, createMenu } from '../redux/slice/menuSlice';
 import CardCarousel from '../components/CardCarousel';
@@ -42,11 +42,12 @@ const RestaurantDetail = () => {
     const [viewMenuMode, setViewMenuMode] = useState(false);
     const [selectedMenu, setSelectedMenu] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [articleSelected,setArticleSelected] = useState(null);
-    const [order,setOrder]=useState(null);
+    const [articleSelected, setArticleSelected] = useState(null);
+    const [order, setOrder] = useState(null);
     const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
     const [selectedQuantity, setSelectedQuantity] = useState(1);
-    
+    const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+    const [userRating, setUserRating] = useState(0);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -238,7 +239,7 @@ const RestaurantDetail = () => {
     const handleViewArticle = (article) => {
         setSelectedArticle(article);
         setViewArticleMode(true);
-        setArticleSelected(article)
+        setArticleSelected(article);
     };
 
     const handleEditArticle = () => {
@@ -251,12 +252,13 @@ const RestaurantDetail = () => {
         setViewArticleMode(false);
         setEditArticleMode(true);
     };
+
     const handleQuantityChange = (event) => {
         setSelectedQuantity(event.target.value);
     };
-    
+
     const handleAddToCartConfirmed = async () => {
-            try {
+        try {
             const orderData = {
                 orderaddress: '123 Main Street',
                 orderPhone: '555-1234',
@@ -266,7 +268,7 @@ const RestaurantDetail = () => {
                     { articleId: articleSelected.id, quantity: selectedQuantity },
                 ]
             };
-            console.log(orderData)
+            console.log(orderData);
             const order = new Order(orderData);
             await new Promise(resolve => {
                 const interval = setInterval(() => {
@@ -284,7 +286,7 @@ const RestaurantDetail = () => {
         setQuantityDialogOpen(false);
         notifier.success('Item added to cart successfully!');
     };
-    
+
     const handleAddToCart = async () => {
         setQuantityDialogOpen(true);
     };
@@ -383,6 +385,42 @@ const RestaurantDetail = () => {
             })
             .catch((error) => {
                 setIsSaving(false);
+                console.error(error);
+                notifier.alert('An unexpected error occurred. Please try again.');
+            });
+    };
+
+    const handleOpenRatingDialog = () => {
+        setRatingDialogOpen(true);
+    };
+
+    const handleCloseRatingDialog = () => {
+        setRatingDialogOpen(false);
+    };
+
+    const handleRatingChange = (event, newValue) => {
+        setUserRating(newValue);
+    };
+
+    const handleSubmitRating = () => {
+        if (userRating < 1 || userRating > 5) {
+            notifier.alert('Rating must be between 1 and 5 stars.');
+            return;
+        }
+
+        dispatch(rateRestaurant({ id: restaurant._id, rating: userRating }))
+            .unwrap()
+            .then((response) => {
+                if (response.error) {
+                    notifier.alert(response.error);
+                } else {
+                    notifier.success('Rating submitted successfully!');
+                    setUserRating(0); // Reset rating
+                    setRatingDialogOpen(false);
+                    dispatch(fetchRestaurantById(id)); // Refetch the restaurant details to get the latest updates
+                }
+            })
+            .catch((error) => {
                 console.error(error);
                 notifier.alert('An unexpected error occurred. Please try again.');
             });
@@ -491,6 +529,40 @@ const RestaurantDetail = () => {
                     onCreateMenu={() => setCreateMenuMode(true)}
                 />
             )}
+
+            {user?.role === 'client' && (
+                <div className="rating-container">
+                    <Typography variant="h6">Rate this Restaurant:</Typography>
+                    <Rating
+                        name="user-rating"
+                        value={userRating}
+                        onChange={handleRatingChange}
+                    />
+                    <Button variant="contained" color="primary" onClick={handleOpenRatingDialog}>Submit Rating</Button>
+                </div>
+            )}
+
+            <Dialog open={ratingDialogOpen} onClose={handleCloseRatingDialog}>
+                <DialogTitle>
+                    Submit Your Rating
+                    <IconButton onClick={handleCloseRatingDialog}>
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <Rating
+                            name="user-rating"
+                            value={userRating}
+                            onChange={handleRatingChange}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleSubmitRating} color="primary">Submit</Button>
+                    <Button onClick={handleCloseRatingDialog} color="secondary">Cancel</Button>
+                </DialogActions>
+            </Dialog>
 
             <h2 className="carousel-title">Menus</h2>
             {restaurant.menus && restaurant.menus.length > 0 ? (

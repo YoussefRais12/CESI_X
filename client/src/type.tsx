@@ -5,4 +5,12 @@ const UserRole = {
     restaurantOwner : 'restaurantOwner'
   };
   
-  module.exports = UserRole;
+const OrderStatus = {
+  New : "Nouveau",
+  end : "Fin",
+  continue : "en cours",
+  delivery : "livrée"
+
+}  
+module.exports = UserRole;
+module.exports = OrderStatus;

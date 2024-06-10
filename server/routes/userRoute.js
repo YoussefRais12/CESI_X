@@ -13,6 +13,7 @@ const upload = multer({ storage });
 require("dotenv").config();
 const UserRole = require("../../client/src/type.tsx");
 const cloudinary = require('../config/cloudinary'); // Import your cloudinary configuration
+const crypto = require('crypto');
 
 // Middleware to check user roles
 const checkRole = (UserRole) => (req, res, next) => {
@@ -23,9 +24,14 @@ const checkRole = (UserRole) => (req, res, next) => {
     }
 };
 
+// Function to generate referral codes
+const generateReferralCode = () => {
+    return crypto.randomBytes(3).toString('hex');
+};
+
 // Register new user
 userRouter.post("/register", registerRules(), Validation, async (req, res) => {
-    const { name, email, password, role, isVerified, lang } = req.body;
+    const { name, email, password, role, isVerified, lang, referralCode } = req.body;
     try {
         const newUser = new User(req.body);
 
@@ -34,6 +40,19 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         if (searchedUser) {
             return res.status(400).send({ msg: "Email already exists" });
         }
+
+        // Handle referral code
+        if (referralCode) {
+            const referringUser = await User.findOne({ referralCode });
+            if (referringUser) {
+                newUser.referredBy = referringUser._id;
+            } else {
+                return res.status(400).send({ msg: "Invalid referral code" });
+            }
+        }
+
+        // Generate a unique referral code for the new user
+        newUser.referralCode = new mongoose.Types.ObjectId().toString();
 
         // Hash password
         const salt = 10;
@@ -51,8 +70,27 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         res.send({ user: result, msg: "User is saved", token: `Bearer ${token}` });
     } catch (error) {
         res.send("Cannot save the user");
-        console.error("An error occured:", error.message);
+        console.error("An error occurred:", error.message);
         console.log(error);
+    }
+});
+
+
+// Validate referral code
+userRouter.post("/validate-referral", async (req, res) => {
+    const { referralCode } = req.body;
+
+    try {
+        const user = await User.findOne({ referralCode });
+
+        if (!user) {
+            return res.status(400).send({ msg: "Invalid referral code" });
+        }
+
+        res.status(200).send({ msg: "Referral code is valid" });
+    } catch (error) {
+        console.error("An error occurred:", error.message);
+        res.status(500).send("Internal Server Error");
     }
 });
 
@@ -79,7 +117,7 @@ userRouter.post("/login", loginRules(), Validation, async (req, res) => {
 
         res.status(200).send({ user: searchedUser, msg: "Success", token: `Bearer ${token}` });
     } catch (error) {
-        console.error("An error occured:", error.message);
+        console.error("An error occurred:", error.message);
         res.send({ msg: "Cannot get the user" });
     }
 });
@@ -195,7 +233,5 @@ userRouter.post("/upload-image", isAuth(), upload.single("img"), async (req, res
         res.status(500).send("Internal Server Error");
     }
 });
-
-
 
 module.exports = userRouter;

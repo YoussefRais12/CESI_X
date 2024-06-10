@@ -33,7 +33,8 @@
   "error": "Nessun ristorante trovato per la categoria selezionata",
   "erp": "Responsabile  ERP",
   "commercial": "Responsabile  Commercial",
-  "energie": "Responsabile  Energie"
+  "energie": "Responsabile  Energie",
+  "Commande" : "Mi Commandito"
 
 
 }

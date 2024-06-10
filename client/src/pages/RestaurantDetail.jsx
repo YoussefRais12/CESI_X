@@ -1,3 +1,4 @@
+// RestaurantDetail.jsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -20,6 +21,7 @@ import { TailSpin } from 'react-loader-spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera } from '@fortawesome/free-solid-svg-icons';
 import Order from '../class/order';
+import DeleteRestaurantDialog from '../components/DeleteRestaurantDialog'; // Import the new component
 
 const RestaurantDetail = () => {
     const { id } = useParams();
@@ -48,6 +50,7 @@ const RestaurantDetail = () => {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
     const [userRating, setUserRating] = useState(0);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // State for the delete dialog
 
     const [formData, setFormData] = useState({
         name: '',
@@ -729,6 +732,13 @@ const RestaurantDetail = () => {
                 onQuantityChange={handleQuantityChange}
                 onConfirm={handleAddToCartConfirmed}
             />
+                        {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
+                <div className="admin-controls">
+                    <h2> ⚠️ Delete  </h2>
+                    <Button variant="contained" color="secondary" onClick={() => setDeleteDialogOpen(true)}>Delete Restaurant</Button>
+                </div>
+            )}
+            <DeleteRestaurantDialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} restaurantId={restaurant._id} />
         </div>
     );
 };

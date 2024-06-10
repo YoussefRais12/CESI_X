@@ -181,7 +181,7 @@ userRouter.put("/update/:id", isAuth(), async (req, res) => {
 });
 
 // Delete user by ID (requires role check)
-userRouter.delete("/delete/:id", isAuth(), checkRole(["admin"]), async (req, res) => {
+userRouter.delete("/delete/:id", isAuth(),  async (req, res) => {
     try {
         let result = await User.findByIdAndDelete(req.params.id);
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/navbar.css';
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -23,6 +23,7 @@ const Navbar = ({ setPing, ping }) => {
     const ownedRestaurants = useSelector((state) => state.restaurant?.ownedRestaurants);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const notificationsRef = useRef(null);
 
     useEffect(() => {
         if (user?.role === 'restaurantOwner') {
@@ -137,7 +138,7 @@ const Navbar = ({ setPing, ping }) => {
     };
 
     const renderNotifications = () => (
-        <div className="notification-dropdown">
+        <div ref={notificationsRef} className="notification-dropdown">
             {notifications.length > 0 ? (
                 notifications.map((notification) => (
                     <div key={notification._id} className="notification-item" onClick={() => handleNotificationClick(notification._id)}>
@@ -156,6 +157,19 @@ const Navbar = ({ setPing, ping }) => {
             </button>
         </div>
     );
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+                setShowNotifications(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     // ************************** lang section ************************** //
     const [languageData, setLanguageData] = useState({});

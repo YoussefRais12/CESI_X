@@ -17,7 +17,7 @@ orderRoute.post('/add', async (req, res) => {
 
     try {
         let allArticlesExist = true;
-        let totalOrderPrice = 0; 
+        let totalOrderPrice = 0;
         const articlesByRestaurant = {};
 
         for (const item of Articles) {
@@ -35,7 +35,7 @@ orderRoute.post('/add', async (req, res) => {
             }
 
             const newArticle = {
-                articleId: article._id, 
+                articleId: article._id,
                 quantity: item.quantity
             };
 
@@ -96,7 +96,8 @@ orderRoute.post('/add', async (req, res) => {
                     subOrderId: subOrder._id,
                     restaurantId: subOrder.restaurantId,
                     OrderPrice: subOrder.OrderPrice,
-                    OrderStatus: subOrder.OrderStatus
+                    OrderStatus: subOrder.OrderStatus,
+                    Articles: subOrder.Articles // Include the articles
                 })),
                 OrderPrice: totalOrderPrice,
                 OrderStatus: "en cours"
@@ -107,12 +108,18 @@ orderRoute.post('/add', async (req, res) => {
             user.orders.push(newOrder._id);
             await user.save();
 
-            const orderWithoutId = JSON.parse(JSON.stringify(newOrder));
-            orderWithoutId.Orders.forEach(order => {
-                delete order._id;
-            });
+            // Transform the order to include sub-order details
+            const orderWithDetails = await Order.findById(newOrder._id)
+                .populate({
+                    path: 'Orders.subOrderId',
+                    populate: {
+                        path: 'Articles.articleId',
+                        model: 'Article'
+                    }
+                })
+                .lean();
 
-            res.status(201).json({ message: "Commande ajoutée avec succès", order: orderWithoutId });
+            res.status(201).json({ message: "Commande ajoutée avec succès", order: orderWithDetails });
         } else {
             res.status(400).json({ error: 'At least one of the articles does not exist or has an invalid quantity' });
         }
@@ -120,6 +127,7 @@ orderRoute.post('/add', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 // Get a order by ID
 orderRoute.get('/:id', async (req, res) => {
@@ -212,9 +220,10 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
         }
 
         const articleTotalPrice = article.price * quantity;
+        const restaurantId = article.restaurantId;
 
-        const orderIndex = order.Orders.findIndex(orderItem => 
-            orderItem.restaurantId.toString() === article.restaurantId.toString()
+        const orderIndex = order.Orders.findIndex(orderItem =>
+            orderItem.restaurantId.toString() === restaurantId.toString()
         );
 
         if (orderIndex !== -1) {
@@ -225,10 +234,26 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
             } else {
                 order.Orders[orderIndex].Articles.push({ articleId: idarticle, quantity: quantity });
             }
+
+            // Update the OrderPrice of the subOrder
+            order.Orders[orderIndex].OrderPrice += articleTotalPrice;
         } else {
+            // Create a new subOrder
+            const newSubOrder = new SubOrder({
+                restaurantId,
+                Articles: [{ articleId: idarticle, quantity: quantity }],
+                OrderPrice: articleTotalPrice,
+                OrderStatus: "en cours"
+            });
+
+            await newSubOrder.save();
+
             const newOrder = {
-                restaurantId: article.restaurantId,
-                Articles: [{ articleId: idarticle, quantity: quantity }]
+                subOrderId: newSubOrder._id,
+                restaurantId: restaurantId,
+                Articles: newSubOrder.Articles,
+                OrderPrice: newSubOrder.OrderPrice,
+                OrderStatus: newSubOrder.OrderStatus
             };
             order.Orders.push(newOrder);
         }
@@ -237,7 +262,6 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
 
         await order.save();
 
-        console.log('Order after update:', order);
         res.status(200).json({ message: 'Article added/updated successfully', order });
     } catch (error) {
         console.error('Error adding/updating article in order:', error);

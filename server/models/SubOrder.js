@@ -8,9 +8,8 @@ const subOrderSchema = new Schema({
         quantity: { type: Number, required: true }
     }],
     OrderPrice: { type: Number, required: true },
-    OrderStatus: { type: String, required: true }
+    OrderStatus: { type: String, required: true}
 });
-
 const SubOrder = mongoose.model('SubOrder', subOrderSchema);
 
 module.exports = SubOrder;

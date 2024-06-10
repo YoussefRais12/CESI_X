@@ -99,7 +99,7 @@ articleRoute.get('/restaurant/:restaurantId', async (req, res) => {
 });
 
 // Update an article by ID
-articleRoute.put('/:id', isAuth(), checkRole('restaurantOwner'), async (req, res) => {
+articleRoute.put('/:id', isAuth(), checkRole(['restaurantOwner', 'admin']), async (req, res) => {
     const { id } = req.params;
     const { name, price, description, category } = req.body;
     try {

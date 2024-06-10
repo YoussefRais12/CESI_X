@@ -4,6 +4,7 @@ const Menu = require('../models/menu');
 const Article = require('../models/article');
 const Restaurant = require('../models/restaurant');
 const isAuth = require("../middleware/passport");
+const checkRole = require("../middleware/checkRole");
 
 menuRoute.post('/', isAuth(), async (req, res) => {
     const { name, price, description, articles, restaurantId } = req.body;
@@ -32,7 +33,7 @@ menuRoute.post('/', isAuth(), async (req, res) => {
     }
 });
 
-menuRoute.put('/:id', isAuth(), async (req, res) => {
+menuRoute.put('/:id', isAuth(), checkRole(['restaurantOwner', 'admin']), async (req, res) => {
     const { id } = req.params;
     const { name, price, description, articles } = req.body;
 

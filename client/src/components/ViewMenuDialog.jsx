@@ -193,7 +193,7 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                     ) : (
                         <>
                             <Button onClick={onAddToCart} color="primary">Add to Cart</Button>
-                            {user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId && (
+                            {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
                                 <>
                                     <Button onClick={() => setEditMode(true)} color="primary">Edit Menu</Button>
                                     <Button onClick={() => setConfirmDelete(true)} color="error">Delete Menu</Button>

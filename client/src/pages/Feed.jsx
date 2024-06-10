@@ -94,6 +94,13 @@ const Feed = () => {
     return (
         <div className="feed-container">
             <CategorySelector onSelectCategory={handleCategoryChange} />
+            {user?.role === 'admin' && (
+                <Box sx={{ textAlign: 'start', margin: '10px 0' }}>
+                    <Button variant="contained" color="primary" onClick={handleClickOpen}>
+                        Create Restaurant
+                    </Button>
+                </Box>
+            )}
             {loading || status === "loading" ? (
                 <LoadingScreen fullPage />
             ) : (
@@ -109,19 +116,14 @@ const Feed = () => {
                                     No restaurants found for the selected category.
                                 </Typography>
                             ) : (
+                                
                                 <GridDisplay items={items} title="Discover More" />
                             )}
                         </div>
                     )}
                 </>
             )}
-            {user?.role === 'admin' && (
-                <Box sx={{ textAlign: 'center', margin: '20px 0' }}>
-                    <Button variant="contained" color="primary" onClick={handleClickOpen}>
-                        Create Restaurant
-                    </Button>
-                </Box>
-            )}
+          
             <CreateRestaurantDialog open={open} onClose={handleClose} />
         </div>
     );

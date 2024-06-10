@@ -16,7 +16,7 @@ const RestaurantInfo = ({ restaurant, user, averageRating, onEdit, onCreateArtic
         <Typography variant="body1" className="restaurant-category">Category: {restaurant.category}</Typography>
         <Box className="restaurant-ratings" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
         </Box>
-        {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
+        {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' ? (
             <>
                 <Button variant="contained" color="primary" onClick={onEdit}>
                     Edit Information
@@ -28,7 +28,8 @@ const RestaurantInfo = ({ restaurant, user, averageRating, onEdit, onCreateArtic
                     Add Menu
                 </Button>
             </>
-        )}
+        ) : null}
+
     </>
 );
 

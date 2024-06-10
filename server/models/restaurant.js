@@ -17,10 +17,6 @@ const restaurantSchema = new schema({
     subOrders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SubOrder' }]
 });
 
-const Restaurant = mongoose.model("Restaurant", restaurantSchema);
-module.exports = Restaurant;
-
-
 // Method to get the restaurant's name
 restaurantSchema.methods.getName = function() {
     return this.name;
@@ -62,3 +58,6 @@ restaurantSchema.methods.getAverageRating = function() {
     const sum = this.ratings.reduce((a, b) => a + b, 0);
     return (this.ratings.length === 0) ? 0 : (sum / this.ratings.length).toFixed(2);
 };
+
+const Restaurant = mongoose.model("Restaurant", restaurantSchema);
+module.exports = Restaurant;

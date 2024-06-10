@@ -94,7 +94,7 @@ app.get('/notifications', async (req, res) => {
   const { userId } = req.query;
 
   try {
-    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+    const notifications = await Notification.find({ userId }).sort({ createdAt: -1 }).limit(5);
     res.status(200).json(notifications);
   } catch (error) {
     res.status(500).json({ error: error.message });

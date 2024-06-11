@@ -1,3 +1,4 @@
+// LoginContainer.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faHamburger, faBuilding } from '@fortawesome/free-solid-svg-icons';
@@ -9,7 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const LoginContainer = ({ ping, setPing }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const location= useLocation();
+    const location = useLocation();
     const [login, setLogin] = useState({ email: '', password: '', showPassword: false });
     const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '', referralCode: '' });
     const [error, setError] = useState('');
@@ -19,19 +20,17 @@ const LoginContainer = ({ ping, setPing }) => {
     const [languageData, setLanguageData] = useState({});
     const passwordRef = useRef(null);
 
-    useEffect(() =>{
-        const searchParams= new URLSearchParams(location.search);
-        const lang = searchParams.get('lang')||'en';
-        import(`../lang/${lang}.json`) 
-        .then((data) =>{
-            setLanguageData(data);
-        })
-        .catch((error)=>{
-            console.error("Let's try again buddy:", error);
-    
-        });
-
-    },[location.search]);
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const lang = searchParams.get('lang') || 'en';
+        import(`../lang/${lang}.json`)
+            .then((data) => {
+                setLanguageData(data);
+            })
+            .catch((error) => {
+                console.error("Error loading language file:", error);
+            });
+    }, [location.search]);
 
     const togglePasswordVisibility = () => {
         setLogin({ ...login, showPassword: !login.showPassword });
@@ -51,14 +50,18 @@ const LoginContainer = ({ ping, setPing }) => {
         try {
             setError('');
 
-            const response = await dispatch(userLogin(login));
+            const response = await dispatch(userLogin(login)).unwrap();
 
-            if (response.payload.token) {
+            if (response.token) {
                 navigate('/feed');
                 setPing(!ping);
             }
         } catch (error) {
-            setError('Email or password incorrect.');
+            if (error.msg === 'Account is suspended') {
+                setError('Your account is suspended. Please contact support.');
+            } else {
+                setError('Email or password incorrect.');
+            }
             console.error('Login error:', error);
         }
     };
@@ -78,9 +81,9 @@ const LoginContainer = ({ ping, setPing }) => {
         try {
             setError('');
 
-            const response = await dispatch(userLogin({ email: newUser.email, password: newUser.password }));
+            const response = await dispatch(userLogin({ email: newUser.email, password: newUser.password })).unwrap();
 
-            if (response.payload.token) {
+            if (response.token) {
                 navigate('/feed');
                 setPing(!ping);
                 setShowCreateAccountModal(false); // Close modal on successful account creation and login

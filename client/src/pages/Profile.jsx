@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { logout, userCurrent, userEdit, uploadUserImage } from '../redux/slice/userSlice';
+import { logout, userCurrent, userEdit, uploadUserImage, userDelete } from '../redux/slice/userSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faCamera } from '@fortawesome/free-solid-svg-icons';
 import AWN from 'awesome-notifications';
@@ -156,6 +156,23 @@ const Profile = ({ ping, setPing }) => {
       });
   };
 
+  const handleDeleteAccount = () => {
+    if (window.confirm(languageData.confirmDeleteAccount || 'Are you sure you want to delete your account? This action cannot be undone.')) {
+      dispatch(userDelete(user._id))
+        .unwrap()
+        .then(() => {
+          notifier.success(languageData.accountDeleted || 'Account deleted successfully.');
+          dispatch(logout());
+          navigate('/');
+          setPing(!ping);
+        })
+        .catch((error) => {
+          console.error(error);
+          notifier.alert(languageData.unexpectedError || 'An unexpected error occurred. Please try again.');
+        });
+    }
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'info':
@@ -280,6 +297,16 @@ const Profile = ({ ping, setPing }) => {
             {error && <p style={{ color: 'red' }}>{error}</p>}
           </div>
         );
+      case 'delete':
+        return (
+          <div>
+            <h2>{languageData.deleteAccount || 'Delete Account'}</h2>
+            <p>{languageData.deleteAccountWarning || 'Warning: Deleting your account is permanent and cannot be undone.'}</p>
+            <button onClick={handleDeleteAccount} style={{ marginTop: '10px', color: 'red' }}>
+              {languageData.deleteAccount || 'Delete Account'}
+            </button>
+          </div>
+        );
       default:
         return null;
     }
@@ -300,6 +327,12 @@ const Profile = ({ ping, setPing }) => {
           onClick={() => setActiveTab('security')}
         >
           {languageData.security || 'Security'}
+        </button>
+        <button
+          style={{ display: 'block', padding: '10px', cursor: 'pointer', background: activeTab === 'delete' ? '#ddd' : 'transparent', border: 'none', textAlign: 'left', width: '100%', color: 'red' }}
+          onClick={() => setActiveTab('delete')}
+        >
+          {languageData.deleteAccount || 'Delete Account'}
         </button>
         <button
           style={{ display: 'block', padding: '10px', cursor: 'pointer', background: 'transparent', border: 'none', textAlign: 'left', width: '100%', color: 'red' }}

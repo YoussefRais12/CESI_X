@@ -1,11 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { CircularProgress, Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, FormControl, InputLabel, Select, MenuItem, Rating } from '@mui/material';
+// RestaurantDetail.jsx
+import React, {useEffect, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {useParams} from 'react-router-dom';
+import {
+    CircularProgress,
+    Box,
+    Typography,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Rating
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { fetchRestaurantById, updateRestaurant, uploadRestaurantImage, rateRestaurant } from '../redux/slice/restaurantSlice';
-import { updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId, uploadArticleImage } from '../redux/slice/articleSlice';
-import { fetchMenusByRestaurantId, createMenu } from '../redux/slice/menuSlice';
+import {fetchRestaurantById, updateRestaurant, uploadRestaurantImage, rateRestaurant} from '../redux/slice/restaurantSlice';
+import {updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId, uploadArticleImage} from '../redux/slice/articleSlice';
+import {fetchMenusByRestaurantId, createMenu} from '../redux/slice/menuSlice';
 import CardCarousel from '../components/CardCarousel';
 import ArticleDialog from '../components/ArticleDialog';
 import ViewArticleDialog from '../components/ViewArticleDialog';
@@ -16,58 +33,67 @@ import OrderDialog from '../components/OrderDialog';
 import AWN from "awesome-notifications";
 import "awesome-notifications/dist/style.css"; // Import the CSS for notifications
 import '../styles/restaurantDetail.css';
-import { TailSpin } from 'react-loader-spinner';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCamera } from '@fortawesome/free-solid-svg-icons';
+import {TailSpin} from 'react-loader-spinner';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faCamera} from '@fortawesome/free-solid-svg-icons';
 import Order from '../class/order';
+import DeleteRestaurantDialog from '../components/DeleteRestaurantDialog'; // Import the new component
 
 const RestaurantDetail = () => {
-    const { id } = useParams();
+    const {id} = useParams();
     const dispatch = useDispatch();
     const restaurant = useSelector((state) => state.restaurant.restaurant);
     const status = useSelector((state) => state.restaurant.status);
-    const user = useSelector((state) => state.user?.user);
+    const user = useSelector((state) => state.user
+        ?.user);
     const articles = useSelector((state) => state.article.restaurantArticles);
     const menus = useSelector((state) => state.menu.menus);
     const notifier = new AWN();
-    const [showContent, setShowContent] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [viewArticleMode, setViewArticleMode] = useState(false);
-    const [editArticleMode, setEditArticleMode] = useState(false);
-    const [deleteArticleMode, setDeleteArticleMode] = useState(false);
-    const [createArticleMode, setCreateArticleMode] = useState(false);
-    const [createMenuMode, setCreateMenuMode] = useState(false);
-    const [selectedArticle, setSelectedArticle] = useState(null);
-    const [viewMenuMode, setViewMenuMode] = useState(false);
-    const [selectedMenu, setSelectedMenu] = useState(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [articleSelected, setArticleSelected] = useState(null);
-    const [order, setOrder] = useState(null);
-    const [quantityDialogOpen, setQuantityDialogOpen] = useState(false);
-    const [selectedQuantity, setSelectedQuantity] = useState(1);
-    const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
-    const [userRating, setUserRating] = useState(0);
+    const [showContent,
+        setShowContent] = useState(false);
+    const [isSaving,
+        setIsSaving] = useState(false);
+    const [editMode,
+        setEditMode] = useState(false);
+    const [viewArticleMode,
+        setViewArticleMode] = useState(false);
+    const [editArticleMode,
+        setEditArticleMode] = useState(false);
+    const [deleteArticleMode,
+        setDeleteArticleMode] = useState(false);
+    const [createArticleMode,
+        setCreateArticleMode] = useState(false);
+    const [createMenuMode,
+        setCreateMenuMode] = useState(false);
+    const [selectedArticle,
+        setSelectedArticle] = useState(null);
+    const [viewMenuMode,
+        setViewMenuMode] = useState(false);
+    const [selectedMenu,
+        setSelectedMenu] = useState(null);
+    const [isUploading,
+        setIsUploading] = useState(false);
+    const [articleSelected,
+        setArticleSelected] = useState(null);
+    const [order,
+        setOrder] = useState(null);
+    const [quantityDialogOpen,
+        setQuantityDialogOpen] = useState(false);
+    const [selectedQuantity,
+        setSelectedQuantity] = useState(1);
+    const [ratingDialogOpen,
+        setRatingDialogOpen] = useState(false);
+    const [userRating,
+        setUserRating] = useState(0);
+    const [deleteDialogOpen,
+        setDeleteDialogOpen] = useState(false); // State for the delete dialog
 
-    const [formData, setFormData] = useState({
-        name: '',
-        address: '',
-        phone: '',
-        workingHours: '',
-        category: ''
-    });
-    const [articleFormData, setArticleFormData] = useState({
-        name: '',
-        price: '',
-        description: '',
-        category: ''
-    });
-    const [newMenuData, setNewMenuData] = useState({
-        name: '',
-        description: '',
-        price: '',
-        articles: []
-    });
+    const [formData,
+        setFormData] = useState({name: '', address: '', phone: '', workingHours: '', category: ''});
+    const [articleFormData,
+        setArticleFormData] = useState({name: '', price: '', description: '', category: ''});
+    const [newMenuData,
+        setNewMenuData] = useState({name: '', description: '', price: '', articles: []});
 
     useEffect(() => {
         if (id) {
@@ -100,7 +126,7 @@ const RestaurantDetail = () => {
     }, [restaurant]);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData({
             ...formData,
             [name]: value
@@ -108,7 +134,7 @@ const RestaurantDetail = () => {
     };
 
     const handleArticleInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setArticleFormData({
             ...articleFormData,
             [name]: value
@@ -116,7 +142,7 @@ const RestaurantDetail = () => {
     };
 
     const handleNewMenuInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setNewMenuData({
             ...newMenuData,
             [name]: value
@@ -124,22 +150,23 @@ const RestaurantDetail = () => {
     };
 
     const handleNewMenuArticleChange = (e) => {
-        const { value } = e.target;
+        const {value} = e.target;
         setNewMenuData({
             ...newMenuData,
             articles: value
         });
     };
 
-    const handleImageUpload = async (e) => {
+    const handleImageUpload = async(e) => {
         const file = e.target.files[0];
-        if (!file) return;
-
+        if (!file) 
+            return;
+        
         const formData = new FormData();
         formData.append('img', file);
         setIsUploading(true);
 
-        dispatch(uploadRestaurantImage({ id: restaurant._id, formData }))
+        dispatch(uploadRestaurantImage({id: restaurant._id, formData}))
             .unwrap()
             .then((response) => {
                 if (response.error) {
@@ -159,12 +186,13 @@ const RestaurantDetail = () => {
 
     const handleArticleImageUpload = (e) => {
         const file = e.target.files[0];
-        if (!file) return;
-
+        if (!file) 
+            return;
+        
         const formData = new FormData();
         formData.append('img', file);
 
-        dispatch(uploadArticleImage({ id: selectedArticle.id, formData }))
+        dispatch(uploadArticleImage({id: selectedArticle.id, formData}))
             .unwrap()
             .then((response) => {
                 if (response.error) {
@@ -188,7 +216,10 @@ const RestaurantDetail = () => {
 
         setIsSaving(true);
 
-        dispatch(updateRestaurant({ id: restaurant._id, ...formData }))
+        dispatch(updateRestaurant({
+                id: restaurant._id,
+                ...formData
+            }))
             .unwrap()
             .then((response) => {
                 setIsSaving(false);
@@ -215,7 +246,7 @@ const RestaurantDetail = () => {
 
         setIsSaving(true);
 
-        dispatch(updateArticle({ id: selectedArticle.id, articleData: articleFormData }))
+        dispatch(updateArticle({id: selectedArticle.id, articleData: articleFormData}))
             .unwrap()
             .then((response) => {
                 setIsSaving(false);
@@ -226,7 +257,9 @@ const RestaurantDetail = () => {
                     setEditArticleMode(false);
                     setSelectedArticle(null);
                     dispatch(fetchRestaurantById(id)); // Refetch the restaurant details to get the latest updates
-                    window.location.reload();
+                    window
+                        .location
+                        .reload();
                 }
             })
             .catch((error) => {
@@ -245,7 +278,9 @@ const RestaurantDetail = () => {
     const handleEditArticle = () => {
         setArticleFormData({
             name: selectedArticle.title,
-            price: selectedArticle.price.replace(' €', ''), // Remove the Euro symbol for editing
+            price: selectedArticle
+                .price
+                .replace(' €', ''), // Remove the Euro symbol for editing
             description: selectedArticle.content,
             category: selectedArticle.category || ''
         });
@@ -257,7 +292,7 @@ const RestaurantDetail = () => {
         setSelectedQuantity(event.target.value);
     };
 
-    const handleAddToCartConfirmed = async () => {
+    const handleAddToCartConfirmed = async() => {
         try {
             const orderData = {
                 orderaddress: '123 Main Street',
@@ -265,7 +300,10 @@ const RestaurantDetail = () => {
                 userId: user._id,
                 DeliveryPersonId: '664f0e247baafc94cf772754',
                 Articles: [
-                    { articleId: articleSelected.id, quantity: selectedQuantity },
+                    {
+                        articleId: articleSelected.id,
+                        quantity: selectedQuantity
+                    }
                 ]
             };
             console.log(orderData);
@@ -287,7 +325,7 @@ const RestaurantDetail = () => {
         notifier.success('Item added to cart successfully!');
     };
 
-    const handleAddToCart = async () => {
+    const handleAddToCart = async() => {
         setQuantityDialogOpen(true);
     };
 
@@ -299,7 +337,10 @@ const RestaurantDetail = () => {
 
         setIsSaving(true);
 
-        dispatch(addArticle({ ...articleFormData, restaurantId: restaurant._id }))
+        dispatch(addArticle({
+                ...articleFormData,
+                restaurantId: restaurant._id
+            }))
             .unwrap()
             .then((response) => {
                 setIsSaving(false);
@@ -308,12 +349,7 @@ const RestaurantDetail = () => {
                 } else {
                     notifier.success('Article added successfully!');
                     setCreateArticleMode(false);
-                    setArticleFormData({
-                        name: '',
-                        price: '',
-                        description: '',
-                        category: ''
-                    });
+                    setArticleFormData({name: '', price: '', description: '', category: ''});
                     dispatch(fetchRestaurantById(id)); // Refetch the restaurant details to get the latest updates
                 }
             })
@@ -357,7 +393,11 @@ const RestaurantDetail = () => {
         setIsSaving(true);
 
         const formattedPrice = parseFloat(newMenuData.price);
-        const newMenu = { ...newMenuData, price: formattedPrice, restaurantId: restaurant._id };
+        const newMenu = {
+            ...newMenuData,
+            price: formattedPrice,
+            restaurantId: restaurant._id
+        };
 
         console.log(restaurant._id);
         console.log(newMenuData);
@@ -371,15 +411,15 @@ const RestaurantDetail = () => {
                 } else {
                     notifier.success('Menu created successfully!');
                     setCreateMenuMode(false);
-                    setNewMenuData({
-                        name: '',
-                        description: '',
-                        price: '',
-                        articles: []
-                    });
-                    document.body.classList.remove('fade-in');
+                    setNewMenuData({name: '', description: '', price: '', articles: []});
+                    document
+                        .body
+                        .classList
+                        .remove('fade-in');
                     setTimeout(() => {
-                        window.location.reload();
+                        window
+                            .location
+                            .reload();
                     }, 1000);
                 }
             })
@@ -408,7 +448,7 @@ const RestaurantDetail = () => {
             return;
         }
 
-        dispatch(rateRestaurant({ id: restaurant._id, rating: userRating }))
+        dispatch(rateRestaurant({id: restaurant._id, rating: userRating}))
             .unwrap()
             .then((response) => {
                 if (response.error) {
@@ -427,7 +467,7 @@ const RestaurantDetail = () => {
     };
 
     if (!showContent) {
-        return <LoadingScreen />;
+        return <LoadingScreen/>;
     }
 
     if (!restaurant) {
@@ -441,121 +481,126 @@ const RestaurantDetail = () => {
     return (
         <div className="restaurant-detail-container">
             <div className="restaurant-image-container">
-                {isUploading ? (
-                    <div className="loader-container">
-                        <TailSpin color="#007bff" height={40} width={40} />
-                    </div>
-                ) : (
-                    <>
-                        <img src={restaurant.img} alt="Restaurant" className="restaurant-img" />
-                        {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
-                            <label htmlFor="upload-img" className="restaurant-camera-icon">
-                                <FontAwesomeIcon icon={faCamera} />
-                            </label>
-                        )}
-                        <input
-                            type="file"
-                            id="upload-img"
-                            style={{ display: 'none' }}
-                            onChange={handleImageUpload}
-                        />
-                    </>
-                )}
+                {isUploading
+                    ? (
+                        <div className="loader-container">
+                            <TailSpin color="#007bff" height={40} width={40}/>
+                        </div>
+                    )
+                    : (<> <img src={restaurant.img} alt="Restaurant" className="restaurant-img"/>
+                        {
+                        (user
+                            ?.role === 'restaurantOwner' && user
+                                ?._id === restaurant.ownerId) || user
+                            ?.role === 'admin'
+                                ? (
+                                    <label htmlFor="upload-img" className="restaurant-camera-icon">
+                                        <FontAwesomeIcon icon={faCamera}/>
+                                    </label>
+                                )
+                                : null
+                    } < input type = "file" id = "upload-img" style = {{ display: 'none' }}
+                    onChange = {
+                        handleImageUpload
+                    } /> </>)}
             </div>
-            {editMode ? (
-                <Dialog open={editMode} onClose={() => setEditMode(false)}>
-                    <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        Edit Restaurant
-                        <IconButton onClick={() => setEditMode(false)}>
-                            <CloseIcon />
-                        </IconButton>
-                    </DialogTitle>
-                    <DialogContent>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <TextField
-                                label="Name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Address"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Phone"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Working Hours"
-                                name="workingHours"
-                                value={formData.workingHours}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                            <TextField
-                                label="Category"
-                                name="category"
-                                value={formData.category}
-                                onChange={handleInputChange}
-                                fullWidth
-                                margin="normal"
-                            />
-                        </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleSaveChanges} color="primary">Save</Button>
-                        <Button onClick={() => setEditMode(false)} color="secondary">Cancel</Button>
-                    </DialogActions>
-                </Dialog>
-            ) : (
-                <RestaurantInfo
+            {editMode
+                ? (
+                    <Dialog open={editMode} onClose={() => setEditMode(false)}>
+                        <DialogTitle
+                            sx={{
+                            backgroundColor: 'transparent',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            Edit Restaurant
+                            <IconButton onClick={() => setEditMode(false)}>
+                                <CloseIcon/>
+                            </IconButton>
+                        </DialogTitle>
+                        <DialogContent>
+                            <Box
+                                sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center'
+                            }}>
+                                <TextField
+                                    label="Name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    fullWidth
+                                    margin="normal"/>
+                                <TextField
+                                    label="Address"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleInputChange}
+                                    fullWidth
+                                    margin="normal"/>
+                                <TextField
+                                    label="Phone"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    fullWidth
+                                    margin="normal"/>
+                                <TextField
+                                    label="Working Hours"
+                                    name="workingHours"
+                                    value={formData.workingHours}
+                                    onChange={handleInputChange}
+                                    fullWidth
+                                    margin="normal"/>
+                                <TextField
+                                    label="Category"
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={handleInputChange}
+                                    fullWidth
+                                    margin="normal"/>
+                            </Box>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleSaveChanges} color="primary">Save</Button>
+                            <Button onClick={() => setEditMode(false)} color="secondary">Cancel</Button>
+                        </DialogActions>
+                    </Dialog>
+                )
+                : (<RestaurantInfo
                     restaurant={restaurant}
                     user={user}
                     averageRating={averageRating}
                     onEdit={() => setEditMode(true)}
                     onCreateArticle={() => setCreateArticleMode(true)}
-                    onCreateMenu={() => setCreateMenuMode(true)}
-                />
-            )}
+                    onCreateMenu={() => setCreateMenuMode(true)}/>)}
 
-            {user?.role === 'client' && (
-                <div className="rating-container">
-                    <Typography variant="h6">Rate this Restaurant:</Typography>
-                    <Rating
-                        name="user-rating"
-                        value={userRating}
-                        onChange={handleRatingChange}
-                    />
-                    <Button variant="contained" color="primary" onClick={handleOpenRatingDialog}>Submit Rating</Button>
-                </div>
-            )}
+            {user
+                ?.role === 'client' && (
+                    <div className="rating-container">
+                        <Typography variant="h6">Rate this Restaurant:</Typography>
+                        <Rating name="user-rating" value={userRating} onChange={handleRatingChange}/>
+                        <Button variant="contained" color="primary" onClick={handleOpenRatingDialog}>Submit Rating</Button>
+                    </div>
+                )}
 
             <Dialog open={ratingDialogOpen} onClose={handleCloseRatingDialog}>
                 <DialogTitle>
                     Submit Your Rating
                     <IconButton onClick={handleCloseRatingDialog}>
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <Rating
-                            name="user-rating"
-                            value={userRating}
-                            onChange={handleRatingChange}
-                        />
+                    <Box
+                        sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center'
+                    }}>
+                        <Rating name="user-rating" value={userRating} onChange={handleRatingChange}/>
                     </Box>
                 </DialogContent>
                 <DialogActions>
@@ -565,80 +610,87 @@ const RestaurantDetail = () => {
             </Dialog>
 
             <h2 className="carousel-title">Menus</h2>
-            {restaurant.menus && restaurant.menus.length > 0 ? (
-                <CardCarousel items={restaurant.menus.map(menu => ({
-                    id: menu._id,
-                    img: menu.img || '/default-article-image.png',
-                    title: menu.name,
-                    price: `${menu.price} €`,
-                    description: menu.description,
-                    articles: menu.articles
-                }))} carouselId="menus" onCardClick={handleViewMenu} />
-            ) : (
-                <p>No menus available.</p>
-            )}
+            {restaurant.menus && restaurant.menus.length > 0
+                ? (<CardCarousel
+                    items={restaurant
+                    .menus
+                    .map(menu => ({
+                        id: menu._id,
+                        img: menu.img || '/default-article-image.png',
+                        title: menu.name,
+                        price: `${menu.price} €`,
+                        description: menu.description,
+                        articles: menu.articles
+                    }))}
+                    carouselId="menus"
+                    onCardClick={handleViewMenu}/>)
+                : (
+                    <p>No menus available.</p>
+                )}
 
             <h2 className="carousel-title">Articles</h2>
-            {restaurant.articles && restaurant.articles.length > 0 ? (
-                <CardCarousel items={restaurant.articles.map(article => ({
-                    id: article._id,
-                    img: article.img || '/default-article-image.png',
-                    title: article.name,
-                    content: article.description,
-                    price: `${article.price} €`,
-                    color: article.color || '#e3f1f8',
-                    text: 'Read Article',
-                    link: '',
-                    category: article.category
-                }))} carouselId="articles" onCardClick={handleViewArticle} />
-            ) : (
-                <p>No articles available.</p>
-            )}
+            {restaurant.articles && restaurant.articles.length > 0
+                ? (<CardCarousel
+                    items={restaurant
+                    .articles
+                    .map(article => ({
+                        id: article._id,
+                        img: article.img || '/default-article-image.png',
+                        title: article.name,
+                        content: article.description,
+                        price: `${article.price} €`,
+                        color: article.color || '#e3f1f8',
+                        text: 'Read Article',
+                        link: '',
+                        category: article.category
+                    }))}
+                    carouselId="articles"
+                    onCardClick={handleViewArticle}/>)
+                : (
+                    <p>No articles available.</p>
+                )}
 
-            {selectedArticle && (
-                <ViewArticleDialog
-                    open={viewArticleMode}
-                    onClose={() => setViewArticleMode(false)}
-                    article={selectedArticle}
-                    onEdit={handleEditArticle}
-                    onDelete={() => setDeleteArticleMode(true)}
-                    onAddToCart={handleAddToCart}
-                    user={user}
-                    restaurant={restaurant}
-                    onImageUpload={handleArticleImageUpload}
-                />
-            )}
+            {selectedArticle && (<ViewArticleDialog
+                open={viewArticleMode}
+                onClose={() => setViewArticleMode(false)}
+                article={selectedArticle}
+                onEdit={handleEditArticle}
+                onDelete={() => setDeleteArticleMode(true)}
+                onAddToCart={handleAddToCart}
+                user={user}
+                restaurant={restaurant}
+                onImageUpload={handleArticleImageUpload}/>)}
 
-            {editArticleMode && selectedArticle && (
-                <ArticleDialog
-                    open={editArticleMode}
-                    onClose={() => setEditArticleMode(false)}
-                    title="Edit Article"
-                    formData={articleFormData}
-                    onInputChange={handleArticleInputChange}
-                    onSave={handleSaveArticleChanges}
-                    onCancel={() => setEditArticleMode(false)}
-                />
-            )}
+            {editArticleMode && selectedArticle && (<ArticleDialog
+                open={editArticleMode}
+                onClose={() => setEditArticleMode(false)}
+                title="Edit Article"
+                formData={articleFormData}
+                onInputChange={handleArticleInputChange}
+                onSave={handleSaveArticleChanges}
+                onCancel={() => setEditArticleMode(false)}/>)}
 
-            {createArticleMode && (
-                <ArticleDialog
-                    open={createArticleMode}
-                    onClose={() => setCreateArticleMode(false)}
-                    title="Add Article"
-                    formData={articleFormData}
-                    onInputChange={handleArticleInputChange}
-                    onSave={handleCreateArticle}
-                    onCancel={() => setCreateArticleMode(false)}
-                />
-            )}
+            {createArticleMode && (<ArticleDialog
+                open={createArticleMode}
+                onClose={() => setCreateArticleMode(false)}
+                title="Add Article"
+                formData={articleFormData}
+                onInputChange={handleArticleInputChange}
+                onSave={handleCreateArticle}
+                onCancel={() => setCreateArticleMode(false)}/>)}
 
             {deleteArticleMode && (
                 <Dialog open={deleteArticleMode} onClose={() => setDeleteArticleMode(false)}>
-                    <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <DialogTitle
+                        sx={{
+                        backgroundColor: 'transparent',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
                         Confirm Delete
                         <IconButton onClick={() => setDeleteArticleMode(false)}>
-                            <CloseIcon />
+                            <CloseIcon/>
                         </IconButton>
                     </DialogTitle>
                     <DialogContent>
@@ -651,50 +703,60 @@ const RestaurantDetail = () => {
                 </Dialog>
             )}
 
-            {selectedMenu && (
-                <ViewMenuDialog
-                    open={viewMenuMode}
-                    onClose={() => setViewMenuMode(false)}
-                    menu={selectedMenu}
-                    onAddToCart={handleAddToCart}
-                    user={user}
-                    restaurant={restaurant}
-                />
-            )}
+            {selectedMenu && (<ViewMenuDialog
+                open={viewMenuMode}
+                onClose={() => setViewMenuMode(false)}
+                menu={selectedMenu}
+                onAddToCart={handleAddToCart}
+                user={user}
+                restaurant={restaurant}/>)}
 
-            <Dialog open={createMenuMode} onClose={() => setCreateMenuMode(false)} fullWidth maxWidth="md">
-                <DialogTitle sx={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Dialog
+                open={createMenuMode}
+                onClose={() => setCreateMenuMode(false)}
+                fullWidth
+                maxWidth="md">
+                <DialogTitle
+                    sx={{
+                    backgroundColor: 'transparent',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
                     Create Menu
                     <IconButton onClick={() => setCreateMenuMode(false)}>
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 2 }}>
+                    <Box
+                        sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        padding: 2
+                    }}>
                         <TextField
                             label="Name"
                             name="name"
                             value={newMenuData.name}
                             onChange={handleNewMenuInputChange}
                             fullWidth
-                            margin="normal"
-                        />
+                            margin="normal"/>
                         <TextField
                             label="Description"
                             name="description"
                             value={newMenuData.description}
                             onChange={handleNewMenuInputChange}
                             fullWidth
-                            margin="normal"
-                        />
+                            margin="normal"/>
                         <TextField
                             label="Price"
                             name="price"
                             value={newMenuData.price}
                             onChange={handleNewMenuInputChange}
                             fullWidth
-                            margin="normal"
-                        />
+                            margin="normal"/>
                         <FormControl fullWidth margin="normal">
                             <InputLabel id="articles-label">Articles</InputLabel>
                             <Select
@@ -704,10 +766,11 @@ const RestaurantDetail = () => {
                                 value={newMenuData.articles}
                                 onChange={handleNewMenuArticleChange}
                                 renderValue={(selected) => selected.map(id => {
-                                    const article = articles.find(a => a._id === id);
-                                    return article ? article.name : id;
-                                }).join(', ')}
-                            >
+                                const article = articles.find(a => a._id === id);
+                                return article
+                                    ? article.name
+                                    : id;
+                            }).join(', ')}>
                                 {articles.map((article) => (
                                     <MenuItem key={article._id} value={article._id}>
                                         {article.name}
@@ -727,8 +790,22 @@ const RestaurantDetail = () => {
                 onClose={() => setQuantityDialogOpen(false)}
                 selectedQuantity={selectedQuantity}
                 onQuantityChange={handleQuantityChange}
-                onConfirm={handleAddToCartConfirmed}
-            />
+                onConfirm={handleAddToCartConfirmed}/> {user
+                ?.role === 'admin' && (
+                    <div className="admin-controls">
+                        <h2>
+                            ⚠️ Delete
+                        </h2>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => setDeleteDialogOpen(true)}>Delete Restaurant</Button>
+                    </div>
+                )}
+            <DeleteRestaurantDialog
+                open={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                restaurantId={restaurant._id}/>
         </div>
     );
 };

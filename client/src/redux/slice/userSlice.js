@@ -131,7 +131,6 @@ export const userCurrent = createAsyncThunk("user/current", async () => {
     throw error;
   }
 });
-
 // Upload user image
 export const uploadUserImage = createAsyncThunk("user/uploadImage", async (formData) => {
   try {

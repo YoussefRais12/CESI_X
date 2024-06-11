@@ -19,6 +19,7 @@ const deliveryPersonRoute = require('./routes/deliveryPersonRoute');
 const menuRoute = require('./routes/menuRoute');
 const uploadRoute = require('./routes/imageRoute');
 const orderRoute = require('./routes/orderRoute');
+const emailRoute = require('./routes/emailRoute');
 
 
 // ------------------------ our routes----------------------------
@@ -29,6 +30,9 @@ app.use('/deliveryPerson', deliveryPersonRoute);
 app.use('/menu', menuRoute);
 app.use('/image', uploadRoute);
 app.use('/order', orderRoute);
+app.use('/email', emailRoute);
+
+app.use("/testemails", emailRoute);
 
 // ------------------------ end our routes------------------------
 

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import AWN from 'awesome-notifications';
 import 'awesome-notifications/dist/style.css';
-import '../styles/testStripe.css'; // Import the CSS file
+import '../styles/testStripe.cssf'; // Import the CSS file
 
 const TestStripe = () => {
     const stripe = useStripe();

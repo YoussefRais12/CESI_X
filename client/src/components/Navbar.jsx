@@ -8,7 +8,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faHeart, faShoppingCart, faWallet, faTachometerAlt, faStore, faBell } from '@fortawesome/free-solid-svg-icons';
 import { Input, Box, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import {useLocation } from "react-router-dom";
 import axios from 'axios';
 import moment from 'moment';
 
@@ -23,6 +22,7 @@ const Navbar = ({ setPing, ping }) => {
     const ownedRestaurants = useSelector((state) => state.restaurant?.ownedRestaurants);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const notificationsRef = useRef(null);
     const location = useLocation();
 
     useEffect(() => {

@@ -1,10 +1,12 @@
-import {useEffect, useState} from 'react';
+import React from 'react';
+import { useEffect, useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import AWN from 'awesome-notifications';
 import 'awesome-notifications/dist/style.css';
+import '../styles/testStripe.css'; // Import the CSS file
 
 const TestStripe = () => {
     const stripe = useStripe();
@@ -111,7 +113,7 @@ const TestStripe = () => {
                 </label>
                 <label>
                     Détails de la carte :
-                    <CardElement />
+                    <CardElement className="CardElement" />
                 </label>
                 <button type="submit" disabled={!stripe}>
                     Payer

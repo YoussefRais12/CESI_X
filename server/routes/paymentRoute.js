@@ -1,9 +1,10 @@
 const express = require("express");
 const paymentRoute = express.Router();
 const Payment = require('../models/payment');
+require("dotenv").config();
 
 const Stripe = require('stripe');
-const stripe = Stripe('sk_test_51PMUzFKJ5LRFuT3XK0gGfYY7jtr2CUDbJP8mQt4IQyNjZq63GUXUDaq1qdGqLkN1UdUDSVm1eZXzNhz6bCFtef1j00tyTYOHs6');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 paymentRoute.post('/create-payment-intent', async (req, res) => {
     const { amount, currency, paymentMethodId, userId } = req.body;

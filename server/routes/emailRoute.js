@@ -1,52 +1,41 @@
 const express = require("express");
-const nodemailer = require("nodemailer");
+const sendEmail = require("../utilities/mailer");
 const user = require("../models/user");
-const router = express.Router();
-const dotenv = require("dotenv");
+const isAuth = require("../middleware/passport");
+const emailRouter = express.Router();
 
-dotenv.config();
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_PORT,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-async function sendEmail(to, subject, text) {
-  const mail = {
-    from: process.env.SMTP_USER,
-    to,
-    subject,
-    text,
-  };
-
-  try {
-    let message = await transporter.sendMail(mail);
-    console.log("Email envoyé:" + message.response);
-  } catch (error) {
-    console.error(
-      "Erreur lors de l'envoi de message; veuillez rééssayer: ",
-      error
-    );
-  }
-}
-
-router.post("/login", async (req, res) => {
+emailRouter.post("/login", isAuth(), async (req, res) => {
   // authMiddleware
   const user = req.user;
-  await sendEmail(
-    user.email,
-    "Connexion réussie",
-    "Vous vous êtes connecté avec succès."
-  );
-  res.json({ message: "Email de connexion envoyé" });
+  try {
+    await sendEmail(
+      user.email,
+      "Connexion réussie",
+      "Vous vous êtes connecté avec succès."
+    );
+    res.json({ message: "Email de connexion envoyé" });
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email de connexion", error);
+    res.status(500).json({ error: "Veuillez réessayer !!" });
+  }
+  // const { user } = req.body;
+  // if (!user) {
+  //   return res.status(400).json({ error: "Adresse email manquante" });
+  // }
+  // try {
+  //   await sendEmail(
+  //     user,
+  //     "Connexion réussie",
+  //     "Vous vous êtes connecté avec succès."
+  //   );
+  //   res.json({ message: "Email de connexion envoyé à " + user });
+  // } catch (error) {
+  //   console.error("Erreur lors de l'envoi de l'email de connexion:", error);
+  //   res.status(500).json({ error: "Let's try again budd" });
+  // }
 });
 
-router.post("/order", async (req, res) => {
+emailRouter.post("/order", isAuth(), async (req, res) => {
   const user = req.user;
   await sendEmail(
     user.email,
@@ -56,7 +45,7 @@ router.post("/order", async (req, res) => {
   res.json({ message: "Email de confirmation de commande envoyé" });
 });
 
-router.post("/notify", async (req, res) => {
+emailRouter.post("/notify", isAuth(), async (req, res) => {
   const user = req.user;
   setTimeout(async () => {
     await sendEmail(
@@ -68,7 +57,7 @@ router.post("/notify", async (req, res) => {
   res.json({ message: "Notification de commande en cours programmée" });
 });
 
-router.post("/sendEmails", authMiddleware, async (req, res) => {
+emailRouter.post("/sendEmails", isAuth(), async (req, res) => {
   const subject = req.body.subject;
   const message = req.body.message;
 
@@ -84,4 +73,23 @@ router.post("/sendEmails", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+emailRouter.post("/test-email", async (req, res) => {
+  const { refemail } = req.body;
+
+  try {
+    if (!refemail) {
+      return res
+        .status(400)
+        .json({ error: "Adresse email manquante dans la requête" });
+    }
+    await sendEmail(refemail, "Test d'envoi d'email");
+    res.json({ message: "Email de test envoyé avec succès à " + refemail });
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email de test :", error);
+    res
+      .status(500)
+      .json({ error: "Erreur lors de l'envoi de l'email de test" });
+  }
+});
+
+module.exports = emailRouter;

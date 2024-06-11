@@ -16,7 +16,7 @@ const ViewArticleDialog = ({ open, onClose, article, onEdit, onDelete, onAddToCa
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Box sx={{ width: '100%', marginBottom: 2, position: 'relative' }}>
                     <img src={article.img || '/default-article-image.png'} alt={article.name} style={{ width: '100%', borderRadius: '10px' }} />
-                    {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
+                    {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' ? (
                         <label htmlFor="upload-article-img" style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer' }}>
                             <FontAwesomeIcon icon={faCamera} />
                             <input
@@ -26,7 +26,7 @@ const ViewArticleDialog = ({ open, onClose, article, onEdit, onDelete, onAddToCa
                                 onChange={(e) => onImageUpload(e, article._id)}
                             />
                         </label>
-                    )}
+                    ) : null}
                 </Box>
                 <Typography variant="h6">{article.name}</Typography>
                 <Typography variant="body1">Price: {article.price}</Typography>
@@ -36,12 +36,12 @@ const ViewArticleDialog = ({ open, onClose, article, onEdit, onDelete, onAddToCa
         </DialogContent>
         <DialogActions>
             <Button onClick={onAddToCart} color="primary">Add to Cart</Button>
-            {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
+            {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' ? (
                 <>
                     <Button onClick={onEdit} color="secondary">Edit</Button>
                     <Button onClick={onDelete} color="error">Delete</Button>
                 </>
-            )}
+           ) : null}
         </DialogActions>
     </Dialog>
 );

@@ -25,8 +25,8 @@ export const fetchRestaurantsByCategory = createAsyncThunk("restaurant/fetchRest
   return response.data;
 });
 
-// Add new restaurant
-export const addRestaurant = createAsyncThunk("restaurant/addRestaurant", async (newRestaurant) => {
+// Create new restaurant
+export const createRestaurant = createAsyncThunk("restaurant/createRestaurant", async (newRestaurant) => {
   try {
     let result = await axios.post("http://localhost:5000/restaurant/register", newRestaurant, {
       headers: {
@@ -191,14 +191,14 @@ const restaurantSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
-      .addCase(addRestaurant.pending, (state) => {
+      .addCase(createRestaurant.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(addRestaurant.fulfilled, (state, action) => {
+      .addCase(createRestaurant.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.restaurants.push(action.payload);
       })
-      .addCase(addRestaurant.rejected, (state, action) => {
+      .addCase(createRestaurant.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       })
@@ -268,7 +268,7 @@ const restaurantSlice = createSlice({
       })
       .addCase(rateRestaurant.fulfilled, (state, action) => {
         state.status = "succeeded";
-        const index = state.restaurants.findIndex((restaurant) => restaurant._id === action.payload._id);
+        const index = state.restaurants.find((restaurant) => restaurant._id === action.payload._id);
         if (index !== -1) {
           state.restaurants[index].averageRating = action.payload.averageRating;
         }

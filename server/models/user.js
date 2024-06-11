@@ -19,7 +19,8 @@ const userSchema = new schema({
     referralCode: { type: String, unique: true },
     referredBy: { type: schema.Types.ObjectId, ref: 'User' },
     hasUsedReferral: { type: Boolean, default: false },
-    logHistory: [logSchema],  // Add log history
+    logHistory: [logSchema],  
+    suspended: { type: Boolean, default: false } 
 });
 
 const User = mongoose.model("User", userSchema);

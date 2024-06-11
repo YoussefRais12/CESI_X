@@ -1,3 +1,4 @@
+// LoginContainer.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faHamburger, faBuilding } from '@fortawesome/free-solid-svg-icons';
@@ -9,9 +10,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const LoginContainer = ({ ping, setPing }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const location= useLocation();
+    const location = useLocation();
     const [login, setLogin] = useState({ email: '', password: '', showPassword: false });
-    const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '' });
+    const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '', referralCode: '' });
     const [error, setError] = useState('');
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
@@ -19,19 +20,17 @@ const LoginContainer = ({ ping, setPing }) => {
     const [languageData, setLanguageData] = useState({});
     const passwordRef = useRef(null);
 
-    useEffect(() =>{
-        const searchParams= new URLSearchParams(location.search);
-        const lang = searchParams.get('lang')||'fr';
-        import(`../lang/${lang}.json`) 
-        .then((data) =>{
-            setLanguageData(data);
-        })
-        .catch((error)=>{
-            console.error("Let's try again buddy:", error);
-    
-        });
-
-    },[location.search]);
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const lang = searchParams.get('lang') || 'en';
+        import(`../lang/${lang}.json`)
+            .then((data) => {
+                setLanguageData(data);
+            })
+            .catch((error) => {
+                console.error("Error loading language file:", error);
+            });
+    }, [location.search]);
 
     const togglePasswordVisibility = () => {
         setLogin({ ...login, showPassword: !login.showPassword });
@@ -51,14 +50,18 @@ const LoginContainer = ({ ping, setPing }) => {
         try {
             setError('');
 
-            const response = await dispatch(userLogin(login));
+            const response = await dispatch(userLogin(login)).unwrap();
 
-            if (response.payload.token) {
+            if (response.token) {
                 navigate('/feed');
                 setPing(!ping);
             }
         } catch (error) {
-            setError('Email or password incorrect.');
+            if (error.msg === 'Account is suspended') {
+                setError('Your account is suspended. Please contact support.');
+            } else {
+                setError('Email or password incorrect.');
+            }
             console.error('Login error:', error);
         }
     };
@@ -66,7 +69,7 @@ const LoginContainer = ({ ping, setPing }) => {
     const handleRegister = async () => {
         try {
             await dispatch(userRegister(newUser)).unwrap();
-            setNewUser({ name: '', email: '', password: '', role: '' });
+            setNewUser({ name: '', email: '', password: '', role: '', referralCode: '' });
             handleLoginWithNewUser();
         } catch (error) {
             setError('Error registering user.');
@@ -78,9 +81,9 @@ const LoginContainer = ({ ping, setPing }) => {
         try {
             setError('');
 
-            const response = await dispatch(userLogin({ email: newUser.email, password: newUser.password }));
+            const response = await dispatch(userLogin({ email: newUser.email, password: newUser.password })).unwrap();
 
-            if (response.payload.token) {
+            if (response.token) {
                 navigate('/feed');
                 setPing(!ping);
                 setShowCreateAccountModal(false); // Close modal on successful account creation and login
@@ -117,19 +120,19 @@ const LoginContainer = ({ ping, setPing }) => {
     };
 
     const selectRole = (role) => {
-        setNewUser({ ...newUser, role:role });
+        setNewUser({ ...newUser, role: role });
         handleRegister();
     };
 
     return (
         <div className="login-page">
             <div className="text-container">
-                <h1 className="headline">Your favorite meals</h1>
-                <h2 className="subheadline">Delivred to you</h2>
+                <h1 className="headline">{languageData.meals || "Your favorite meals"}</h1>
+                <h2 className="subheadline">Delivered to you</h2>
                 <div className="button-container">
                     <button className="sign-in" onClick={() => setShowSignInModal(true)}>Sign in</button>
                     <button className="create-account" onClick={() => {
-                        setNewUser({ name: '', email: '', password: '', role: '' });
+                        setNewUser({ name: '', email: '', password: '', role: '', referralCode: '' });
                         setCurrentStep(1);
                         setShowCreateAccountModal(true);
                     }}>Create account</button>
@@ -216,15 +219,25 @@ const LoginContainer = ({ ping, setPing }) => {
                                 </div>
                             )}
                             {currentStep === 3 && (
-                                <div className="role-selection-container">
-                                    <button className="role-button" onClick={() => selectRole('client')}>
-                                        Client
-                                        <FontAwesomeIcon icon={faHamburger} className="role-icon" />
-                                    </button>
-                                    <button className="role-button" onClick={() => selectRole('entreprise')}>
-                                        Entreprise
-                                        <FontAwesomeIcon icon={faBuilding} className="role-icon" />
-                                    </button>
+                                <div>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            placeholder="Referral Code (Optional)"
+                                            value={newUser.referralCode}
+                                            onChange={(e) => setNewUser({ ...newUser, referralCode: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="role-selection-container">
+                                        <button className="role-button" onClick={() => selectRole('client')}>
+                                            Client
+                                            <FontAwesomeIcon icon={faHamburger} className="role-icon" />
+                                        </button>
+                                        <button className="role-button" onClick={() => selectRole('entreprise')}>
+                                            Entreprise
+                                            <FontAwesomeIcon icon={faBuilding} className="role-icon" />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                             {currentStep < 3 && (

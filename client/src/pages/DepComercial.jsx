@@ -1,11 +1,14 @@
-import React, {  useEffect } from "react";
+import React, {  useState, useEffect } from "react";
 import '../styles/depcom.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const DepComercial = () => {
   const user = useSelector((state) => state.user?.user); // Assuming user details include role
+  const [languageData, setLanguageData] = useState({});
+  
   const navigate = useNavigate();
+  const location= useLocation();
 
   useEffect(() => {
    
@@ -15,9 +18,23 @@ const DepComercial = () => {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    const searchParams= new URLSearchParams(location.search);
+    const lang = searchParams.get('lang')||'fr';
+    import(`../lang/${lang}.json`) 
+    .then((data) =>{
+        setLanguageData(data);
+    })
+    .catch((error)=> {
+        console.error("Let's try again buddy:", error);
+
+    });
+
+},[location.search]);
+
   return (
     <div className="DepComercial-container">
-      <h1 className="DepComercial-title">Département Commercial</h1>
+      <h1 className="DepComercial-title"> {languageData.DepComercial || 'Département Commercial'} </h1>
       <iframe
         className="DepComercial-iframe"
         title="Rapport Power BI - Département Commercial"

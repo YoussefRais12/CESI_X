@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Button, Box, Typography, TextField } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Button, Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchArticlesByIds } from '../redux/slice/articleSlice';
+import { fetchArticlesByIds, fetchArticlesByRestaurantId } from '../redux/slice/articleSlice';
 import { deleteMenu, updateMenu } from '../redux/slice/menuSlice';
 
 const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) => {
     const dispatch = useDispatch();
     const articles = useSelector((state) => state.article.articles);
+    const restaurantArticles = useSelector((state) => state.article.restaurantArticles);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [menuData, setMenuData] = useState({
+        title: menu?.title || '',
+        description: menu?.description || '',
+        price: menu?.price || '',
+        articles: menu?.articles || []
+    });
+
+    const [editMenuData, setEditMenuData] = useState({
         title: menu?.title || '',
         description: menu?.description || '',
         price: menu?.price || '',
@@ -31,37 +39,64 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                 price: menu.price,
                 articles: menu.articles
             });
+
+            setEditMenuData({
+                title: menu.title,
+                description: menu.description,
+                price: menu.price.toString().replace(' €', ''),
+                articles: menu.articles
+            });
+           
         }
     }, [menu]);
 
-    console.log(menu)
+    useEffect(() => {
+        if (restaurant?._id) {
+            dispatch(fetchArticlesByRestaurantId(restaurant._id));
+        }
+    }, [dispatch, restaurant]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setMenuData({
-            ...menuData,
+        setEditMenuData({
+            ...editMenuData,
             [name]: value
         });
     };
 
+    const handleArticleChange = (e) => {
+        const { value } = e.target;
+        setEditMenuData({
+            ...editMenuData,
+            articles: value
+        });
+    };
+
     const handleSaveChanges = () => {
-        dispatch(updateMenu({ id: menu.id, menudData: menuData }))
+        const formattedPrice = parseFloat(editMenuData.price); // Ensure the price is a number
+        const updatedMenuData = { name:editMenuData.title, description:editMenuData.description , price: formattedPrice, articles: editMenuData.articles};
+        console.log("Saving changes with updatedMenuData:", updatedMenuData);
+        dispatch(updateMenu({ id: menu.id, menuData: updatedMenuData }))
             .unwrap()
             .then(() => {
                 setEditMode(false);
+                onClose(); // Close the dialog after saving
                 window.location.reload();
             })
             .catch((error) => {
                 console.error('Failed to update menu:', error);
+                if (error.response && error.response.data) {
+                    console.error('Backend error:', error.response.data);
+                }
             });
     };
 
     const handleDeleteMenu = () => {
-        dispatch(deleteMenu(menu.id)) // Use `id` instead of `_id`
+        dispatch(deleteMenu(menu.id))
             .unwrap()
             .then(() => {
-                setConfirmDelete(false); // Close the confirmation dialog
-                onClose(); // Close the main dialog
+                setConfirmDelete(false);
+                onClose();
                 window.location.reload();
             })
             .catch((error) => {
@@ -85,7 +120,7 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                                 <TextField
                                     label="Title"
                                     name="title"
-                                    value={menuData.title}
+                                    value={editMenuData.title}
                                     onChange={handleInputChange}
                                     fullWidth
                                     margin="normal"
@@ -93,7 +128,7 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                                 <TextField
                                     label="Description"
                                     name="description"
-                                    value={menuData.description}
+                                    value={editMenuData.description}
                                     onChange={handleInputChange}
                                     fullWidth
                                     margin="normal"
@@ -101,11 +136,31 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                                 <TextField
                                     label="Price"
                                     name="price"
-                                    value={menuData.price}
+                                    value={editMenuData.price}
                                     onChange={handleInputChange}
                                     fullWidth
                                     margin="normal"
                                 />
+                                <FormControl fullWidth margin="normal">
+                                    <InputLabel id="articles-label">Articles</InputLabel>
+                                    <Select
+                                        labelId="articles-label"
+                                        name="articles"
+                                        multiple
+                                        value={editMenuData.articles}
+                                        onChange={handleArticleChange}
+                                        renderValue={(selected) => selected.map(id => {
+                                            const article = restaurantArticles.find(a => a._id === id);
+                                            return article ? article.name : id;
+                                        }).join(', ')}
+                                    >
+                                        {restaurantArticles.map((article) => (
+                                            <MenuItem key={article._id} value={article._id}>
+                                                {article.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
                             </>
                         ) : (
                             <>
@@ -138,7 +193,7 @@ const ViewMenuDialog = ({ open, onClose, menu, onAddToCart, user, restaurant }) 
                     ) : (
                         <>
                             <Button onClick={onAddToCart} color="primary">Add to Cart</Button>
-                            {user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId && (
+                            {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' && (
                                 <>
                                     <Button onClick={() => setEditMode(true)} color="primary">Edit Menu</Button>
                                     <Button onClick={() => setConfirmDelete(true)} color="error">Delete Menu</Button>

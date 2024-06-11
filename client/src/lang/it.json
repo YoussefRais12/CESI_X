@@ -18,12 +18,23 @@
   "changePassword": "Cambia password",
   "userAccount": "Account utente",
   "Favoris":"preferiti",
-  "Commandes":"miei Ordini",
+  "Commandes":"Ordina di più",
   "Wallet":"portfolio",
   "Dashboard":"menu principal",
   "Chef_Service_HSE":"Capo_servizio_HSE",
   "Add_New_User":"Aggiungere un nuovo utente",
   "Chef_Securite":"Responsabile della sicurezza",
-  "basic" : "cliento",
-  "Add_User":"ajoutado"
+  "basic" : "Cliente",
+  "Add_User":"ajoutado",
+  "discover": "Scopri di più",
+  "meals": "I tuoi piatti preferiti",
+  "Article_Details":"dettagli degli articoli",
+  "order":"Riordino",
+  "error": "Nessun ristorante trovato per la categoria selezionata",
+  "erp": "Responsabile  ERP",
+  "commercial": "Responsabile  Commercial",
+  "energie": "Responsabile  Energie",
+  "Commande" : "Mi Commandito"
+
+
 }

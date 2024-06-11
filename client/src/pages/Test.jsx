@@ -1,112 +1,191 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import '../styles/Test.css';
+import Order from '../class/order';
 
 export default function Test() {
-    const [downloadUrl,
-        setDownloadUrl] = useState(null);
-    const [fileName,
-        setFileName] = useState('');
-    const [file,
-        setFile] = useState(null);
+    const [downloadUrl, setDownloadUrl] = useState(null);
+    const [fileName, setFileName] = useState('');
+    const [file, setFile] = useState(null);
+    const [order, setOrder] = useState(null);
+    const [articleId, setArticleId] = useState('');
+    const [quantity, setQuantity] = useState(1);
+    const [articleIdToRemove, setArticleIdToRemove] = useState('');
 
-    // Handler for file selection
     const handleFileChange = (event) => {
-        setFile(event.target.files[0]); // Set the selected file
+        setFile(event.target.files[0]);
     };
 
-    // Handler for uploading the file
-   // Handler for uploading the file
-const handleUpload = () => {
-    if (file) {
-        const formData = new FormData();
-        formData.append("file", file); // Append the file to form data
+    const handleUpload = () => {
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
 
-        // POST request to server
-        axios.post('http://localhost:5000/user/data', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(response => {
-            console.log('Response:', response.data);
-            alert('File uploaded successfully');
-            // Assuming the response from the server includes the file's original name
-            setFileName(file.name.replace('.csv', '')); // Remove .csv from file name
-        })
-        .catch(error => {
-            console.error('Upload error:', error);
-            alert('Error uploading file');
-        });
-    } else {
-        alert('Please select a file to upload');
-    }
-};
+            axios.post('http://localhost:5000/user/data', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(response => {
+                console.log('Response:', response.data);
+                alert('File uploaded successfully');
+                setFileName(file.name.replace('.csv', ''));
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                alert('Error uploading file');
+            });
+        } else {
+            alert('Please select a file to upload');
+        }
+    };
 
+    const createOrder = async () => {
+        try {
+            const orderData = {
+                orderaddress: '123 Main Street',
+                orderPhone: '555-1234',
+                userId: '664c600fea3bf82611450fbd',
+                DeliveryPersonId: '664f0e247baafc94cf772754',
+                Articles: [
+                    { articleId: "6657697fcda8cf305abdcd3a", quantity: 10 }
+                ]
+            };
 
-    // useEffect to handle GET request and processing
+            const order = new Order(orderData);
+            await new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if (order.initialized) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 100);
+            });
+            console.log(order);
+            setOrder(order);
+        } catch (error) {
+            console.error('Error creating order:', error);
+        }
+    };
+
+    const deleteOrder = async () => {
+        if (!order) {
+            console.error('No order to delete');
+            return;
+        }
+
+        try {
+            await order.remove();
+            console.log('Order deleted successfully.');
+            setOrder(null);
+        } catch (error) {
+            console.error('Error deleting order:', error);
+        }
+    };
+
+    const addArticleToOrder = async () => {
+        if (!order) {
+            console.error('No order to add article to');
+            return;
+        }
+
+        try {
+            const result = await order.addArticle(articleId, quantity);
+            console.log('Article added successfully:', result.data);
+        } catch (error) {
+            console.error('Error adding article to order:', error);
+        }
+    };
+
+    const removeArticleFromOrder = async () => {
+        if (!order) {
+            console.error('No order to remove article from');
+            return;
+        }
+        console.log(order)
+
+        try {
+            const result = await order.removeArticle(articleIdToRemove);
+            console.log('Article removed successfully:', result.data);
+        } catch (error) {
+            console.error('Error removing article from order:', error);
+        }
+    };
+
     useEffect(() => {
         axios
             .get('http://localhost:5000/user/data')
             .then(response => {
                 const fileBuffer = response.data.data[0].file.data;
                 let localFileName = response.data.data[0].filename;
-                console.log(localFileName);
 
                 if (localFileName.endsWith('.csv')) {
                     localFileName = localFileName.replace('.csv', '');
                 }
 
-                setFileName(localFileName); // Update state with the modified filename
+                setFileName(localFileName);
 
-                // Convert buffer to workbook
-                const workbook = XLSX.read(fileBuffer, {type: 'array'});
-
-                // Convert workbook to binary Excel data
-                const excelData = XLSX.write(workbook, {
-                    type: 'array',
-                    bookType: 'xlsx'
-                });
-
-                // Create a Blob object with the Excel data
-                const blob = new Blob([excelData], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-
-                // Create and save the URL for the Blob
+                const workbook = XLSX.read(fileBuffer, { type: 'array' });
+                const excelData = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+                const blob = new Blob([excelData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url = URL.createObjectURL(blob);
-                setDownloadUrl(url); // Store the URL in state
+                setDownloadUrl(url);
             })
             .catch(error => {
                 console.error('Error:', error);
             });
 
-        // Cleanup function to revoke the Blob URL when the component unmounts
         return () => {
             if (downloadUrl) {
                 URL.revokeObjectURL(downloadUrl);
             }
         };
-    }, []); // Runs only on component mount
+    }, [downloadUrl]);
 
     return (
         <div className="container">
-
             {downloadUrl && (
-                <a
-                    href={downloadUrl}
-                    download={fileName}
-                    style={{
-                    textDecoration: 'none'
-                }}>
+                <a href={downloadUrl} download={fileName} style={{ textDecoration: 'none' }}>
                     <button className="button">Download File</button>
                 </a>
-
             )}
-            
             <div>
                 <button className="button" onClick={handleUpload}>Upload File</button>
+                <button className="buttonOrder" onClick={createOrder}>Create Order</button>
+                <button className="buttonDeleteOrder" onClick={deleteOrder}>Delete Order</button>
             </div>
-            <input type="file" className="input-file" onChange={handleFileChange}/>
+            <input type="file" className="input-file" onChange={handleFileChange} />
+
+            {order && (
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Article ID"
+                        value={articleId}
+                        onChange={(e) => setArticleId(e.target.value)}
+                    />
+                    <input
+                        type="number"
+                        placeholder="Quantity"
+                        value={quantity}
+                        onChange={(e) => setQuantity(Number(e.target.value))}
+                    />
+                    <button className="buttonAddArticle" onClick={addArticleToOrder}>Add Article</button>
+                </div>
+            )}
+
+            {order && (
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Article ID to remove"
+                        value={articleIdToRemove}
+                        onChange={(e) => setArticleIdToRemove(e.target.value)}
+                    />
+                    <button className="buttonRemoveArticle" onClick={removeArticleFromOrder}>Remove Article</button>
+                </div>
+            )}
         </div>
     );
 }

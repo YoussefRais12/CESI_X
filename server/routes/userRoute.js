@@ -1,7 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
-const Data = require("../models/data");
 const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
 const { loginRules, registerRules, Validation } = require("../middleware/auth-validator");
@@ -12,28 +11,48 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 require("dotenv").config();
 const UserRole = require("../../client/src/type.tsx");
+const cloudinary = require('../config/cloudinary');
+const crypto = require('crypto');
+const addLog = require("../utils/addLog.jsx");
 
 // Middleware to check user roles
-const checkRole = (UserRole) => (req, res, next) => {
-    if (UserRole.includes(req.user.UserRole)) {
+const checkRole = (roles) => (req, res, next) => {
+    if (roles.includes(req.user.role)) {
         next();
     } else {
         res.status(403).json({ message: "Access denied: You do not have sufficient permissions to access this resource." });
     }
 };
 
+// Function to generate referral codes
+const generateReferralCode = () => {
+    return crypto.randomBytes(3).toString('hex');
+};
+
 // Register new user
 userRouter.post("/register", registerRules(), Validation, async (req, res) => {
-    const { name, email, password, role, isVerified, lang } = req.body;
+    const { name, email, password, role, isVerified, lang, referralCode } = req.body;
     try {
         const newUser = new User(req.body);
 
         // Check if email exists
         const searchedUser = await User.findOne({ email });
         if (searchedUser) {
-            
             return res.status(400).send({ msg: "Email already exists" });
         }
+
+        // Handle referral code
+        if (referralCode) {
+            const referringUser = await User.findOne({ referralCode });
+            if (referringUser) {
+                newUser.referredBy = referringUser._id;
+            } else {
+                return res.status(400).send({ msg: "Invalid referral code" });
+            }
+        }
+
+        // Generate a unique referral code for the new user
+        newUser.referralCode = new mongoose.Types.ObjectId().toString();
 
         // Hash password
         const salt = 10;
@@ -48,10 +67,13 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         const payload = { _id: result._id, name: result.name };
         const token = await jwt.sign(payload, process.env.SecretOrKey, { expiresIn: 1000 * 60 * 60 * 24 });
 
+        // Add log entry
+        await addLog(result._id, 'User registered');
+
         res.send({ user: result, msg: "User is saved", token: `Bearer ${token}` });
     } catch (error) {
         res.send("Cannot save the user");
-        console.error("An error occured:", error.message);
+        console.error("An error occurred:", error.message);
         console.log(error);
     }
 });
@@ -67,6 +89,11 @@ userRouter.post("/login", loginRules(), Validation, async (req, res) => {
             return res.status(400).send({ msg: "Bad credential" });
         }
 
+           // Check if the user is suspended
+           if (searchedUser.suspended) {
+            return res.status(403).send({ msg: "Account is suspended" });
+        }
+        
         // Check password
         const match = await bcrypt.compare(password, searchedUser.password);
         if (!match) {
@@ -77,15 +104,18 @@ userRouter.post("/login", loginRules(), Validation, async (req, res) => {
         const payload = { _id: searchedUser.id, name: searchedUser.name };
         const token = await jwt.sign(payload, process.env.SecretOrKey, { expiresIn: 1000 * 3600 * 24 });
 
+        // Add log entry
+        await addLog(searchedUser._id, 'User logged in');
+
         res.status(200).send({ user: searchedUser, msg: "Success", token: `Bearer ${token}` });
     } catch (error) {
-        console.error("An error occured:", error.message);
+        console.error("An error occurred:", error.message);
         res.send({ msg: "Cannot get the user" });
     }
 });
 
 // Add new user (requires role check)
-userRouter.post("/add", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
+userRouter.post("/add", isAuth(), checkRole(["admin"]), async (req, res) => {
     try {
         let newUser = new User(req.body);
         const result = await newUser.save();
@@ -96,7 +126,7 @@ userRouter.post("/add", isAuth(), checkRole([UserRole.admin]), async (req, res) 
 });
 
 // Get all users (requires role check)
-userRouter.get("/all", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
+userRouter.get("/all", isAuth(), checkRole(['admin']), async (req, res) => {
     try {
         let result = await User.find();
         res.send({ users: result, msg: "All users" });
@@ -106,7 +136,7 @@ userRouter.get("/all", isAuth(), checkRole([UserRole.admin]), async (req, res) =
 });
 
 // Get user by ID (requires role check)
-userRouter.get("/find/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
+userRouter.get("/find/:id", isAuth(), checkRole(["admin"]), async (req, res) => {
     try {
         let result = await User.findById(req.params.id);
         res.send({ users: result, msg: "This is the user by ID" });
@@ -139,6 +169,10 @@ userRouter.put("/update/:id", isAuth(), async (req, res) => {
         }
 
         let result = await User.findByIdAndUpdate({ _id: req.params.id }, { $set: updateUser }, { new: true });
+
+        // Add log entry
+        await addLog(req.params.id, 'User updated');
+
         res.send({ newUser: result, msg: "User updated" });
     } catch (error) {
         console.log(error);
@@ -146,11 +180,14 @@ userRouter.put("/update/:id", isAuth(), async (req, res) => {
     }
 });
 
-
 // Delete user by ID (requires role check)
-userRouter.delete("/delete/:id", isAuth(), checkRole([UserRole.admin]), async (req, res) => {
+userRouter.delete("/delete/:id", isAuth(),  async (req, res) => {
     try {
         let result = await User.findByIdAndDelete(req.params.id);
+
+        // Add log entry
+        await addLog(req.params.id, 'User deleted');
+
         res.send({ msg: "User deleted" });
     } catch (error) {
         console.log(error);
@@ -162,29 +199,76 @@ userRouter.get("/current", isAuth(), (req, res) => {
     res.status(200).send({ user: req.user });
 });
 
-// Data upload (example, assuming it requires authentication and specific roles)
-userRouter.post("/data", isAuth(), upload.single("file"), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).send("No file uploaded.");
-    }
-
-    const { buffer, originalname } = req.file;
-
+// Upload user image
+userRouter.post("/upload-image", isAuth(), upload.single("img"), async (req, res) => {
     try {
-        const data = await Data.create({ file: buffer, filename: originalname });
-        res.send({ data: data, msg: "Data is saved" });
+        if (!req.file) {
+            return res.status(400).send("No file uploaded.");
+        }
+
+        const user = await User.findById(req.user._id);
+        if (user.imgPublicId) {
+            // Delete the old image from Cloudinary
+            await cloudinary.uploader.destroy(user.imgPublicId);
+        }
+
+        const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream((error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            });
+            uploadStream.end(req.file.buffer);
+        });
+
+        // Update user with image URL and public ID
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            { img: uploadResult.secure_url, imgPublicId: uploadResult.public_id },
+            { new: true }
+        );
+
+        // Add log entry
+        await addLog(req.user._id, 'User image uploaded');
+
+        res.send({ user: updatedUser, msg: "Image uploaded successfully" });
     } catch (error) {
         console.log(error);
-        res.status(500).send("Cannot save the data");
+        res.status(500).send("Internal Server Error");
     }
 });
 
-userRouter.get("/data", isAuth(), async (req, res) => {
+//----------------------------------------------------------------------------------
+//--------------------------------- Admin only  ------------------------------------
+//----------------------------------------------------------------------------------
+
+// Fetch logs for a specific user (Admin only)
+userRouter.get("/logs/:id", isAuth(), checkRole(["admin"]), async (req, res) => {
     try {
-        let result = await Data.find();
-        res.send({ data: result, msg: "All data" });
+        const user = await User.findById(req.params.id).select('name email logHistory');
+        if (!user) {
+            return res.status(404).send({ msg: "User not found" });
+        }
+        res.status(200).send({ logs: user.logHistory });
     } catch (error) {
         console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+userRouter.put('/suspend/:id', isAuth(), checkRole(['admin']), async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { suspend } = req.body; // true to suspend, false to unsuspend
+
+        const user = await User.findByIdAndUpdate(userId, { suspended: suspend }, { new: true });
+        if (!user) {
+            return res.status(404).send({ msg: 'User not found' });
+        }
+
+        res.send({ user, msg: `User has been ${suspend ? 'suspended' : 'unsuspended'}` });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ msg: 'Internal Server Error' });
     }
 });
 

@@ -20,8 +20,8 @@ const Profile = ({ ping, setPing }) => {
     id: user?._id,
     name: user?.name || '',
     email: user?.email || '',
-    address: user?.address || '', // Add address to profile state
-    phoneNumber: user?.phoneNumber || '' // Add phone number to profile state
+    address: user?.address || '',
+    phoneNumber: user?.phoneNumber || ''
   });
   const [passwords, setPasswords] = useState({
     oldPassword: '',
@@ -204,7 +204,11 @@ const Profile = ({ ping, setPing }) => {
                 </div>
               ) : (
                 <>
-                  <img src={user?.img} alt="Profile" style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <img 
+                    src={user?.img || 'https://via.placeholder.com/150'} 
+                    alt="Profile" 
+                    style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }} 
+                  />
                   <label htmlFor="upload-img" style={{ position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(0, 0, 0, 0.5)', borderRadius: '50%', padding: '5px', cursor: 'pointer', color: 'white' }}>
                     <FontAwesomeIcon icon={faCamera} />
                   </label>

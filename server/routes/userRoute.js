@@ -1,5 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const mongoose = require("mongoose"); // Add this line to import mongoose
+
 const User = require("../models/user");
 const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
@@ -31,9 +33,17 @@ const generateReferralCode = () => {
 
 // Register new user
 userRouter.post("/register", registerRules(), Validation, async (req, res) => {
-    const { name, email, password, role, isVerified, lang, referralCode, address, phoneNumber } = req.body;
+    const { name, email, password, role, address, phoneNumber, referralCode } = req.body;
     try {
-        const newUser = new User(req.body);
+        const newUser = new User({
+            name,
+            email,
+            password,
+            role,
+            address,
+            phoneNumber,
+            referralCode
+        });
 
         // Check if email exists
         const searchedUser = await User.findOne({ email });
@@ -72,11 +82,11 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
 
         res.send({ user: result, msg: "User is saved", token: `Bearer ${token}` });
     } catch (error) {
-        res.send("Cannot save the user");
-        console.error("An error occurred:", error.message);
-        console.log(error);
+        console.error("An error occurred:", error.message); // Log the error
+        res.status(500).send({ msg: "Cannot save the user", error: error.message }); // Improved error response
     }
 });
+
 
 // Login user
 userRouter.post("/login", loginRules(), Validation, async (req, res) => {

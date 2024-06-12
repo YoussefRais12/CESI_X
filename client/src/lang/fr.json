@@ -33,6 +33,8 @@
   "erp": "Responsable ERP",
   "commercial": "Responsable Commercial",
   "energie": "Responsable Energie",
-  "Commande" : "Mes Commandes"
+  "Commande" : "Mes Commandes",
+  "Address" : "Adresse",
+  "Phone Number" : "Numéro de Téléphone"
 
 }

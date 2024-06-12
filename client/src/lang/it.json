@@ -34,7 +34,9 @@
   "erp": "Responsabile  ERP",
   "commercial": "Responsabile  Commercial",
   "energie": "Responsabile  Energie",
-  "Commande" : "Mi Commandito"
+  "Commande" : "Mi Commandito",
+  "Address" : "Indirizzo",
+  "Phone Number" : "Numero di telefono"
 
 
 }

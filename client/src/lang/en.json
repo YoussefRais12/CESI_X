@@ -34,7 +34,9 @@
   "erp": "ERP Manager",
   "commercial": " Commercial Manager",
   "energie": "Energie Manager",
-  "Commande" : "My orders"
+  "Commande" : "My orders",
+  "Address" : "Adress",
+  "Phone Number" : "Phone Number"
   
 
 }

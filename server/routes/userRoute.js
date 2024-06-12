@@ -31,7 +31,7 @@ const generateReferralCode = () => {
 
 // Register new user
 userRouter.post("/register", registerRules(), Validation, async (req, res) => {
-    const { name, email, password, role, isVerified, lang, referralCode } = req.body;
+    const { name, email, password, role, isVerified, lang, referralCode, address, phoneNumber } = req.body;
     try {
         const newUser = new User(req.body);
 

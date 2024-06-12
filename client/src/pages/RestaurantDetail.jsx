@@ -291,12 +291,11 @@ const RestaurantDetail = () => {
     const handleQuantityChange = (event) => {
         setSelectedQuantity(event.target.value);
     };
-
     const handleAddToCartConfirmed = async() => {
         try {
             const orderData = {
-                orderaddress: '123 Main Street',
-                orderPhone: '555-1234',
+                orderaddress: user.address,
+                orderPhone: user.phoneNumber,
                 userId: user._id,
                 DeliveryPersonId: '664f0e247baafc94cf772754',
                 Articles: [
@@ -306,6 +305,7 @@ const RestaurantDetail = () => {
                     }
                 ]
             };
+            console.log(user)
             console.log(orderData);
             const order = new Order(orderData);
             await new Promise(resolve => {

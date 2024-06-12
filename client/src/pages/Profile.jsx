@@ -20,6 +20,8 @@ const Profile = ({ ping, setPing }) => {
     id: user?._id,
     name: user?.name || '',
     email: user?.email || '',
+    address: user?.address || '', // Add address to profile state
+    phoneNumber: user?.phoneNumber || '' // Add phone number to profile state
   });
   const [passwords, setPasswords] = useState({
     oldPassword: '',
@@ -39,6 +41,8 @@ const Profile = ({ ping, setPing }) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        address: user.address,
+        phoneNumber: user.phoneNumber
       });
     }
   }, [user, dispatch]);
@@ -121,6 +125,8 @@ const Profile = ({ ping, setPing }) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      address: user.address,
+      phoneNumber: user.phoneNumber
     });
   };
 
@@ -237,6 +243,32 @@ const Profile = ({ ping, setPing }) => {
                   />
                 ) : (
                   <strong> {profile.email}</strong>
+                )}
+              </p>
+              <p>{languageData.address || 'Address'}:
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="address"
+                    value={profile.address}
+                    onChange={handleChange}
+                    style={{ marginLeft: '10px' }}
+                  />
+                ) : (
+                  <strong> {profile.address}</strong>
+                )}
+              </p>
+              <p>{languageData.phoneNumber || 'Phone Number'}:
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    value={profile.phoneNumber}
+                    onChange={handleChange}
+                    style={{ marginLeft: '10px' }}
+                  />
+                ) : (
+                  <strong> {profile.phoneNumber}</strong>
                 )}
               </p>
               <p>{languageData.role || 'Role'}:

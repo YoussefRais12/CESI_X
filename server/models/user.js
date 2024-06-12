@@ -15,6 +15,8 @@ const userSchema = new schema({
     langUser: { type: String },
     img: { type: String },
     imgPublicId: { type: String },
+    address: { type: String }, // Added address field
+    phoneNumber: { type: String }, // Added phone number field
     orders: [{ type: schema.Types.ObjectId, ref: 'Order' }],
     referralCode: { type: String, unique: true },
     referredBy: { type: schema.Types.ObjectId, ref: 'User' },

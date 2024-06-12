@@ -205,7 +205,7 @@ const Profile = ({ ping, setPing }) => {
               ) : (
                 <>
                   <img 
-                    src={user?.img || 'path/to/default-image.png'} 
+                    src={user?.img || 'https://via.placeholder.com/150'} 
                     alt="Profile" 
                     style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }} 
                   />

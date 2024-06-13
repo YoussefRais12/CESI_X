@@ -36,12 +36,26 @@ async function FetchArticle(idarticle) {
     });
     return result.data;
   } catch (error) {
-    console.error(`Error fetching order ${idarticle}:`, error);
+    console.error(`Error fetching article ${idarticle}:`, error);
+  }
+}
+
+async function FetchRestaurant(idRestaurant) {
+  try {
+    const result = await axios.get(`http://localhost:5000/restaurant/${idRestaurant}`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return result.data;
+  } catch (error) {
+    console.error(`Error fetching restaurant ${idRestaurant}:`, error);
   }
 }
 
 function Commandes() {
   const [orders, setOrders] = useState([]);
+  const [restaurants, setRestaurants] = useState([]); 
   const [articles, setArticles] = useState([]);
   const user = useSelector((state) => state.user?.user);
   const [languageData, setLanguageData] = useState({});
@@ -59,12 +73,23 @@ function Commandes() {
           )
         );
 
+        const orderRestaurantInfo = await Promise.all(
+          orders.flatMap(order =>
+            order.Orders.map(subOrder => subOrder.restaurantId)
+          ).map(async restaurantId => {
+            console.log(restaurantId)
+            const restaurant = await FetchRestaurant(restaurantId);
+            return { id: restaurantId, name: restaurant.name };
+          })
+        );
+
         const orderArticleInfo = await Promise.all(
           articleIds.map(async (articleId) => {
             return await FetchArticle(articleId);
           })
         );
 
+        setRestaurants(orderRestaurantInfo);
         setArticles(orderArticleInfo);
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -73,7 +98,6 @@ function Commandes() {
 
     fetchOrders();
   }, [user?.orders]);
-
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get("lang") || "fr";
@@ -93,8 +117,6 @@ function Commandes() {
     orders.forEach((order, index) => {
       doc.text(`Order ${index + 1}`, 10, yOffset);
       yOffset += 10;
-      doc.text(`Order ID: ${order._id}`, 10, yOffset);
-      yOffset += 10;
       doc.text(`Order Address: ${order.orderaddress}`, 10, yOffset);
       yOffset += 10;
       doc.text(`Order Phone: ${order.orderPhone}`, 10, yOffset);
@@ -107,19 +129,17 @@ function Commandes() {
       order.Orders.forEach((subOrder, subIndex) => {
         doc.text(`  Sub Order ${subIndex + 1}`, 10, yOffset);
         yOffset += 10;
-        doc.text(`  Sub Order ID: ${subOrder._id}`, 10, yOffset);
+        const restaurantInfo = restaurants.find(r => r.id === subOrder.restaurantId);
+        doc.text(`  Restaurant Name: ${restaurantInfo ? restaurantInfo.name : 'N/A'}`, 10, yOffset);
         yOffset += 10;
         doc.text(`  Sub Order Price: ${subOrder.OrderPrice}`, 10, yOffset);
         yOffset += 10;
         doc.text(`  Sub Order Status: ${subOrder.OrderStatus}`, 10, yOffset);
         yOffset += 10;
-        doc.text(`  Restaurant ID: ${subOrder.subOrderId}`, 10, yOffset);
-        yOffset += 10;
+ 
 
         subOrder.Articles.forEach(article => {
           const articleInfo = articles.find(item => item._id === article.articleId);
-          doc.text(`    Article ID: ${article.articleId}`, 10, yOffset);
-          yOffset += 10;
           doc.text(`    Article Name: ${articleInfo ? articleInfo.name : 'N/A'}`, 10, yOffset);
           yOffset += 10;
           doc.text(`    Article Price: ${articleInfo ? articleInfo.price : 'N/A'}`, 10, yOffset);
@@ -129,7 +149,7 @@ function Commandes() {
         });
       });
 
-      yOffset += 10; // Add extra space between orders
+      yOffset += 10;
     });
 
     doc.save('orders.pdf');
@@ -154,23 +174,16 @@ function Commandes() {
               {order.Orders && order.Orders.length > 0 ? (
                 order.Orders.map((subOrder, subIndex) => (
                   <div key={subIndex}>
-                    <h6>Sub Order {subIndex + 1}</h6>
-                    <p>Sub Order ID: {subOrder._id}</p>
+                    <h6>Sub Order  : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
+                    <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
                     <p>Sub Order Price: {subOrder.OrderPrice}</p>
                     <p>Sub Order Status: {subOrder.OrderStatus}</p>
-                    <p>Restaurant ID: {subOrder.subOrderId}</p>
                     <h6>Articles:</h6>
                     {subOrder.Articles && subOrder.Articles.length > 0 ? (
                       subOrder.Articles.map((article, articleIndex) => (
                         <div key={articleIndex}>
-                          {articles.find(item => item._id === article.articleId) ? (
-                            <>
-                              <p>Article Name: {articles.find(item => item._id === article.articleId).name}</p>
-                              <p>Article Price: {articles.find(item => item._id === article.articleId).price}</p>
-                            </>
-                          ) : (
-                            <p>Article details not found...</p>
-                          )}
+                          <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
+                          <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
                           <p>Quantity: {article.quantity}</p>
                         </div>
                       ))

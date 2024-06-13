@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/navbar.css';
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from '../redux/slice/userSlice';
 import { fetchRestaurantsByOwnerId } from '../redux/slice/restaurantSlice';
@@ -24,6 +24,7 @@ const Navbar = ({ setPing, ping }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const notificationsRef = useRef(null);
+    const location = useLocation();
 
     useEffect(() => {
         if (user?.role === 'restaurantOwner') {
@@ -111,7 +112,7 @@ const Navbar = ({ setPing, ping }) => {
                     </button>
                 );
             case "admin":
-                return <h1>admin</h1>;
+                return null;
             case "restaurantOwner":
                 return (
                     <button className="dropdown-button" onClick={toggleMenu}>
@@ -173,9 +174,9 @@ const Navbar = ({ setPing, ping }) => {
 
     // ************************** lang section ************************** //
     const [languageData, setLanguageData] = useState({});
-    const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get('lang') || "fr";
+
     useEffect(() => {
         import(`../lang/${lang}.json`)
             .then((data) => {
@@ -186,11 +187,12 @@ const Navbar = ({ setPing, ping }) => {
             });
     }, [location.search]);
     
+
     return (
         <>
             <div className={`navbar`}>
                 <button className="menu-button" onClick={toggleMenu}>☰</button>
-                <Link to="/feed">
+                <Link to={`/feed?lang=${lang}`}>
                     <img src="/logo.svg" alt="App Logo" className="app-logo" />
                 </Link>
                 <div className="spacer"></div>
@@ -210,27 +212,24 @@ const Navbar = ({ setPing, ping }) => {
                 </button>
                 {renderCartOrAuthButtons()}
             </div>
-    
+
             {menuOpen && (
                 <>
                     <div className={`overlay ${animationClass}`} onClick={handleCloseMenu}></div>
                     <div className={`dropdown-menu ${animationClass}`}>
-                        <Link to={'/profile?lang='+lang} onClick={toggleMenu}>
+                        <Link to={`/profile?lang=${lang}`} onClick={toggleMenu}>
                             <h1 className='dropdown-content'><FontAwesomeIcon icon={faUser} className="menu-icon" />{languageData.profile}</h1>
                         </Link>
-                        <Link to={'/favoris?lang='+lang} onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faHeart} className="menu-icon" />{languageData.Favoris}</h1>
-                        </Link>
-                        <Link to={'/commandes?lang='+lang} onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" />{languageData.Commandes}</h1>
-                        </Link>
-                        <Link to={'/depcomercial?lang='+lang} onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" />{languageData.Wallet}</h1>
-                        </Link>
-                        <Link to={'/dashboard?lang='+lang} onClick={toggleMenu}>
-                            <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" />{languageData.Dashboard}</h1>
-                        </Link>
-                        
+                        {user?.role === 'admin' && (
+                            <>
+                                <Link to={`/usermanagement?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" /> User Management</h1>
+                                </Link>
+                                <Link to={`/feed?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Feed</h1>
+                                </Link>
+                            </>
+                        )}
                         {user?.role === 'restaurantOwner' && (
                             <>
                                 <h1 className='dropdown-content' onClick={toggleMenu}>
@@ -251,7 +250,7 @@ const Navbar = ({ setPing, ping }) => {
                     </div>
                 </>
             )}
-    
+
             {cartOpen && (
                 <>
                     <div className={`overlay ${cartAnimationClass}`} onClick={handleCloseCart}></div>

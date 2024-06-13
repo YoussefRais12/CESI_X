@@ -19,8 +19,20 @@ export const fetchRestaurantsByOwnerId = createAsyncThunk("restaurant/fetchResta
   return response.data;
 });
 
-// Add new restaurant
-export const addRestaurant = createAsyncThunk("restaurant/addRestaurant", async (newRestaurant) => {
+// Fetch restaurants by Name
+export const fetchRestaurantByName = createAsyncThunk("restaurant/fetchRestaurantByName", async (name) => {
+  const response = await axios.get(`http://localhost:5000/restaurant/${name}`);
+  return response.data;
+});
+
+// Fetch restaurants by category
+export const fetchRestaurantsByCategory = createAsyncThunk("restaurant/fetchRestaurantsByCategory", async (category) => {
+  const response = await axios.get(`http://localhost:5000/restaurant/category/${category}`);
+  return response.data;
+});
+
+// Create new restaurant
+export const createRestaurant = createAsyncThunk("restaurant/createRestaurant", async (newRestaurant) => {
   try {
     let result = await axios.post("http://localhost:5000/restaurant/register", newRestaurant, {
       headers: {
@@ -94,6 +106,37 @@ export const fetchMenusByRestaurantId = createAsyncThunk("restaurant/fetchMenusB
   }
 });
 
+// Upload restaurant image
+export const uploadRestaurantImage = createAsyncThunk("restaurant/uploadImage", async ({ id, formData }) => {
+  try {
+      let result = await axios.post(`http://localhost:5000/restaurant/upload-image/${id}`, formData, {
+          headers: {
+              Authorization: localStorage.getItem("token"),
+              "Content-Type": "multipart/form-data"
+          },
+      });
+      return result.data.restaurant;
+  } catch (error) {
+      console.log(error);
+      throw error;
+  }
+});
+
+// Rate a restaurant
+export const rateRestaurant = createAsyncThunk("restaurant/rateRestaurant", async ({ id, rating }) => {
+  try {
+    let response = await axios.post(`http://localhost:5000/restaurant/${id}/rate`, { rating }, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+});
+
 const initialState = {
   restaurants: [],
   restaurant: null,
@@ -143,14 +186,25 @@ const restaurantSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
-      .addCase(addRestaurant.pending, (state) => {
+      .addCase(fetchRestaurantsByCategory.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(addRestaurant.fulfilled, (state, action) => {
+      .addCase(fetchRestaurantsByCategory.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.restaurants = action.payload;
+      })
+      .addCase(fetchRestaurantsByCategory.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(createRestaurant.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(createRestaurant.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.restaurants.push(action.payload);
       })
-      .addCase(addRestaurant.rejected, (state, action) => {
+      .addCase(createRestaurant.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       })
@@ -198,6 +252,34 @@ const restaurantSlice = createSlice({
         state.menus = action.payload;
       })
       .addCase(fetchMenusByRestaurantId.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(uploadRestaurantImage.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(uploadRestaurantImage.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        const index = state.restaurants.findIndex((restaurant) => restaurant._id === action.payload._id);
+        if (index !== -1) {
+          state.restaurants[index] = action.payload;
+        }
+      })
+      .addCase(uploadRestaurantImage.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(rateRestaurant.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(rateRestaurant.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        const index = state.restaurants.find((restaurant) => restaurant._id === action.payload._id);
+        if (index !== -1) {
+          state.restaurants[index].averageRating = action.payload.averageRating;
+        }
+      })
+      .addCase(rateRestaurant.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       });

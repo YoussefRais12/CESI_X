@@ -16,9 +16,12 @@ import VerifPay from './pages/VerifPay';
 import PaymentHistory from './pages/PaymentHistory';
 import Error from "./pages/Error";
 import Feed from "./pages/Feed";
-import RequireRole from "./routes/PrivateRoute"; // Ensure this path matches the actual file location
+import RequireRole from "./routes/PrivateRoute"; 
 import Dashboard from "./pages/Dashboard";
-import RestaurantDetail from "./pages/RestaurantDetail"; // Import RestaurantDetail
+import RestaurantDetail from "./pages/RestaurantDetail"; 
+import UserManagement from './pages/UserManagement';
+import UserDetails from './pages/UserDetails';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -33,10 +36,11 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
-  const langUrl = userLang == undefined?"fr": userLang
-  const lang = searchParams.get('lang') || langUrl; 
   const stripePromise = loadStripe('pk_test_51PMUzFKJ5LRFuT3XFS2dKbfHUQm734UzoqoQXunU66rfSFilgwLXyqIBrbuecc83rlMTKQxEzijrX7iQAqPGIXXz00av4XhuzD');
   
+  const langUrl = userLang === undefined ? "fr" : userLang;
+  const lang = searchParams.get('lang') || langUrl;
+
   useEffect(() => {
     if (isAuth) {
       dispatch(userCurrent());
@@ -53,27 +57,35 @@ function App() {
 
       <div className="content">
         <Elements stripe={stripePromise}>
-          <Routes>
-            <Route path="/" element={isAuth ? <Navigate to={"/profile?lang="+lang} replace /> : <Login ping={ping} setPing={setPing} />} />
-            <Route path="/test" element={<Test />} />
-            <Route path="/teststripe" element={<TestStripe />} />
-            <Route path="/verif-pay" element={<VerifPay />} />
-            <Route path="/payment-history" element={<PaymentHistory />} />
-            <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
-            
-            {/* Applying RequireRole for protected routes */}
-            <Route element={<PrivateRoute />}>
-              <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
-                <Route path={"/profile"}  element={<Profile ping={ping} setPing={setPing} />} />
-              </Route>
-            </Route>
-            <Route path={"/commandes"} element={<Commandes />} />
-            <Route path={"/depcomercial"} element={<DepComercial />} />
-            <Route path={"/dashboard"} element={<Dashboard />} />
-            <Route path={"/favoris"} element={<Favoris />} />
-            <Route path={"/error"} element={<Error />} />
-            <Route path={"/feed"} element={<Feed />} />
-          </Routes>
+          <TransitionGroup>
+            <CSSTransition key={location.key} classNames="fade" timeout={1000}>
+              <Routes location={location}>
+                <Route path="/" element={isAuth ? <Navigate to={"/profile?lang=" + lang} replace /> : <Login ping={ping} setPing={setPing} />} />
+                <Route path="/test" element={<Test />} />
+                <Route path="/teststripe" element={<TestStripe />} />
+                <Route path="/verif-pay" element={<VerifPay />} />
+                <Route path="/payment-history" element={<PaymentHistory />} />
+                <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
+
+                {/* Applying RequireRole for protected routes */}
+                <Route element={<PrivateRoute />}>
+                  <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>
+                    <Route path="/profile" element={<Profile ping={ping} setPing={setPing} />} />
+                  </Route>
+                </Route>
+
+                <Route path="/commandes" element={<Commandes />} />
+                <Route path="/depcomercial" element={<DepComercial />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/favoris" element={<Favoris />} />
+                <Route path="/error" element={<Error />} />
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/usermanagement" element={<UserManagement />} />
+                <Route path="/user/:id" element={<UserDetails />} />
+
+              </Routes>
+            </CSSTransition>
+          </TransitionGroup>
         </Elements>
       </div>
     </div>

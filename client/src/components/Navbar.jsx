@@ -224,6 +224,9 @@ const Navbar = ({ setPing, ping }) => {
                                 <Link to={`/usermanagement?lang=${lang}`} onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" /> User Management</h1>
                                 </Link>
+                                <Link to={`/commandes?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Orders</h1>
+                                </Link>
                                 <Link to={`/feed?lang=${lang}`} onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Feed</h1>
                                 </Link>

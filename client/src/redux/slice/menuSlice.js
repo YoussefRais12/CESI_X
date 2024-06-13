@@ -14,7 +14,7 @@ export const fetchMenuById = createAsyncThunk("menu/fetchMenuById", async (id) =
 });
 
 // Add new menu
-export const addMenu = createAsyncThunk("menu/addMenu", async (newMenu) => {
+export const createMenu = createAsyncThunk("menu/createMenu", async (newMenu) => {
     try {
         let result = await axios.post("http://localhost:5000/menu/", newMenu, {
             headers: {
@@ -61,6 +61,7 @@ export const deleteMenu = createAsyncThunk("menu/deleteMenu", async (id) => {
 const initialState = {
     menus: [],
     menu: null,
+    restaurantMenus: [],
     status: null,
     error: null,
 };
@@ -76,7 +77,7 @@ const menuSlice = createSlice({
             })
             .addCase(fetchMenusByRestaurantId.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.menus = action.payload;
+                state.restaurantMenus = action.payload;
             })
             .addCase(fetchMenusByRestaurantId.rejected, (state, action) => {
                 state.status = "failed";
@@ -93,14 +94,14 @@ const menuSlice = createSlice({
                 state.status = "failed";
                 state.error = action.error.message;
             })
-            .addCase(addMenu.pending, (state) => {
+            .addCase(createMenu.pending, (state) => {
                 state.status = "loading";
             })
-            .addCase(addMenu.fulfilled, (state, action) => {
+            .addCase(createMenu.fulfilled, (state, action) => {
                 state.status = "succeeded";
                 state.menus.push(action.payload);
             })
-            .addCase(addMenu.rejected, (state, action) => {
+            .addCase(createMenu.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.error.message;
             })

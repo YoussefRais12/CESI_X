@@ -11,7 +11,6 @@ import DepComercial from "./pages/DepComercial";
 import Favoris from "./pages/Favoris";
 import Navbar from "./components/Navbar";
 import Test from "./pages/Test";
-import TestStripe from "./pages/TestStripe";
 import VerifPay from './pages/VerifPay';
 import PaymentHistory from './pages/PaymentHistory';
 import Error from "./pages/Error";
@@ -62,7 +61,6 @@ function App() {
               <Routes location={location}>
                 <Route path="/" element={isAuth ? <Navigate to={"/profile?lang=" + lang} replace /> : <Login ping={ping} setPing={setPing} />} />
                 <Route path="/test" element={<Test />} />
-                <Route path="/teststripe" element={<TestStripe />} />
                 <Route path="/verif-pay" element={<VerifPay />} />
                 <Route path="/payment-history" element={<PaymentHistory />} />
                 <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}

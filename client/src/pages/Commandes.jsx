@@ -193,8 +193,8 @@ function Commandes() {
               ) : (
                 <p>No sub-orders found.</p>
               )}
-              <button onClick={downloadPDF(order)}>Download as PDF</button>
-              <button onclick={PayOrder(order)}>Paye sale pauvre</button>
+              <button onClick={() => downloadPDF(order)}>Download as PDF</button>
+              <button onClick={() => PayOrder(order)}>Pay Order</button>
             </div>
           ))
         )}

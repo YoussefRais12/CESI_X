@@ -77,7 +77,6 @@ function Commandes() {
           orders.flatMap(order =>
             order.Orders.map(subOrder => subOrder.restaurantId)
           ).map(async restaurantId => {
-            console.log(restaurantId)
             const restaurant = await FetchRestaurant(restaurantId);
             return { id: restaurantId, name: restaurant.name };
           })
@@ -110,16 +109,14 @@ function Commandes() {
       });
   }, [location.search]);
 
-  const downloadPDF = () => {
+  const downloadPDF = (order) => {
     const doc = new jsPDF();
     let yOffset = 10;
-
-    orders.forEach((order, index) => {
-      doc.text(`Order ${index + 1}`, 10, yOffset);
+      doc.text(`Order ${1}`, 10, yOffset);
       yOffset += 10;
-      doc.text(`Order Address: ${order.orderaddress}`, 10, yOffset);
+      doc.text(`Order Address: ${user.address}`, 10, yOffset);
       yOffset += 10;
-      doc.text(`Order Phone: ${order.orderPhone}`, 10, yOffset);
+      doc.text(`Order Phone: ${user.phoneNumber}`, 10, yOffset);
       yOffset += 10;
       doc.text(`Order Price: ${order.OrderPrice}`, 10, yOffset);
       yOffset += 10;
@@ -136,7 +133,6 @@ function Commandes() {
         yOffset += 10;
         doc.text(`  Sub Order Status: ${subOrder.OrderStatus}`, 10, yOffset);
         yOffset += 10;
- 
 
         subOrder.Articles.forEach(article => {
           const articleInfo = articles.find(item => item._id === article.articleId);
@@ -150,10 +146,12 @@ function Commandes() {
       });
 
       yOffset += 10;
-    });
-
+    
     doc.save('orders.pdf');
   };
+  const PayOrder = (order) =>{
+    console.log(order)
+  }
 
   return (
     <div className="wrapper">
@@ -166,8 +164,8 @@ function Commandes() {
             <div key={index}>
               <h4>Order {index + 1}</h4>
               <p>Order ID: {order._id}</p>
-              <p>Order Address: {order.orderaddress}</p>
-              <p>Order Phone: {order.orderPhone}</p>
+              <p>Order Address: {user.address}</p>
+              <p>Order Phone: {user.phoneNumber}</p>
               <p>Order Price: {order.OrderPrice}</p>
               <p>Order Status: {order.OrderStatus}</p>
               <h5>Sub Orders:</h5>
@@ -195,11 +193,12 @@ function Commandes() {
               ) : (
                 <p>No sub-orders found.</p>
               )}
+              <button onClick={downloadPDF(order)}>Download as PDF</button>
+              <button onclick={PayOrder(order)}>Paye sale pauvre</button>
             </div>
           ))
         )}
       </div>
-      <button onClick={downloadPDF}>Download as PDF</button>
     </div>
   );
 }

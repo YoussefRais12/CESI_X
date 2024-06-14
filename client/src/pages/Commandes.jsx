@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom"; 
 import axios from "axios";
 import "../styles/commandes.css";
+import ViewPaymentDialog from "../components/ViewPaymentDialog";
 
 async function OrderUser(currentUserOrder) {
   const orderDetails = [];
@@ -60,6 +61,8 @@ function Commandes() {
   const user = useSelector((state) => state.user?.user);
   const [languageData, setLanguageData] = useState({});
   const location = useLocation();
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     async function fetchOrders() {
@@ -97,6 +100,7 @@ function Commandes() {
 
     fetchOrders();
   }, [user?.orders]);
+
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get("lang") || "fr";
@@ -149,9 +153,15 @@ function Commandes() {
     
     doc.save('orders.pdf');
   };
+
   const PayOrder = (order) =>{
-    console.log(order)
+    setSelectedOrder(order);
+    setShowPaymentDialog(true);
   }
+
+  const closePaymentDialog = () => {
+    setShowPaymentDialog(false); 
+  };
 
   return (
     <div className="wrapper">
@@ -199,6 +209,9 @@ function Commandes() {
           ))
         )}
       </div>
+      {showPaymentDialog && selectedOrder && (
+        <ViewPaymentDialog order={selectedOrder} onClose={closePaymentDialog} />
+      )}
     </div>
   );
 }

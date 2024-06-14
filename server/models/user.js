@@ -15,14 +15,15 @@ const userSchema = new schema({
     langUser: { type: String },
     img: { type: String },
     imgPublicId: { type: String },
-    address: { type: String }, // Added address field
-    phoneNumber: { type: String }, // Added phone number field
+    address: { type: String },
+    phoneNumber: { type: String },
     orders: [{ type: schema.Types.ObjectId, ref: 'Order' }],
     referralCode: { type: String, unique: true },
     referredBy: { type: schema.Types.ObjectId, ref: 'User' },
     hasUsedReferral: { type: Boolean, default: false },
-    logHistory: [logSchema],  
-    suspended: { type: Boolean, default: false } 
+    logHistory: [logSchema],
+    suspended: { type: Boolean, default: false },
+    deliveryPerson: { type: mongoose.Schema.Types.ObjectId, ref: 'DeliveryPerson' } // Add reference to DeliveryPerson
 });
 
 const User = mongoose.model("User", userSchema);

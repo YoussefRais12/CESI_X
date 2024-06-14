@@ -1,7 +1,6 @@
-// LoginContainer.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash, faHamburger, faBuilding } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import '../styles/login.css';
 import { userLogin, userRegister } from '../redux/slice/userSlice';
 import { useDispatch } from 'react-redux';
@@ -12,11 +11,14 @@ const LoginContainer = ({ ping, setPing }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [login, setLogin] = useState({ email: '', password: '', showPassword: false });
-    const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: '', referralCode: '' });
+    const [newUser, setNewUser] = useState({
+        name: '', email: '', password: '', role: '', referralCode: '',
+        address: '', phoneNumber: '', vehicleDetails: '', showPassword: false
+    });
     const [error, setError] = useState('');
+    const [validationErrors, setValidationErrors] = useState({});
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
-    const [currentStep, setCurrentStep] = useState(1);
     const [languageData, setLanguageData] = useState({});
     const passwordRef = useRef(null);
 
@@ -36,6 +38,10 @@ const LoginContainer = ({ ping, setPing }) => {
         setLogin({ ...login, showPassword: !login.showPassword });
     };
 
+    const toggleNewUserPasswordVisibility = () => {
+        setNewUser({ ...newUser, showPassword: !newUser.showPassword });
+    };
+
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             if (e.target.id === 'email') {
@@ -49,9 +55,7 @@ const LoginContainer = ({ ping, setPing }) => {
     const handleLogin = async () => {
         try {
             setError('');
-
             const response = await dispatch(userLogin(login)).unwrap();
-
             if (response.token) {
                 navigate('/feed');
                 setPing(!ping);
@@ -66,46 +70,50 @@ const LoginContainer = ({ ping, setPing }) => {
         }
     };
 
+    const validateInputs = () => {
+        const errors = {};
+        if (!newUser.name) {
+            errors.name = 'Name is required.';
+        }
+        if (!newUser.email) {
+            errors.email = 'Email is required.';
+        } else if (!validateEmail(newUser.email)) {
+            errors.email = 'Invalid email format.';
+        }
+        if (!newUser.password) {
+            errors.password = 'Password is required.';
+        } else if (!validatePassword(newUser.password)) {
+            errors.password = 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.';
+        }
+        if (!newUser.address) {
+            errors.address = 'Address is required.';
+        }
+        if (!newUser.phoneNumber) {
+            errors.phoneNumber = 'Phone number is required.';
+        }
+        if (!newUser.role) {
+            errors.role = 'Role is required.';
+        }
+        if (newUser.role === 'deliveryPerson' && !newUser.vehicleDetails) {
+            errors.vehicleDetails = 'Vehicle details are required for delivery persons.';
+        }
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleRegister = async () => {
+        if (!validateInputs()) {
+            return;
+        }
         try {
+            console.log('Registering user:', newUser); // Debug log
             await dispatch(userRegister(newUser)).unwrap();
-            setNewUser({ name: '', email: '', password: '', role: '', referralCode: '' });
-            handleLoginWithNewUser();
+            setNewUser({ name: '', email: '', password: '', role: '', referralCode: '', address: '', phoneNumber: '', vehicleDetails: '' });
+            setShowCreateAccountModal(false); // Close modal on successful registration
+            setShowSignInModal(true); // Show login modal
         } catch (error) {
             setError('Error registering user.');
             console.error("Error registering user", error);
-        }
-    };
-
-    const handleLoginWithNewUser = async () => {
-        try {
-            setError('');
-
-            const response = await dispatch(userLogin({ email: newUser.email, password: newUser.password })).unwrap();
-
-            if (response.token) {
-                navigate('/feed');
-                setPing(!ping);
-                setShowCreateAccountModal(false); // Close modal on successful account creation and login
-            }
-        } catch (error) {
-            setError('Error logging in with new account.');
-            console.error('Login error:', error);
-        }
-    };
-
-    const nextStep = () => {
-        if (currentStep === 1 && (!newUser.name || !newUser.email)) {
-            setError('Name and email are required.');
-        } else if (currentStep === 2 && !newUser.password) {
-            setError('Password is required.');
-        } else if (currentStep === 1 && !validateEmail(newUser.email)) {
-            setError('Invalid email format.');
-        } else if (currentStep === 2 && !validatePassword(newUser.password)) {
-            setError('Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.');
-        } else {
-            setError('');
-            setCurrentStep(currentStep + 1);
         }
     };
 
@@ -119,9 +127,8 @@ const LoginContainer = ({ ping, setPing }) => {
         return re.test(String(password));
     };
 
-    const selectRole = (role) => {
-        setNewUser({ ...newUser, role: role });
-        handleRegister();
+    const handleInputChange = (e) => {
+        setNewUser({ ...newUser, [e.target.name]: e.target.value });
     };
 
     return (
@@ -132,8 +139,10 @@ const LoginContainer = ({ ping, setPing }) => {
                 <div className="button-container">
                     <button className="sign-in" onClick={() => setShowSignInModal(true)}>Sign in</button>
                     <button className="create-account" onClick={() => {
-                        setNewUser({ name: '', email: '', password: '', role: '', referralCode: '' });
-                        setCurrentStep(1);
+                        setNewUser({
+                            name: '', email: '', password: '', role: '', referralCode: '',
+                            address: '', phoneNumber: '', vehicleDetails: '', showPassword: false
+                        });
                         setShowCreateAccountModal(true);
                     }}>Create account</button>
                     <p className="terms-text">
@@ -185,64 +194,96 @@ const LoginContainer = ({ ping, setPing }) => {
                         <div className="login-container">
                             <span className="close" onClick={() => setShowCreateAccountModal(false)}>&times;</span>
                             <h2 className="headline-login">Create your account</h2>
-                            {currentStep === 1 && (
-                                <div>
-                                    <div className="input-container">
-                                        <input
-                                            type="text"
-                                            placeholder="Name"
-                                            value={newUser.name}
-                                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                                        />
-                                        <span className="input-count">{newUser.name.length} / 50</span>
-                                    </div>
-                                    <div className="input-container">
-                                        <input
-                                            type="email"
-                                            placeholder="Email"
-                                            value={newUser.email}
-                                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                                        />
-                                    </div>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Name"
+                                    value={newUser.name}
+                                    onChange={handleInputChange}
+                                />
+                                {validationErrors.name && <p className="error">{validationErrors.name}</p>}
+                            </div>
+                            <div className="input-container">
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email"
+                                    value={newUser.email}
+                                    onChange={handleInputChange}
+                                />
+                                {validationErrors.email && <p className="error">{validationErrors.email}</p>}
+                            </div>
+                            <div className="input-container">
+                                <input
+                                    type={newUser.showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    placeholder="Password"
+                                    value={newUser.password}
+                                    onChange={handleInputChange}
+                                />
+                                <FontAwesomeIcon
+                                    icon={newUser.showPassword ? faEyeSlash : faEye}
+                                    onClick={toggleNewUserPasswordVisibility}
+                                    className="eye-icon"
+                                />
+                                {validationErrors.password && <p className="error">{validationErrors.password}</p>}
+                            </div>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    name="address"
+                                    placeholder="Address"
+                                    value={newUser.address}
+                                    onChange={handleInputChange}
+                                />
+                                {validationErrors.address && <p className="error">{validationErrors.address}</p>}
+                            </div>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    name="phoneNumber"
+                                    placeholder="Phone Number"
+                                    value={newUser.phoneNumber}
+                                    onChange={handleInputChange}
+                                />
+                                {validationErrors.phoneNumber && <p className="error">{validationErrors.phoneNumber}</p>}
+                            </div>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    name="referralCode"
+                                    placeholder="Referral Code (Optional)"
+                                    value={newUser.referralCode}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div className="input-container">
+                                <select
+                                    name="role"
+                                    value={newUser.role}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="">Select Role</option>
+                                    <option value="user">User</option>
+                                    <option value="restaurantOwner">Restaurant Owner</option>
+                                    <option value="deliveryPerson">Delivery Person</option>
+                                </select>
+                                {validationErrors.role && <p className="error">{validationErrors.role}</p>}
+                            </div>
+                            {newUser.role === 'deliveryPerson' && (
+                                <div className="input-container">
+                                    <input
+                                        type="text"
+                                        name="vehicleDetails"
+                                        placeholder="Vehicle Details"
+                                        value={newUser.vehicleDetails}
+                                        onChange={handleInputChange}
+                                    />
+                                    {validationErrors.vehicleDetails && <p className="error">{validationErrors.vehicleDetails}</p>}
                                 </div>
                             )}
-                            {currentStep === 2 && (
-                                <div>
-                                    <div className="input-container">
-                                        <input
-                                            type="password"
-                                            placeholder="Password"
-                                            value={newUser.password}
-                                            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                            {currentStep === 3 && (
-                                <div>
-                                    <div className="input-container">
-                                        <input
-                                            type="text"
-                                            placeholder="Referral Code (Optional)"
-                                            value={newUser.referralCode}
-                                            onChange={(e) => setNewUser({ ...newUser, referralCode: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="role-selection-container">
-                                        <button className="role-button" onClick={() => selectRole('client')}>
-                                            Client
-                                            <FontAwesomeIcon icon={faHamburger} className="role-icon" />
-                                        </button>
-                                        <button className="role-button" onClick={() => selectRole('entreprise')}>
-                                            Entreprise
-                                            <FontAwesomeIcon icon={faBuilding} className="role-icon" />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                            {currentStep < 3 && (
-                                <button onClick={nextStep}>Next</button>
-                            )}
+                            <button onClick={handleRegister}>Register</button>
                             {error && <p className="error">{error}</p>}
                         </div>
                     </div>

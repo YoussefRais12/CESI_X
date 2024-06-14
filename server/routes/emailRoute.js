@@ -7,6 +7,9 @@ const emailRouter = express.Router();
 emailRouter.post("/login", isAuth(), async (req, res) => {
   // authMiddleware
   const user = req.user;
+  if (!user) {
+    return res.status(400).json({ error: "Adresse email manquante" });
+  }
   try {
     await sendEmail(
       user.email,
@@ -18,21 +21,21 @@ emailRouter.post("/login", isAuth(), async (req, res) => {
     console.error("Erreur lors de l'envoi de l'email de connexion", error);
     res.status(500).json({ error: "Veuillez réessayer !!" });
   }
-  // const { user } = req.body;
-  // if (!user) {
-  //   return res.status(400).json({ error: "Adresse email manquante" });
-  // }
-  // try {
-  //   await sendEmail(
-  //     user,
-  //     "Connexion réussie",
-  //     "Vous vous êtes connecté avec succès."
-  //   );
-  //   res.json({ message: "Email de connexion envoyé à " + user });
-  // } catch (error) {
-  //   console.error("Erreur lors de l'envoi de l'email de connexion:", error);
-  //   res.status(500).json({ error: "Let's try again budd" });
-  // }
+  //   const { user } = req.body;
+  //   if (!user) {
+  //     return res.status(400).json({ error: "Adresse email manquante" });
+  //   }
+  //   try {
+  //     await sendEmail(
+  //       user,
+  //       "Connexion réussie",
+  //       "Vous vous êtes connecté avec succès."
+  //     );
+  //     res.json({ message: "Email de connexion envoyé à " + user });
+  //   } catch (error) {
+  //     console.error("Erreur lors de l'envoi de l'email de connexion:", error);
+  //     res.status(500).json({ error: "Let's try again budd" });
+  //   }
 });
 
 emailRouter.post("/order", isAuth(), async (req, res) => {

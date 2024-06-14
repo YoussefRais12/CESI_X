@@ -264,8 +264,8 @@ const RestaurantDetail = () => {
     const handleAddToCartConfirmed = async () => {
         try {
             const orderData = {
-                orderaddress: user.address,
-                orderPhone: user.phoneNumber,
+                orderaddress: "user.address",
+                orderPhone: "user.phoneNumber",
                 userId: user._id,
                 DeliveryPersonId: '664f0e247baafc94cf772754',
                 Articles: [

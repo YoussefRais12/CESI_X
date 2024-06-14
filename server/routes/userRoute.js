@@ -1,6 +1,9 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
+
 const User = require("../models/user");
+const DeliveryPerson = require("../models/delivery-person");
 const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
 const { loginRules, registerRules, Validation } = require("../middleware/auth-validator");
@@ -31,9 +34,17 @@ const generateReferralCode = () => {
 
 // Register new user
 userRouter.post("/register", registerRules(), Validation, async (req, res) => {
-    const { name, email, password, role, isVerified, lang, referralCode, address, phoneNumber } = req.body;
+    const { name, email, password, role, address, phoneNumber, referralCode, vehicleDetails } = req.body;
     try {
-        const newUser = new User(req.body);
+        const newUser = new User({
+            name,
+            email,
+            password,
+            role,
+            address,
+            phoneNumber,
+            referralCode
+        });
 
         // Check if email exists
         const searchedUser = await User.findOne({ email });
@@ -52,7 +63,7 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         }
 
         // Generate a unique referral code for the new user
-        newUser.referralCode = new mongoose.Types.ObjectId().toString();
+        newUser.referralCode = generateReferralCode();
 
         // Hash password
         const salt = 10;
@@ -63,6 +74,16 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
         // Save user
         const result = await newUser.save();
 
+        // If the user is a delivery person, create a delivery person entry
+        if (role === "deliveryPerson") {
+            const deliveryPerson = new DeliveryPerson({
+                userId: result._id,
+                vehicleDetails: vehicleDetails,
+                available: true
+            });
+            await deliveryPerson.save();
+        }
+
         // Generate a token
         const payload = { _id: result._id, name: result.name };
         const token = await jwt.sign(payload, process.env.SecretOrKey, { expiresIn: 1000 * 60 * 60 * 24 });
@@ -72,9 +93,8 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
 
         res.send({ user: result, msg: "User is saved", token: `Bearer ${token}` });
     } catch (error) {
-        res.send("Cannot save the user");
-        console.error("An error occurred:", error.message);
-        console.log(error);
+        console.error("An error occurred:", error.message); // Log the error
+        res.status(500).send({ msg: "Cannot save the user", error: error.message }); // Improved error response
     }
 });
 
@@ -82,18 +102,18 @@ userRouter.post("/register", registerRules(), Validation, async (req, res) => {
 userRouter.post("/login", loginRules(), Validation, async (req, res) => {
     const { email, password } = req.body;
     try {
-        const searchedUser = await User.findOne({ email });
+        const searchedUser = await User.findOne({ email }).populate("deliveryPerson");
 
         // If the email does not exist
         if (!searchedUser) {
             return res.status(400).send({ msg: "Bad credential" });
         }
 
-           // Check if the user is suspended
-           if (searchedUser.suspended) {
+        // Check if the user is suspended
+        if (searchedUser.suspended) {
             return res.status(403).send({ msg: "Account is suspended" });
         }
-        
+
         // Check password
         const match = await bcrypt.compare(password, searchedUser.password);
         if (!match) {
@@ -128,7 +148,7 @@ userRouter.post("/add", isAuth(), checkRole(["admin"]), async (req, res) => {
 // Get all users (requires role check)
 userRouter.get("/all", isAuth(), checkRole(['admin']), async (req, res) => {
     try {
-        let result = await User.find();
+        let result = await User.find().populate("deliveryPerson");
         res.send({ users: result, msg: "All users" });
     } catch (error) {
         console.log(error);
@@ -138,7 +158,7 @@ userRouter.get("/all", isAuth(), checkRole(['admin']), async (req, res) => {
 // Get user by ID (requires role check)
 userRouter.get("/find/:id", isAuth(), checkRole(["admin"]), async (req, res) => {
     try {
-        let result = await User.findById(req.params.id);
+        let result = await User.findById(req.params.id).populate("deliveryPerson");
         res.send({ users: result, msg: "This is the user by ID" });
     } catch (error) {
         console.log(error);
@@ -148,7 +168,7 @@ userRouter.get("/find/:id", isAuth(), checkRole(["admin"]), async (req, res) => 
 // Update user by ID (requires role check)
 userRouter.put("/update/:id", isAuth(), async (req, res) => {
     try {
-        const { oldPassword, password, ...otherUpdates } = req.body;
+        const { oldPassword, password, vehicleDetails, ...otherUpdates } = req.body;
 
         let updateUser = { ...otherUpdates };
 
@@ -170,6 +190,15 @@ userRouter.put("/update/:id", isAuth(), async (req, res) => {
 
         let result = await User.findByIdAndUpdate({ _id: req.params.id }, { $set: updateUser }, { new: true });
 
+        // If the user is a delivery person, update the delivery person entry
+        if (result.role === "deliveryPerson") {
+            await DeliveryPerson.findOneAndUpdate(
+                { userId: result._id },
+                { vehicleDetails },
+                { new: true }
+            );
+        }
+
         // Add log entry
         await addLog(req.params.id, 'User updated');
 
@@ -181,9 +210,14 @@ userRouter.put("/update/:id", isAuth(), async (req, res) => {
 });
 
 // Delete user by ID (requires role check)
-userRouter.delete("/delete/:id", isAuth(),  async (req, res) => {
+userRouter.delete("/delete/:id", isAuth(), async (req, res) => {
     try {
         let result = await User.findByIdAndDelete(req.params.id);
+
+        // If the user is a delivery person, delete the delivery person entry
+        if (result.role === "deliveryPerson") {
+            await DeliveryPerson.findOneAndDelete({ userId: result._id });
+        }
 
         // Add log entry
         await addLog(req.params.id, 'User deleted');
@@ -195,8 +229,14 @@ userRouter.delete("/delete/:id", isAuth(),  async (req, res) => {
 });
 
 // Get current user
-userRouter.get("/current", isAuth(), (req, res) => {
-    res.status(200).send({ user: req.user });
+userRouter.get("/current", isAuth(), async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user._id).populate("deliveryPerson");
+        res.status(200).send({ user: currentUser });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 // Upload user image

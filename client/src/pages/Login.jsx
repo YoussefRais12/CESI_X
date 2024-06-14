@@ -13,7 +13,7 @@ const LoginContainer = ({ ping, setPing }) => {
     const [login, setLogin] = useState({ email: '', password: '', showPassword: false });
     const [newUser, setNewUser] = useState({
         name: '', email: '', password: '', role: '', referralCode: '',
-        address: '', phoneNumber: '', showPassword: false
+        address: '', phoneNumber: '', vehicleDetails: '', showPassword: false
     });
     const [error, setError] = useState('');
     const [validationErrors, setValidationErrors] = useState({});
@@ -94,6 +94,9 @@ const LoginContainer = ({ ping, setPing }) => {
         if (!newUser.role) {
             errors.role = 'Role is required.';
         }
+        if (newUser.role === 'deliveryPerson' && !newUser.vehicleDetails) {
+            errors.vehicleDetails = 'Vehicle details are required for delivery persons.';
+        }
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -105,7 +108,7 @@ const LoginContainer = ({ ping, setPing }) => {
         try {
             console.log('Registering user:', newUser); // Debug log
             await dispatch(userRegister(newUser)).unwrap();
-            setNewUser({ name: '', email: '', password: '', role: '', referralCode: '', address: '', phoneNumber: '' });
+            setNewUser({ name: '', email: '', password: '', role: '', referralCode: '', address: '', phoneNumber: '', vehicleDetails: '' });
             setShowCreateAccountModal(false); // Close modal on successful registration
             setShowSignInModal(true); // Show login modal
         } catch (error) {
@@ -138,7 +141,7 @@ const LoginContainer = ({ ping, setPing }) => {
                     <button className="create-account" onClick={() => {
                         setNewUser({
                             name: '', email: '', password: '', role: '', referralCode: '',
-                            address: '', phoneNumber: '', showPassword: false
+                            address: '', phoneNumber: '', vehicleDetails: '', showPassword: false
                         });
                         setShowCreateAccountModal(true);
                     }}>Create account</button>
@@ -268,6 +271,18 @@ const LoginContainer = ({ ping, setPing }) => {
                                 </select>
                                 {validationErrors.role && <p className="error">{validationErrors.role}</p>}
                             </div>
+                            {newUser.role === 'deliveryPerson' && (
+                                <div className="input-container">
+                                    <input
+                                        type="text"
+                                        name="vehicleDetails"
+                                        placeholder="Vehicle Details"
+                                        value={newUser.vehicleDetails}
+                                        onChange={handleInputChange}
+                                    />
+                                    {validationErrors.vehicleDetails && <p className="error">{validationErrors.vehicleDetails}</p>}
+                                </div>
+                            )}
                             <button onClick={handleRegister}>Register</button>
                             {error && <p className="error">{error}</p>}
                         </div>

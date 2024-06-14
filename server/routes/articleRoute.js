@@ -77,10 +77,10 @@ articleRoute.get('/name/:name', isAuth(), async (req, res) => {
 });
 
 // Find articles by IDs
-articleRoute.post('/articles/findByIds', async (req, res) => {
-    const { ids } = req.body;
+articleRoute.get('/articles/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const articles = await Article.find({ '_id': { $in: ids } });
+        const articles = await Article.findById(id);
         res.status(200).json(articles);
     } catch (error) {
         res.status(400).json({ error: error.message });

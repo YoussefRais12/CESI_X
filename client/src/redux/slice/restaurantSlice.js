@@ -19,6 +19,12 @@ export const fetchRestaurantsByOwnerId = createAsyncThunk("restaurant/fetchResta
   return response.data;
 });
 
+// Fetch restaurants by Name
+export const fetchRestaurantByName = createAsyncThunk("restaurant/fetchRestaurantByName", async (name) => {
+  const response = await axios.get(`http://localhost:5000/restaurant/${name}`);
+  return response.data;
+});
+
 // Fetch restaurants by category
 export const fetchRestaurantsByCategory = createAsyncThunk("restaurant/fetchRestaurantsByCategory", async (category) => {
   const response = await axios.get(`http://localhost:5000/restaurant/category/${category}`);

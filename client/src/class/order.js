@@ -111,6 +111,13 @@ export default class Order {
                             result = await this.StaticAddArticle(orderId,article.articleId, article.quantity);
                         }
                         return result.data.order; 
+                    }else{
+                        const result = await axios.post(`${apiurl}/order/add`, orderData, {
+                            headers: {
+                                Authorization: localStorage.getItem("token"),
+                            },
+                        });
+                        return result.data.order; 
                     }
                 }
             }else{

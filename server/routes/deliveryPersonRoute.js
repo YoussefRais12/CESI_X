@@ -2,6 +2,8 @@ const express = require('express');
 const deliveryPersonRouter = express.Router();
 const DeliveryPerson = require('../models/delivery-person');
 const isAuth = require("../middleware/passport");
+const Order = require('../models/Order');
+const SubOrder = require('../models/SubOrder');
 
 // Create a new delivery person
 deliveryPersonRouter.post('/', async (req, res) => {
@@ -84,6 +86,26 @@ deliveryPersonRouter.delete('/delete/:id', isAuth(), async (req, res) => {
         res.status(200).json({ message: "Delivery person deleted successfully" });
     } catch (error) {
         res.status(400).json({ error: error.message });
+    }
+});
+//-----------------------------------------------------------------
+//                   Order Section
+//-----------------------------------------------------------------
+deliveryPersonRouter.post('/validateOrder/:orderId', isAuth(), async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await Order.findById(orderId);
+
+        if (order.OrderStatus === 'Pending') {
+            order.OrderStatus = 'DeliveryValidated';
+        } else if (order.OrderStatus === 'RestaurantValidated') {
+            order.OrderStatus = 'Validated';
+        }
+
+        await order.save();
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

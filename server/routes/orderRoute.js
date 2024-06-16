@@ -188,7 +188,24 @@ orderRoute.put('/:id', isAuth(), async (req, res) => {
         order.userId = userId !== undefined ? userId : order.userId;
         order.DeliveryPersonId = DeliveryPersonId !== undefined ? DeliveryPersonId : order.DeliveryPersonId;
         order.Orders = Orders !== undefined ? Orders : order.Orders;
-        order.OrderPrice = OrderPrice !== undefined ? OrderPrice : order.OrderPrice;
+        order.OrderStatus = OrderStatus !== undefined ? OrderStatus : order.OrderStatus;
+
+        await order.save();
+        console.log('Updated order:', order);
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+// fbue
+orderRoute.put('/:id/status', isAuth(), async (req, res) => {
+    const { id } = req.params;
+    const { OrderStatus } = req.body;
+    try {
+        const order = await Order.findById(id);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
         order.OrderStatus = OrderStatus !== undefined ? OrderStatus : order.OrderStatus;
 
         await order.save();
@@ -339,5 +356,20 @@ orderRoute.delete('/:idorder/article/:idarticle', isAuth(), async (req, res) => 
         res.status(400).json({ error: error.message });
     }
 });
+
+// Get an order by subOrder ID
+orderRoute.get('/suborder/:subOrderId', async (req, res) => {
+    const { subOrderId } = req.params;
+    try {
+        const order = await Order.findOne({ 'Orders.subOrderId': subOrderId }).populate('Orders.subOrderId');
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 module.exports = orderRoute;

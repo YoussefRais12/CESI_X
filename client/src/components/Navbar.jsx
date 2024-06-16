@@ -234,14 +234,23 @@ const Navbar = ({ setPing, ping }) => {
                         )}
                         {user?.role === 'restaurantOwner' && (
                             <>
+                                <Link to={`/commandes?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Orders</h1>
+                                </Link>
+                                <Link to={`/feed?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Feed</h1>
+                                </Link>
                                 <h1 className='dropdown-content' onClick={toggleMenu}>
                                     <FontAwesomeIcon icon={faStore} className="menu-icon" /> My Restaurants
+
                                 </h1>
                                 {ownedRestaurants && ownedRestaurants.length > 0 ? (
                                     ownedRestaurants.map((restaurant) => (
+                                        <>
                                         <Link to={`/restaurant/${restaurant._id}`} key={restaurant._id} onClick={toggleMenu}>
-                                            <h2 className='submenu-item'>{restaurant.name}</h2>
+                                                <h2 className='submenu-item'>{restaurant.name}</h2>
                                         </Link>
+                                        </>
                                     ))
                                 ) : (
                                     <p className='submenu-item'>No restaurants found</p>

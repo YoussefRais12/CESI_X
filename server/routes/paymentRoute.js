@@ -6,7 +6,7 @@ const Stripe = require('stripe');
 const stripe = Stripe('sk_test_51PMUzFKJ5LRFuT3XK0gGfYY7jtr2CUDbJP8mQt4IQyNjZq63GUXUDaq1qdGqLkN1UdUDSVm1eZXzNhz6bCFtef1j00tyTYOHs6');
 
 paymentRoute.post('/create-payment-intent', async (req, res) => {
-    const { amount, currency, paymentMethodId, userId } = req.body;
+    const { amount, currency, paymentMethodId, userId, orderId } = req.body;
   
     try {
         const paymentIntent = await stripe.paymentIntents.create({
@@ -22,6 +22,7 @@ paymentRoute.post('/create-payment-intent', async (req, res) => {
       // Enregistrement du paiement dans la base de données
       const payment = new Payment({
         userId,
+        orderId,
         amount,
         currency,
         status: paymentIntent.status,
@@ -33,6 +34,7 @@ paymentRoute.post('/create-payment-intent', async (req, res) => {
     } catch (error) {
       const payment = new Payment({
         userId,
+        orderId,
         amount,
         currency,
         status: 'failed',

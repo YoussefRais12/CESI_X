@@ -15,7 +15,6 @@ const PaymentHistory = () => {
                 setPayments(response.data);
             } catch (error) {
                 console.error('Error fetching payment history:', error);
-                setError('Error fetching payment history');
             }
         };
 
@@ -34,6 +33,7 @@ const PaymentHistory = () => {
                             <th>Montant</th>
                             <th>Devise</th>
                             <th>Statut</th>
+                            <th>orderID</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,6 +43,7 @@ const PaymentHistory = () => {
                                 <td>{payment.amount / 100}</td>
                                 <td>{payment.currency.toUpperCase()}</td>
                                 <td>{payment.status}</td>
+                                <td>{payment.orderId}</td>
                             </tr>
                         ))}
                     </tbody>

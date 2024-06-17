@@ -44,6 +44,7 @@ const ViewPaymentDialog  = ({ order, onClose }) => {
                     currency: 'eur',
                     paymentMethodId: paymentMethod.id,
                     userId: user._id,
+                    orderId: order._id,
                 }),
             });
 

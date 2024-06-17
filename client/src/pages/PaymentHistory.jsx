@@ -56,7 +56,7 @@ const PaymentHistory = () => {
                                 <td>
                                     <button onClick={() => deletePayment(payment._id)}>&times;</button>
                                 </td>
-                                <td>{moment(payment.createdAt).format('YYYY-MM-DD HH:mm')}</td>
+                                <td>{moment(payment.createdAt).format('YYYY-MM-DD | HH:mm')}</td>
                                 <td>{payment.amount / 100}</td>
                                 <td>{payment.currency.toUpperCase()}</td>
                                 <td>{payment.status}</td>

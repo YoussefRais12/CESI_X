@@ -145,7 +145,7 @@ const Navbar = ({ setPing, ping }) => {
                         <div>{notification.message}</div>
                         <div className="notification-meta">
                             <span>{moment(notification.createdAt).fromNow()}</span>
-                            <span>{moment(notification.createdAt).format('YYYY-MM-DD HH:mm')}</span>
+                            <span>{moment(notification.createdAt).format('YYYY-MM-DD | HH:mm')}</span>
                         </div>
                     </div>
                 ))

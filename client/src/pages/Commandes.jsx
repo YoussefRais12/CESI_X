@@ -9,27 +9,28 @@ import ViewPaymentDialog from "../components/ViewPaymentDialog";
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
 
-  if (user.role === "restaurantOwner") {
-    try {
-      const result = await axios.get(`http://localhost:5000/restaurant/owner/${user._id}`, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
+  if (user && user.orders) 
+    if (user.role === "restaurantOwner") {
+      try {
+        const result = await axios.get(`http://localhost:5000/restaurant/owner/${user._id}`, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        });
 
-      const restaurants = result.data;
-      for (const restaurant of restaurants) {
-        for (const subOrderId of restaurant.subOrders) {
-          const orderResult = await axios.get(`http://localhost:5000/order/suborder/${subOrderId}`, {
-            headers: {
-              Authorization: localStorage.getItem("token"),
-            },
-          });
+        const restaurants = result.data;
+        for (const restaurant of restaurants) {
+          for (const subOrderId of restaurant.subOrders) {
+            const orderResult = await axios.get(`http://localhost:5000/order/suborder/${subOrderId}`, {
+              headers: {
+                Authorization: localStorage.getItem("token"),
+              },
+            });
 
-          const order = orderResult.data;
-          if (order.Orders.some(subOrder => subOrder.OrderStatus === "en cours")) {
-            orderDetails.push(order);
-          }
+            const order = orderResult.data;
+            if (order.Orders.some(subOrder => subOrder.OrderStatus === "en cours")) {
+              orderDetails.push(order);
+            }
         }
       }
     } catch (error) {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { logout, userCurrent, userEdit, uploadUserImage, userDelete } from '../redux/slice/userSlice';
+import { fetchDeliveryPersonByUserId, updateDeliveryPersonAvailability } from '../redux/slice/deliveryPersonSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faCamera } from '@fortawesome/free-solid-svg-icons';
 import AWN from 'awesome-notifications';
@@ -11,6 +12,7 @@ import '../styles/profile.css';
 
 const Profile = ({ ping, setPing }) => {
   const user = useSelector((state) => state.user?.user);
+  const deliveryPerson = useSelector((state) => state.deliveryPerson?.deliveryPerson);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,6 +46,10 @@ const Profile = ({ ping, setPing }) => {
         address: user.address,
         phoneNumber: user.phoneNumber
       });
+
+      if (user.role === 'deliveryPerson') {
+        dispatch(fetchDeliveryPersonByUserId(user._id));
+      }
     }
   }, [user, dispatch]);
 
@@ -179,6 +185,13 @@ const Profile = ({ ping, setPing }) => {
     }
   };
 
+  const handleAvailabilityChange = () => {
+    if (deliveryPerson) {
+      const newAvailability = !deliveryPerson.available;
+      dispatch(updateDeliveryPersonAvailability({ id: deliveryPerson._id, available: newAvailability }));
+    }
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'info':
@@ -278,6 +291,16 @@ const Profile = ({ ping, setPing }) => {
               <p>{languageData.role || 'Role'}:
                 <strong> {user?.role}</strong>
               </p>
+              {user?.role === 'deliveryPerson' && deliveryPerson && (
+                <>
+                  <h3>{languageData.deliveryPersonInfo || 'Delivery Person Info'}</h3>
+                  <p>{languageData.vehicleDetails || 'Vehicle Details'}: <strong>{deliveryPerson.vehicleDetails || 'N/A'}</strong></p>
+                  <p>{languageData.status || 'Status'}: <strong>{deliveryPerson.available ? 'Available' : 'Not Available'}</strong></p>
+                  <button onClick={handleAvailabilityChange}>
+                    {deliveryPerson.available ? 'Set to Not Available' : 'Set to Available'}
+                  </button>
+                </>
+              )}
             </div>
             {isEditing && (
               <>

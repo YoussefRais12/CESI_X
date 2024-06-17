@@ -55,4 +55,15 @@ paymentRoute.post('/create-payment-intent', async (req, res) => {
     }
   });
 
+  // Route pour supprimer un paiement par son ID
+  paymentRoute.delete('/:paymentId', async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        await Payment.findByIdAndDelete(paymentId);
+        res.json({ message: 'Payment deleted successfully' });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+  });
+
 module.exports = paymentRoute;

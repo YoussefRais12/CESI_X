@@ -298,7 +298,6 @@ function Commandes() {
                     <p>No sub-orders found.</p>
                   )}
                   <button onClick={() => downloadPDF(order)}>Download as PDF</button>
-                  <button onClick={() => deleteOrder(order)}>Delete Order</button>
                 </div>
               )
             ))}

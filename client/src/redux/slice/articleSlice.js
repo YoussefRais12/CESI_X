@@ -9,9 +9,20 @@ export const fetchAllArticles = createAsyncThunk("article/fetchAllArticles", asy
 
 // Fetch article by ID
 export const fetchArticlesByIds = createAsyncThunk('article/fetchByIds', async (ids) => {
-    const response = await axios.post('http://localhost:5000/article/articles/findByIds', { ids });
-    return response.data;
+    try {
+        const articles = [];
+        for (const id of ids) {
+            const response = await axios.get(`http://localhost:5000/article/articles/${id}`);
+            articles.push(response.data);
+        }
+        return articles;
+    } catch (error) {
+        // Gérer les erreurs ici
+        console.error('Error fetching articles by IDs:', error);
+        throw error;
+    }
 });
+
 
 // Fetch all articles for a restaurant
 export const fetchArticlesByRestaurantId = createAsyncThunk("article/fetchArticlesByRestaurantId", async (restaurantId) => {

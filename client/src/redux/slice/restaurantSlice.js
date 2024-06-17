@@ -21,7 +21,7 @@ export const fetchRestaurantsByOwnerId = createAsyncThunk("restaurant/fetchResta
 
 // Fetch restaurants by Name
 export const fetchRestaurantByName = createAsyncThunk("restaurant/fetchRestaurantByName", async (name) => {
-  const response = await axios.get(`http://localhost:5000/restaurant/${name}`);
+  const response = await axios.get(`http://localhost:5000/restaurant/name/${name}`);
   return response.data;
 });
 

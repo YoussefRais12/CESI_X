@@ -64,10 +64,9 @@ restaurantRoute.get("/:id", async (req, res) => {
 });
 
 // Get restaurants by name
-restaurantRoute.get("/name", async (req, res) => {
-  const { name } = req.query;
+restaurantRoute.get("/name/:name", async (req, res) => {
+  const { name } = req.params;
   console.log('Requête de recherche de restaurant avec le nom :', name);
-
   try {
      const restaurant = await Restaurant.find({name: { $regex: name, $options: 'i' }});
     //  const restaurant = await Restaurant.find({name:  {$regex: name, $options: 'id'}}, { _id: 0 });

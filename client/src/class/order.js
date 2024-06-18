@@ -10,7 +10,7 @@ export default class Order {
     orders;
     OrderPrice;
     OrderStatus;
-    initialized = false; 
+    initialized = false;
 
     constructor(orderData) {
         this.initialize(orderData);
@@ -27,7 +27,7 @@ export default class Order {
             this.orders = result.Orders;
             this.OrderStatus = result.OrderStatus;
             this.OrderPrice = result.OrderPrice;
-            this.initialized = true; 
+            this.initialized = true;
         } catch (error) {
             throw error;
         }
@@ -64,6 +64,7 @@ export default class Order {
             throw error;
         }
     }
+
     async addArticle(articleId, quantity) {
         try {
             const apiurl = REACT_APP_API_URL;
@@ -79,6 +80,7 @@ export default class Order {
             throw error;
         }
     }
+
     async removeArticle(articleId) {
         try {
             const apiurl = REACT_APP_API_URL;
@@ -94,47 +96,72 @@ export default class Order {
         }
     }
 
+    async addMenu(menuId, quantityMenu, articles) {
+        try {
+            const apiurl = REACT_APP_API_URL;
+            const requestData = {
+                quantityMenu,
+                articles: articles.map(article => ({
+                    articleId: article.id,
+                    quantity: article.quantity * quantityMenu
+                }))
+            };
+            const result = await axios.post(`${apiurl}/order/${this.getOrderId()}/menu/${menuId}`, requestData, {
+                headers: {
+                    Authorization: localStorage.getItem("token"),
+                },
+            });
+            return result;
+        } catch (error) {
+            console.error('Error adding menu to order:', error);
+            throw error;
+        }
+    }
+
     static async addOrderUsingRoute(orderData) {
         try {
             const apiurl = REACT_APP_API_URL;
-            const idOrders = await this.getCurrentUserOrders(); 
+            const idOrders = await this.getCurrentUserOrders();
             if (idOrders.length > 0) {
                 for (const orderId of idOrders) {
-                    const result = await axios.get(`${apiurl}/order/${orderId}`, { 
+                    const result = await axios.get(`${apiurl}/order/${orderId}`, {
                         headers: {
                             Authorization: localStorage.getItem("token"),
                         },
                     });
+                    console.log(result)
                     if (result.data.OrderStatus === "en cours") {
-                        let result
                         for (const article of orderData.Articles) {
-                            result = await this.StaticAddArticle(orderId,article.articleId, article.quantity);
+                            await this.StaticAddArticle(orderId, article.articleId, article.quantity);
                         }
-                        return result.data.order; 
-                    }else{
+                        for (const menu of orderData.Menus) {
+                            await this.StaticAddMenu(orderId, menu.menuId, menu.quantityMenu, menu.Articles);
+                        }
+                        return result.data.order;
+                    } else {
                         const result = await axios.post(`${apiurl}/order/add`, orderData, {
                             headers: {
                                 Authorization: localStorage.getItem("token"),
                             },
                         });
-                        return result.data.order; 
+                        return result.data.order;
                     }
                 }
-            }else{
+            } else {
                 const result = await axios.post(`${apiurl}/order/add`, orderData, {
                     headers: {
                         Authorization: localStorage.getItem("token"),
                     },
                 });
-                return result.data.order; 
+                return result.data.order;
             }
-        
         } catch (error) {
             console.error('Error adding order using route:', error);
             throw error;
         }
     }
-    /***************************** Static function ******************************/
+
+    /***************************** Static functions ******************************/
     static async getCurrentUserOrders() {
         try {
             const apiurl = REACT_APP_API_URL;
@@ -143,7 +170,7 @@ export default class Order {
                     Authorization: localStorage.getItem("token"),
                 },
             });
-            const orders =  result.data.user.orders;
+            const orders = result.data.user.orders;
             const orderIds = orders.map(order => order);
             return orderIds;
         } catch (error) {
@@ -151,6 +178,7 @@ export default class Order {
             throw error;
         }
     }
+
     static async StaticAddArticle(orderId, articleId, quantity) {
         try {
             const apiurl = REACT_APP_API_URL;
@@ -163,6 +191,28 @@ export default class Order {
             return result;
         } catch (error) {
             console.error('Error adding article to order:', error);
+            throw error;
+        }
+    }
+
+    static async StaticAddMenu(orderId, menuId, quantityMenu, articles) {
+        try {
+            const apiurl = REACT_APP_API_URL;
+            const requestData = {
+                quantityMenu,
+                articles: articles.map(article => ({
+                    articleId: article.articleId,
+                    quantity: article.quantity
+                }))
+            };
+            const result = await axios.post(`${apiurl}/order/${orderId}/menu/${menuId}`, requestData, {
+                headers: {
+                    Authorization: localStorage.getItem("token"),
+                },
+            });
+            return result;
+        } catch (error) {
+            console.error('Error adding menu to order:', error);
             throw error;
         }
     }

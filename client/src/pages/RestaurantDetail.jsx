@@ -263,19 +263,43 @@ const RestaurantDetail = () => {
     };
     const handleAddToCartConfirmed = async () => {
         try {
-            const orderData = {
-                orderaddress: "user.address",
-                orderPhone: "user.phoneNumber",
-                userId: user._id,
-                DeliveryPersonId: '664f0e247baafc94cf772754',
-                Articles: [
-                    {
-                        articleId: articleSelected.id,
-                        quantity: selectedQuantity
-                    }
-                ]
-            };
-            console.log(user)
+            let orderData;
+    
+            if (selectedMenu) {
+                orderData = {
+                    orderaddress: "user.address",
+                    orderPhone: "user.phoneNumber",
+                    userId: user._id,
+                    DeliveryPersonId: '664f0e247baafc94cf772754',
+                    Articles: [],
+                    Menus: [
+                        {
+                            menuId: selectedMenu.id,
+                            quantityMenu: selectedQuantity,
+                            Articles: selectedMenu.articles.map(article => ({
+                                articleId: article.id,
+                                quantity: article.quantity * selectedQuantity
+                            }))
+                        }
+                    ]
+                };
+            } else if (articleSelected) {
+                orderData = {
+                    orderaddress: "user.address",
+                    orderPhone: "user.phoneNumber",
+                    userId: user._id,
+                    DeliveryPersonId: '664f0e247baafc94cf772754',
+                    Articles: [
+                        {
+                            articleId: articleSelected.id,
+                            quantity: selectedQuantity
+                        }
+                    ],
+                    Menus: []
+                };
+            }
+    
+            console.log(user);
             console.log(orderData);
             const order = new Order(orderData);
             await new Promise(resolve => {
@@ -286,14 +310,14 @@ const RestaurantDetail = () => {
                     }
                 }, 100);
             });
-
+    
             setOrder(order);
         } catch (error) {
             console.error('Error creating order:', error);
         }
         setQuantityDialogOpen(false);
         notifier.success('Item added to cart successfully!');
-    };
+    };    
 
     const handleAddToCart = async () => {
         setQuantityDialogOpen(true);

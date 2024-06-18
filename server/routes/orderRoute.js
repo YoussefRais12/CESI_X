@@ -374,5 +374,105 @@ orderRoute.get('/suborder/:subOrderId', async (req, res) => {
     }
 });
 
+orderRoute.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const order = await Order.findById(id)
+            .populate({
+                path: 'Orders.subOrderId',
+                populate: [
+                    { path: 'Articles.articleId', model: 'Article' },
+                    { path: 'Menus.menuId', model: 'Menu' },
+                    { path: 'Menus.Articles.articleId', model: 'Article' } 
+                ]
+            })
+            .lean();
+
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+orderRoute.post('/:orderId/menu/:menuId', async (req, res) => {
+    const { orderId, menuId } = req.params;
+    const { quantityMenu } = req.body;
+
+    if (!quantityMenu) {
+        return res.status(400).json({ error: 'quantityMenu is required' });
+    }
+
+    try {
+        // Find the order
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        // Find the menu
+        const menu = await Menu.findById(menuId);
+        if (!menu) {
+            return res.status(404).json({ error: 'Menu not found' });
+        }
+
+        // Ensure quantity is valid
+        if (quantityMenu <= 0) {
+            return res.status(400).json({ error: 'Invalid quantity for menu' });
+        }
+
+        // Find the corresponding subOrder for the restaurant
+        const restaurantId = menu.restaurantId;
+        let subOrder = order.Orders.find(subOrder => subOrder.restaurantId.toString() === restaurantId.toString());
+
+        // If no subOrder exists for the restaurant, create a new one
+        if (!subOrder) {
+            subOrder = new SubOrder({
+                restaurantId,
+                Articles: [],
+                Menus: [],
+                OrderPrice: 0,
+                OrderStatus: "en cours"
+            });
+            order.Orders.push(subOrder);
+        }
+
+        // Check if the menu already exists in the subOrder
+        let existingMenu = subOrder.Menus.find(m => m.menuId.toString() === menuId);
+
+        if (existingMenu) {
+            // If the menu exists, increase the quantity
+            existingMenu.quantityMenu += quantityMenu;
+        } else {
+            // If the menu does not exist, add it to the subOrder
+            const newMenu = {
+                menuId: menu._id,
+                quantityMenu,
+                Articles: menu.articles.map(article => ({
+                    articleId: article._id,
+                    quantity: article.quantity ? article.quantity * quantityMenu : 0
+                }))
+            };
+
+            subOrder.Menus.push(newMenu);
+        }
+
+        // Recalculate subOrder price
+        subOrder.OrderPrice += menu.price * quantityMenu;
+
+        // Save the order
+        await order.save();
+
+        res.status(200).json({ message: 'Menu added to order successfully', order });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+module.exports = orderRoute;
+
 
 module.exports = orderRoute;

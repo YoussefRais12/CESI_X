@@ -84,10 +84,24 @@ async function FetchRestaurant(idRestaurant) {
   }
 }
 
+async function FetchMenu(idMenu) {
+  try {
+    const result = await axios.get(`http://localhost:5000/menu/${idMenu}`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return result.data;
+  } catch (error) {
+    console.error(`Error fetching menu ${idMenu}:`, error);
+  }
+}
+
 function Commandes() {
   const [orders, setOrders] = useState([]);
   const [restaurants, setRestaurants] = useState([]); 
   const [articles, setArticles] = useState([]);
+  const [menus, setMenus] = useState([]);
   const user = useSelector((state) => state.user?.user);
   const [languageData, setLanguageData] = useState({});
   const location = useLocation();
@@ -106,6 +120,12 @@ function Commandes() {
           )
         );
 
+        const menuIds = orders.flatMap(order =>
+          order.Orders.flatMap(subOrder =>
+            subOrder.Menus.map(menu => menu.menuId)
+          )
+        );
+
         const orderRestaurantInfo = await Promise.all(
           orders.flatMap(order =>
             order.Orders.map(subOrder => subOrder.restaurantId)
@@ -121,8 +141,15 @@ function Commandes() {
           })
         );
 
+        const orderMenuInfo = await Promise.all(
+          menuIds.map(async (menuId) => {
+            return await FetchMenu(menuId);
+          })
+        );
+
         setRestaurants(orderRestaurantInfo);
         setArticles(orderArticleInfo);
+        setMenus(orderMenuInfo);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -237,24 +264,42 @@ function Commandes() {
                         <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
                         <p>Sub Order Price: {subOrder.OrderPrice}</p>
                         <p>Sub Order Status: {subOrder.OrderStatus}</p>
-                        <h6>Articles:</h6>
-                        {subOrder.Articles && subOrder.Articles.length > 0 ? (
-                          subOrder.Articles.map((article, articleIndex) => (
-                            <div key={articleIndex}>
-                              <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
-                              <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
-                              <p>Quantity: {article.quantity}</p>
-                            </div>
-                          ))
-                        ) : (
-                          <p>No articles found.</p>
+                        {subOrder.Menus && subOrder.Menus.length > 0 && (
+                          <>
+                            <h6>Menus:</h6>
+                            {subOrder.Menus.map((menu, menuIndex) => (
+                              <div key={menuIndex}>
+                                <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'N/A'}</p>
+                                <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'N/A'}</p>
+                                <p>Quantity: {menu.quantityMenu}</p>
+                                <h6>Menu Articles:</h6>
+                                {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
+                                  <div key={menuArticleIndex}>
+                                    <p>Article Name: {menuArticle?.name || 'N/A'}</p>
+                                    <p>Article Price: {menuArticle?.price || 'N/A'}</p>
+                                  </div>
+                                ))}
+                              </div> 
+                            ))}
+                          </>
+                        )}
+                        {subOrder.Articles && subOrder.Articles.length > 0 && (
+                          <>
+                            <h6>Articles:</h6>
+                            {subOrder.Articles.map((article, articleIndex) => (
+                              <div key={articleIndex}>
+                                <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
+                                <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
+                                <p>Quantity: {article.quantity}</p>
+                              </div>
+                            ))}
+                          </>
                         )}
                       </div>
                     ))
                   ) : (
                     <p>No sub-orders found.</p>
                   )}
-                  <button onClick={() => downloadPDF(order)}>Download as PDF</button>
                   <button onClick={() => PayOrder(order)}>Pay Order</button>
                   <button onClick={() => deleteOrder(order)}>Delete Order</button>
                 </div>
@@ -281,17 +326,36 @@ function Commandes() {
                         <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
                         <p>Sub Order Price: {subOrder.OrderPrice}</p>
                         <p>Sub Order Status: {subOrder.OrderStatus}</p>
-                        <h6>Articles:</h6>
-                        {subOrder.Articles && subOrder.Articles.length > 0 ? (
-                          subOrder.Articles.map((article, articleIndex) => (
-                            <div key={articleIndex}>
-                              <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
-                              <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
-                              <p>Quantity: {article.quantity}</p>
-                            </div>
-                          ))
-                        ) : (
-                          <p>No articles found.</p>
+                        {subOrder.Menus && subOrder.Menus.length > 0 && (
+                          <>
+                            <h6>Menus:</h6>
+                            {subOrder.Menus.map((menu, menuIndex) => (
+                              <div key={menuIndex}>
+                                <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'N/A'}</p>
+                                <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'N/A'}</p>
+                                <p>Quantity: {menu.quantityMenu}</p>
+                                <h6>Menu Articles:</h6>
+                                {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
+                                  <div key={menuArticleIndex}>
+                                    <p>Article Name: {menuArticle?.name || 'N/A'}</p>
+                                    <p>Article Price: {menuArticle?.price || 'N/A'}</p>
+                                  </div>
+                                ))}
+                              </div> 
+                            ))}
+                          </>
+                        )}
+                        {subOrder.Articles && subOrder.Articles.length > 0 && (
+                          <>
+                            <h6>Articles:</h6>
+                            {subOrder.Articles.map((article, articleIndex) => (
+                              <div key={articleIndex}>
+                                <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
+                                <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
+                                <p>Quantity: {article.quantity}</p>
+                              </div>
+                            ))}
+                          </>
                         )}
                       </div>
                     ))

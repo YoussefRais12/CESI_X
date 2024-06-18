@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom"; 
 import axios from "axios";
-import "../css/commandes.css";
+import "../styles/commandes.css";
 import ViewPaymentDialog from "../components/ViewPaymentDialog";
 
 async function fetchOrdersByUserRole(user) {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import moment from 'moment';
-import '../css/paymenthistory.css';
+import '../styles/paymenthistory.css';
 
 const PaymentHistory = () => {
     const user = useSelector((state) => state.user?.user);

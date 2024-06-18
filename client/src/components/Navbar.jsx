@@ -273,6 +273,11 @@ const Navbar = ({ setPing, ping }) => {
             onChange={handleSearchInput}
           />
         </div>
+        
+        <button className="notification-button" onClick={toggleNotifications}>
+                    <FontAwesomeIcon icon={faBell} />
+                    {notifications.length > 0 && <span className="notification-count">{notifications.length}</span>}
+                </button>
 
         <div id="result">
           {searchResults.length > 0 ? (
@@ -308,7 +313,7 @@ const Navbar = ({ setPing, ping }) => {
             {user?.role === "admin" && (
               <>
                 
-                <div className="spacer"></div>
+                {/* <div className="spacer"></div>
                 <div className="search-container">
                     <IconButton type="submit" aria-label="search">
                         <SearchIcon />
@@ -318,11 +323,8 @@ const Navbar = ({ setPing, ping }) => {
                         inputProps={{ 'aria-label': 'search' }}
                         className="search-input"
                     />
-                </div>
-                <button className="notification-button" onClick={toggleNotifications}>
-                    <FontAwesomeIcon icon={faBell} />
-                    {notifications.length > 0 && <span className="notification-count">{notifications.length}</span>}
-                </button>
+                </div> */}
+                
                 {renderCartOrAuthButtons()}
                 </>
             )}

@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import AWN from 'awesome-notifications';
 import 'awesome-notifications/dist/style.css';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField } from '@mui/material';
 
 const ViewPaymentDialog  = ({ order, onClose }) => {
     const stripe = useStripe();
@@ -14,10 +14,20 @@ const ViewPaymentDialog  = ({ order, onClose }) => {
     const [paymentStatus, setPaymentStatus] = useState(null);
     const user = useSelector((state) => state.user?.user);
     const notifier = new AWN();
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [firstNameError, setFirstNameError] = useState(false);
+    const [lastNameError, setLastNameError] = useState(false);
 
     const handlePayment = async () => {
  
         if (!stripe || !elements) {
+            return;
+        }
+        if (!firstName || !lastName) {
+            setFirstNameError(!firstName);
+            setLastNameError(!lastName);
+            notifier.alert('Please enter your first and last name.');
             return;
         }
 
@@ -45,6 +55,8 @@ const ViewPaymentDialog  = ({ order, onClose }) => {
                     paymentMethodId: paymentMethod.id,
                     userId: user._id,
                     orderId: order._id,
+                    firstName: firstName,
+                    lastName: lastName,
                 }),
             });
 
@@ -95,6 +107,18 @@ const ViewPaymentDialog  = ({ order, onClose }) => {
         }
     };
 
+    // Limiter aux lettres uniquement + Convertir en majuscules
+    const handleFirstNameChange = (e) => {
+        const value = e.target.value.replace(/[^A-Za-zÀ-ÿ\- ]/g, '');
+        setFirstName(value.toUpperCase());
+        setFirstNameError(false); 
+    };
+    const handleLastNameChange = (e) => {
+        const value = e.target.value.replace(/[^A-Za-zÀ-ÿ\- ]/g, '');
+        setLastName(value.toUpperCase()); 
+        setLastNameError(false);
+    };
+    
     return (
         <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth sx={{ p: 3 }}>
           <DialogTitle>Effectuer le Paiement</DialogTitle>
@@ -102,6 +126,27 @@ const ViewPaymentDialog  = ({ order, onClose }) => {
             <Typography variant="subtitle1" gutterBottom>
                 Montant : {order.OrderPrice} €
             </Typography>
+            <TextField
+                label="Prénom"
+                variant="outlined"
+                margin="normal"
+                value={firstName}
+                onChange={handleFirstNameChange}
+                error={firstNameError}
+                required
+                InputLabelProps={{ shrink: true }}
+                sx={{ mr: 5 }}
+            />
+            <TextField
+                label="Nom"
+                variant="outlined"
+                margin="normal"
+                value={lastName}
+                onChange={handleLastNameChange}
+                error={lastNameError}
+                required
+                InputLabelProps={{ shrink: true }}
+            />
             <CardElement style={{ margin: '1rem 0' }} disabled={true} />
             <Typography variant="body2" color="error" paragraph>
                 {paymentStatus}

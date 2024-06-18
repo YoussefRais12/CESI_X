@@ -8,6 +8,7 @@ const PaymentHistory = () => {
     const user = useSelector((state) => state.user?.user);
     const [payments, setPayments] = useState([]);
     const [error, setError] = useState('');
+    const [selectedPayment, setSelectedPayment] = useState(null);
 
     useEffect(() => {
         const fetchPayments = async () => {
@@ -22,16 +23,12 @@ const PaymentHistory = () => {
         fetchPayments();
     }, [user]);
 
-    const deletePayment = async (paymentId) => {
-        try {
-            await axios.delete(`http://localhost:5000/payments/${paymentId}`);
-            // Rafraîchir la liste des paiements après la suppression
-            const updatedPayments = payments.filter(payment => payment._id !== paymentId);
-            setPayments(updatedPayments);
-        } catch (error) {
-            console.error('Error deleting payment:', error);
-            setError('Error deleting payment');
-        }
+    // Fonctions pour gérer l'affichage des détails du paiement sélectionné
+    const handleShowDetails = (payment) => {
+        setSelectedPayment(payment);
+    };
+    const handleCloseDetails = () => {
+        setSelectedPayment(null);
     };
 
     return (
@@ -42,31 +39,46 @@ const PaymentHistory = () => {
                 <table>
                     <thead>
                         <tr>
-                            <th>  </th>
                             <th>Date</th>
                             <th>Montant</th>
                             <th>Devise</th>
                             <th>Statut</th>
                             <th>orderID</th>
+                            <th>Détails</th>
                         </tr>
                     </thead>
                     <tbody>
                         {payments.map(payment => (
                             <tr key={payment._id}>
-                                <td>
-                                    <button onClick={() => deletePayment(payment._id)}>&times;</button>
-                                </td>
                                 <td>{moment(payment.createdAt).format('YYYY-MM-DD | HH:mm')}</td>
                                 <td>{payment.amount / 100}</td>
                                 <td>{payment.currency.toUpperCase()}</td>
                                 <td>{payment.status}</td>
                                 <td>{payment.orderId}</td>
+                                <td>
+                                    <button onClick={() => handleShowDetails(payment)}>Voir</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             ) : (
                 <p>Aucun paiement trouvé</p>
+            )}
+
+            {selectedPayment && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close" onClick={handleCloseDetails}>&times;</span>
+                        <h2>Détails du Paiement</h2>
+                        <p>orderID : {selectedPayment.orderId}</p>
+
+                        <p>Date : {moment(selectedPayment.createdAt).format('YYYY-MM-DD | HH:mm')}</p>
+                        <p>Montant : {selectedPayment.amount / 100} {selectedPayment.currency.toUpperCase()}</p>
+                        <p>Statut : {selectedPayment.status}</p>
+                        {/* Ajoutez d'autres détails si nécessaire */}
+                    </div>
+                </div>
             )}
         </div>
     );

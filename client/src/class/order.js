@@ -137,7 +137,7 @@ export default class Order {
                         for (const menu of orderData.Menus) {
                             await this.StaticAddMenu(orderId, menu.menuId, menu.quantityMenu, menu.Articles);
                         }
-                        return result.data.order;
+                        return result.data;
                     } else {
                         const result = await axios.post(`${apiurl}/order/add`, orderData, {
                             headers: {
@@ -215,15 +215,5 @@ export default class Order {
             console.error('Error adding menu to order:', error);
             throw error;
         }
-    }
-
-    toObject() {
-        return {
-            orderaddress: this.orderaddress,
-            orderPhone: this.orderPhone,
-            userId: this.userId,
-            DeliveryPersonId: this.DeliveryPersonId,
-            Orders: this.orders
-        };
     }
 }

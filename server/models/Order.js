@@ -13,13 +13,20 @@ const orderSchema = new Schema({
             articleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true },
             quantity: { type: Number, required: true }
         }],
+        Menus: [{
+            menuId: { type: mongoose.Schema.Types.ObjectId, ref: 'Menu' },
+            Articles: [{
+                articleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true },
+                quantity: { type: Number, required: true }
+            }],
+            quantityMenu : { type: Number, required: true }
+        }],
         OrderPrice: { type: Number, required: true },
         OrderStatus: { type: String, required: true }
     }],
     OrderPrice: { type: Number },
     OrderStatus: { type: String }
 });
-
 
 const Order = mongoose.model('Order', orderSchema);
 

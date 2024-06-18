@@ -5,6 +5,7 @@ const SubOrder = require('../models/SubOrder');
 const User = require('../models/user');
 const Article = require('../models/article');
 const Restaurant = require('../models/restaurant');
+const Menu = require('../models/menu');
 const isAuth = require("../middleware/passport");
 const checkRole = require("../middleware/checkRole");
 
@@ -13,25 +14,26 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 orderRoute.post('/add', async (req, res) => {
-    const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles } = req.body;
+    const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles, Menus } = req.body;
 
     try {
-        let allArticlesExist = true;
+        let allItemsExist = true;
         let totalOrderPrice = 0;
-        const articlesByRestaurant = {};
+        const itemsByRestaurant = {};
 
+        // Traitement des articles
         for (const item of Articles) {
             const article = await Article.findById(item.articleId);
             if (!article || item.quantity <= 0) {
-                allArticlesExist = false;
+                allItemsExist = false;
                 break;
             }
 
             const restaurantId = article.restaurantId;
             const articlePrice = article.price * item.quantity;
             totalOrderPrice += articlePrice;
-            if (!articlesByRestaurant[restaurantId]) {
-                articlesByRestaurant[restaurantId] = [];
+            if (!itemsByRestaurant[restaurantId]) {
+                itemsByRestaurant[restaurantId] = { articles: [], menus: [] };
             }
 
             const newArticle = {
@@ -39,29 +41,62 @@ orderRoute.post('/add', async (req, res) => {
                 quantity: item.quantity
             };
 
-            articlesByRestaurant[restaurantId].push(newArticle);
+            itemsByRestaurant[restaurantId].articles.push(newArticle);
         }
 
-        if (allArticlesExist) {
+        // Traitement des menus
+        for (const menuItem of Menus) {
+            const menu = await Menu.findById(menuItem.menuId).populate('articles'); // Correct path
+            if (!menu || menuItem.quantityMenu <= 0) {
+                allItemsExist = false;
+                break;
+            }
+
+            const restaurantId = menu.restaurantId;
+            const menuPrice = menu.price * menuItem.quantityMenu;
+            totalOrderPrice += menuPrice;
+            if (!itemsByRestaurant[restaurantId]) {
+                itemsByRestaurant[restaurantId] = { articles: [], menus: [] };
+            }
+
+            const newMenu = {
+                menuId: menu._id,
+                quantityMenu: menuItem.quantityMenu,
+                Articles: menu.articles.map(article => ({
+                    articleId: article._id,
+                    quantity: article.quantity ? article.quantity * menuItem.quantityMenu : 0
+                }))
+            };
+
+            itemsByRestaurant[restaurantId].menus.push(newMenu);
+        }
+
+        if (allItemsExist) {
             const subOrders = [];
-            for (const restaurantId in articlesByRestaurant) {
-                const articles = articlesByRestaurant[restaurantId];
+            for (const restaurantId in itemsByRestaurant) {
+                const { articles, menus } = itemsByRestaurant[restaurantId];
                 let subOrderPrice = 0;
+
                 for (const article of articles) {
                     const articleData = await Article.findById(article.articleId);
                     subOrderPrice += articleData.price * article.quantity;
                 }
 
+                for (const menu of menus) {
+                    const menuData = await Menu.findById(menu.menuId);
+                    subOrderPrice += menuData.price * menu.quantityMenu;
+                }
+
                 const subOrder = new SubOrder({
                     restaurantId,
                     Articles: articles,
+                    Menus: menus,
                     OrderPrice: subOrderPrice,
                     OrderStatus: "en cours"
                 });
 
                 await subOrder.save();
 
-                // Add subOrder to the corresponding restaurant
                 const restaurant = await Restaurant.findById(restaurantId);
                 restaurant.subOrders.push(subOrder._id);
                 await restaurant.save();
@@ -97,7 +132,8 @@ orderRoute.post('/add', async (req, res) => {
                     restaurantId: subOrder.restaurantId,
                     OrderPrice: subOrder.OrderPrice,
                     OrderStatus: subOrder.OrderStatus,
-                    Articles: subOrder.Articles // Include the articles
+                    Articles: subOrder.Articles,
+                    Menus: subOrder.Menus
                 })),
                 OrderPrice: totalOrderPrice,
                 OrderStatus: "en cours"
@@ -108,38 +144,23 @@ orderRoute.post('/add', async (req, res) => {
             user.orders.push(newOrder._id);
             await user.save();
 
-            // Transform the order to include sub-order details
             const orderWithDetails = await Order.findById(newOrder._id)
                 .populate({
                     path: 'Orders.subOrderId',
-                    populate: {
-                        path: 'Articles.articleId',
-                        model: 'Article'
-                    }
+                    populate: [
+                        { path: 'Articles.articleId', model: 'Article' },
+                        { path: 'Menus.menuId', model: 'Menu' },
+                        { path: 'Menus.Articles.articleId', model: 'Article' } // Populate articles within menus
+                    ]
                 })
                 .lean();
 
             res.status(201).json({ message: "Commande ajoutée avec succès", order: orderWithDetails });
         } else {
-            res.status(400).json({ error: 'At least one of the articles does not exist or has an invalid quantity' });
+            res.status(400).json({ error: 'At least one of the articles or menus does not exist or has an invalid quantity' });
         }
     } catch (error) {
         res.status(400).json({ error: error.message });
-    }
-});
-
-
-// Get a order by ID
-orderRoute.get('/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const order = await Order.findById(id);
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-        res.status(200).json(order);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
     }
 });
 

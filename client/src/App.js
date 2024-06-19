@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import PrivateRoute from "./routes/PrivateRoute";
 import Commandes from "./pages/Commandes";
+import RestaurantOrder from "./pages/RestaurantOrder";
 import DepComercial from "./pages/DepComercial";
 import Favoris from "./pages/Favoris";
 import Navbar from "./components/Navbar";
@@ -73,6 +74,7 @@ function App() {
                 </Route>
 
                 <Route path="/commandes" element={<Commandes />} />
+                <Route path="/restaurantOrder" element={<RestaurantOrder />} />
                 <Route path="/depcomercial" element={<DepComercial />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/favoris" element={<Favoris />} />

@@ -630,7 +630,45 @@ orderRoute.post('/:orderId/menu/:menuId', async (req, res) => {
     }
 });
 
-module.exports = orderRoute;
+orderRoute.put('/accept-suborder/:subOrderId', isAuth(), async (req, res) => {
+    const { subOrderId } = req.params;
+    
+    try {
+        if (!subOrderId) {
+            return res.status(400).json({ message: 'SubOrder ID is required' });
+        }
+
+        // Find the subOrder by ID
+        const subOrder = await SubOrder.findById(subOrderId);
+        if (!subOrder) {
+            return res.status(404).json({ message: 'SubOrder not found' });
+        }
+
+        // Ensure the subOrder status is 'en cours'
+        if (subOrder.OrderStatus !== 'en cours') {
+            return res.status(400).json({ message: 'Only subOrders with status "en cours" can be accepted' });
+        }
+
+        // Update subOrder status to 'accepted'
+        subOrder.OrderStatus = 'accepted';
+        await subOrder.save();
+
+        // Optionally update the parent order's status if needed
+        const parentOrder = await Order.findOne({ 'Orders.subOrderId': subOrderId });
+        if (parentOrder) {
+            const subOrderToUpdate = parentOrder.Orders.find(o => o.subOrderId.toString() === subOrderId);
+            if (subOrderToUpdate) {
+                subOrderToUpdate.OrderStatus = 'accepted';
+                await parentOrder.save();
+            }
+        }
+
+        res.status(200).json({ success: true, message: 'SubOrder accepted successfully' });
+    } catch (error) {
+        console.error('Error accepting subOrder:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 
 module.exports = orderRoute;

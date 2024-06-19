@@ -84,7 +84,7 @@ const PaymentHistory = () => {
 
     const handleShowDetails = async (payment) => {
         setSelectedPayment(payment);
-        const order = await fetchOrderDetails(payment._id);
+        const order = await fetchOrderDetails(payment.orderId);
 
         if (order) {
             const articleIds = order.Orders.flatMap(subOrder =>

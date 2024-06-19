@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import jsPDF from 'jspdf';
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom"; 
 import axios from "axios";
@@ -170,47 +169,6 @@ function Commandes() {
       });
   }, [location.search]);
 
-  const downloadPDF = (order) => {
-    const doc = new jsPDF();
-    let yOffset = 10;
-    doc.text(`Order ${1}`, 10, yOffset);
-    yOffset += 10;
-    doc.text(`Order Address: ${user.address}`, 10, yOffset);
-    yOffset += 10;
-    doc.text(`Order Phone: ${user.phoneNumber}`, 10, yOffset);
-    yOffset += 10;
-    doc.text(`Order Price: ${order.OrderPrice}`, 10, yOffset);
-    yOffset += 10;
-    doc.text(`Order Status: ${order.OrderStatus}`, 10, yOffset);
-    yOffset += 10;
-
-    order.Orders.forEach((subOrder, subIndex) => {
-      doc.text(`  Sub Order ${subIndex + 1}`, 10, yOffset);
-      yOffset += 10;
-      const restaurantInfo = restaurants.find(r => r.id === subOrder.restaurantId);
-      doc.text(`  Restaurant Name: ${restaurantInfo ? restaurantInfo.name : 'N/A'}`, 10, yOffset);
-      yOffset += 10;
-      doc.text(`  Sub Order Price: ${subOrder.OrderPrice}`, 10, yOffset);
-      yOffset += 10;
-      doc.text(`  Sub Order Status: ${subOrder.OrderStatus}`, 10, yOffset);
-      yOffset += 10;
-
-      subOrder.Articles.forEach(article => {
-        const articleInfo = articles.find(item => item._id === article.articleId);
-        doc.text(`    Article Name: ${articleInfo ? articleInfo.name : 'N/A'}`, 10, yOffset);
-        yOffset += 10;
-        doc.text(`    Article Price: ${articleInfo ? articleInfo.price : 'N/A'}`, 10, yOffset);
-        yOffset += 10;
-        doc.text(`    Quantity: ${article.quantity}`, 10, yOffset);
-        yOffset += 10;
-      });
-    });
-
-    yOffset += 10;
-
-    doc.save('orders.pdf');
-  };
-
   const deleteOrder = async (order) => {
     if (!order) {
       console.error('No order to delete');
@@ -241,130 +199,67 @@ function Commandes() {
   return (
     <div className="wrapper">
       <h3>{languageData.Commandes || 'Order'}</h3>
-      {orders.length === 0 ? (
+      {orders.filter(order => order.OrderStatus === "en cours").length === 0 ? (
         <p>No orders found.</p>
       ) : (
         <>
           <div>
             <h4>Orders in Progress</h4>
-            {orders.map((order, index) => (
-              order.OrderStatus === "en cours" && (
-                <div key={index} className="order-in-progress">
-                  <h5>Order {index + 1}</h5>
-                  <p>Order ID: {order._id}</p>
-                  <p>Order Address: {user.address}</p>
-                  <p>Order Phone: {user.phoneNumber}</p>
-                  <p>Order Price: {order.OrderPrice}</p>
-                  <p>Order Status: {order.OrderStatus}</p>
-                  <h6>Sub Orders:</h6>
-                  {order.Orders && order.Orders.length > 0 ? (
-                    order.Orders.map((subOrder, subIndex) => (
-                      <div key={subIndex}>
-                        <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
-                        <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
-                        <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                        <p>Sub Order Status: {subOrder.OrderStatus}</p>
-                        {subOrder.Menus && subOrder.Menus.length > 0 && (
-                          <>
-                            <h6>Menus:</h6>
-                            {subOrder.Menus.map((menu, menuIndex) => (
-                              <div key={menuIndex}>
-                                <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'N/A'}</p>
-                                <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'N/A'}</p>
-                                <p>Quantity: {menu.quantityMenu}</p>
-                                <h6>Menu Articles:</h6>
-                                {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
-                                  <div key={menuArticleIndex}>
-                                    <p>Article Name: {menuArticle?.name || 'N/A'}</p>
-                                    <p>Article Price: {menuArticle?.price || 'N/A'}</p>
-                                  </div>
-                                ))}
-                              </div> 
-                            ))}
-                          </>
-                        )}
-                        {subOrder.Articles && subOrder.Articles.length > 0 && (
-                          <>
-                            <h6>Articles:</h6>
-                            {subOrder.Articles.map((article, articleIndex) => (
-                              <div key={articleIndex}>
-                                <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
-                                <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
-                                <p>Quantity: {article.quantity}</p>
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p>No sub-orders found.</p>
-                  )}
-                  <button onClick={() => PayOrder(order)}>Pay Order</button>
-                  <button onClick={() => deleteOrder(order)}>Delete Order</button>
-                </div>
-              )
-            ))}
-          </div>
-          <hr /> 
-          <div>
-            <h4>Paid Orders</h4>
-            {orders.map((order, index) => (
-              order.OrderStatus !== "en cours" && (
-                <div key={index} className="order-paid">
-                  <h5>Order {index + 1}</h5>
-                  <p>Order ID: {order._id}</p>
-                  <p>Order Address: {user.address}</p>
-                  <p>Order Phone: {user.phoneNumber}</p>
-                  <p>Order Price: {order.OrderPrice}</p>
-                  <p>Order Status: {order.OrderStatus}</p>
-                  <h6>Sub Orders:</h6>
-                  {order.Orders && order.Orders.length > 0 ? (
-                    order.Orders.map((subOrder, subIndex) => (
-                      <div key={subIndex}>
-                        <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
-                        <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
-                        <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                        <p>Sub Order Status: {subOrder.OrderStatus}</p>
-                        {subOrder.Menus && subOrder.Menus.length > 0 && (
-                          <>
-                            <h6>Menus:</h6>
-                            {subOrder.Menus.map((menu, menuIndex) => (
-                              <div key={menuIndex}>
-                                <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'N/A'}</p>
-                                <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'N/A'}</p>
-                                <p>Quantity: {menu.quantityMenu}</p>
-                                <h6>Menu Articles:</h6>
-                                {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
-                                  <div key={menuArticleIndex}>
-                                    <p>Article Name: {menuArticle?.name || 'N/A'}</p>
-                                    <p>Article Price: {menuArticle?.price || 'N/A'}</p>
-                                  </div>
-                                ))}
-                              </div> 
-                            ))}
-                          </>
-                        )}
-                        {subOrder.Articles && subOrder.Articles.length > 0 && (
-                          <>
-                            <h6>Articles:</h6>
-                            {subOrder.Articles.map((article, articleIndex) => (
-                              <div key={articleIndex}>
-                                <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
-                                <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
-                                <p>Quantity: {article.quantity}</p>
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p>No sub-orders found.</p>
-                  )}
-                  <button onClick={() => downloadPDF(order)}>Download as PDF</button>
-                </div>
-              )
+            {orders.filter(order => order.OrderStatus === "en cours").map((order, index) => (
+              <div key={index} className="order-in-progress">
+                <h5>Order {index + 1}</h5>
+                <p>Order ID: {order._id}</p>
+                <p>Order Address: {user.address}</p>
+                <p>Order Phone: {user.phoneNumber}</p>
+                <p>Order Price: {order.OrderPrice}</p>
+                <p>Order Status: {order.OrderStatus}</p>
+                <h6>Sub Orders:</h6>
+                {order.Orders && order.Orders.length > 0 ? (
+                  order.Orders.map((subOrder, subIndex) => (
+                    <div key={subIndex}>
+                      <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
+                      <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
+                      <p>Sub Order Price: {subOrder.OrderPrice}</p>
+                      <p>Sub Order Status: {subOrder.OrderStatus}</p>
+                      {subOrder.Menus && subOrder.Menus.length > 0 && (
+                        <>
+                          <h6>Menus:</h6>
+                          {subOrder.Menus.map((menu, menuIndex) => (
+                            <div key={menuIndex}>
+                              <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'N/A'}</p>
+                              <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'N/A'}</p>
+                              <p>Quantity: {menu.quantityMenu}</p>
+                              <h6>Menu Articles:</h6>
+                              {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
+                                <div key={menuArticleIndex}>
+                                  <p>Article Name: {menuArticle?.name || 'N/A'}</p>
+                                  <p>Article Price: {menuArticle?.price || 'N/A'}</p>
+                                </div>
+                              ))}
+                            </div> 
+                          ))}
+                        </>
+                      )}
+                      {subOrder.Articles && subOrder.Articles.length > 0 && (
+                        <>
+                          <h6>Articles:</h6>
+                          {subOrder.Articles.map((article, articleIndex) => (
+                            <div key={articleIndex}>
+                              <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
+                              <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
+                              <p>Quantity: {article.quantity}</p>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p>No sub-orders found.</p>
+                )}
+                <button onClick={() => PayOrder(order)}>Pay Order</button>
+                <button onClick={() => deleteOrder(order)}>Delete Order</button>
+              </div>
             ))}
           </div>
         </>

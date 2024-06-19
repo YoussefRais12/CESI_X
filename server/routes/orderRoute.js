@@ -532,29 +532,7 @@ orderRoute.get('/suborder/:subOrderId', async (req, res) => {
     }
 });
 
-orderRoute.get('/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const order = await Order.findById(id)
-            .populate({
-                path: 'Orders.subOrderId',
-                populate: [
-                    { path: 'Articles.articleId', model: 'Article' },
-                    { path: 'Menus.menuId', model: 'Menu' },
-                    { path: 'Menus.Articles.articleId', model: 'Article' } 
-                ]
-            })
-            .lean();
 
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        res.status(200).json(order);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
 
 orderRoute.post('/:orderId/menu/:menuId', async (req, res) => {
     const { orderId, menuId } = req.params;
@@ -630,7 +608,51 @@ orderRoute.post('/:orderId/menu/:menuId', async (req, res) => {
     }
 });
 
-module.exports = orderRoute;
+// Define the route for fetching all orders before any parameterized route
+orderRoute.get('/all-orders', isAuth(), async (req, res) => {
+    try {
+        const orders = await Order.find()
+            .populate({
+                path: 'Orders.subOrderId',
+                populate: [
+                    { path: 'Articles.articleId', model: 'Article' },
+                    { path: 'Menus.menuId', model: 'Menu' },
+                    { path: 'Menus.Articles.articleId', model: 'Article' }
+                ]
+            })
+            .lean();
+        res.status(200).json(orders);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Parameterized route should be defined after all specific routes
+orderRoute.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const order = await Order.findById(id)
+            .populate({
+                path: 'Orders.subOrderId',
+                populate: [
+                    { path: 'Articles.articleId', model: 'Article' },
+                    { path: 'Menus.menuId', model: 'Menu' },
+                    { path: 'Menus.Articles.articleId', model: 'Article' } 
+                ]
+            })
+            .lean();
+
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        res.status(200).json(order);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 
 module.exports = orderRoute;
+
+

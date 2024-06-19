@@ -203,7 +203,7 @@ const PaymentHistory = () => {
             )}
 
             {selectedPayment && selectedOrder && (
-                <div className="modal">
+                <div id="detailsModal" className="modal">
                     <div className="modal-content">
                         <span className="close" onClick={handleCloseDetails}>&times;</span>
                         

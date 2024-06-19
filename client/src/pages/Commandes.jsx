@@ -17,16 +17,18 @@ async function fetchOrdersByUserRole(user) {
             Authorization: localStorage.getItem("token"),
           },
         });
-
         const restaurants = result.data;
+
         for (const restaurant of restaurants) {
+          console.log(restaurant)
           for (const subOrderId of restaurant.subOrders) {
+            console.log("here")
+            console.log(subOrderId)
             const orderResult = await axios.get(`http://localhost:5000/order/suborder/${subOrderId}`, {
               headers: {
                 Authorization: localStorage.getItem("token"),
               },
             });
-
             const order = orderResult.data;
             if (order.Orders.some(subOrder => subOrder.OrderStatus === "en cours")) {
               orderDetails.push(order);

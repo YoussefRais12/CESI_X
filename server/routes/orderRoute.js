@@ -46,7 +46,7 @@ orderRoute.post('/add', async (req, res) => {
 
         // Traitement des menus
         for (const menuItem of Menus) {
-            const menu = await Menu.findById(menuItem.menuId).populate('articles'); // Correct path
+            const menu = await Menu.findById(menuItem.menuId).populate('articles');
             if (!menu || menuItem.quantityMenu <= 0) {
                 allItemsExist = false;
                 break;
@@ -98,8 +98,11 @@ orderRoute.post('/add', async (req, res) => {
                 await subOrder.save();
 
                 const restaurant = await Restaurant.findById(restaurantId);
+                if (!restaurant) {
+                    throw new Error(`Restaurant with id ${restaurantId} not found`);
+                }
                 restaurant.subOrders.push(subOrder._id);
-                await restaurant.save();
+                await restaurant.save(); // Save the restaurant after adding the subOrder
 
                 subOrders.push(subOrder);
             }
@@ -150,7 +153,7 @@ orderRoute.post('/add', async (req, res) => {
                     populate: [
                         { path: 'Articles.articleId', model: 'Article' },
                         { path: 'Menus.menuId', model: 'Menu' },
-                        { path: 'Menus.Articles.articleId', model: 'Article' } // Populate articles within menus
+                        { path: 'Menus.Articles.articleId', model: 'Article' }
                     ]
                 })
                 .lean();
@@ -168,17 +171,21 @@ orderRoute.post('/add', async (req, res) => {
 orderRoute.delete('/:id', isAuth(), async (req, res) => {
     const { id } = req.params;
     try {
-      
+        // Trouver la commande à supprimer
         const deletedOrder = await Order.findByIdAndDelete(id);
         if (!deletedOrder) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-      
+        // Supprimer la commande des sous-commandes associées
+        const subOrderIds = deletedOrder.Orders.map(subOrder => subOrder.subOrderId);
+        await SubOrder.deleteMany({ _id: { $in: subOrderIds } });
+
+        // Supprimer la commande de l'utilisateur
         const user = await User.findOneAndUpdate(
-            { orders: id }, 
-            { $pull: { orders: id } }, 
-            { new: true } 
+            { orders: id },
+            { $pull: { orders: id } },
+            { new: true }
         );
 
         if (!user) {
@@ -186,9 +193,15 @@ orderRoute.delete('/:id', isAuth(), async (req, res) => {
             throw new Error('User not found or order not associated with user');
         }
 
-        console.log('User after update:', user);
+        // Supprimer la commande des restaurants associés
+        for (const subOrder of deletedOrder.Orders) {
+            await Restaurant.findOneAndUpdate(
+                { subOrders: subOrder.subOrderId },
+                { $pull: { subOrders: subOrder.subOrderId } }
+            );
+        }
 
-        res.status(200).json({ message: 'Order deleted successfully' });
+        res.status(200).json({ message: 'Order and associated sub-orders deleted successfully' });
     } catch (error) {
         console.error('Error deleting order:', error);
         res.status(400).json({ error: error.message });
@@ -237,9 +250,83 @@ orderRoute.put('/:id/status', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+// add menu by id 
+orderRoute.post('/:idorder/menu/:idMenu', isAuth(), async (req, res) => {
+    const { idorder, idMenu } = req.params;
+    const { quantityMenu } = req.body;
 
+    try {
+        if (quantityMenu <= 0) {
+            throw new Error('Quantity must be greater than zero');
+        }
 
-// Add article in an order by ID
+        const menu = await Menu.findById(idMenu).populate('articles');
+        if (!menu) {
+            throw new Error('Menu not found');
+        }
+
+        const order = await Order.findById(idorder);
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        const menuTotalPrice = menu.price * quantityMenu;
+        const restaurantId = menu.restaurantId;
+
+        const orderIndex = order.Orders.findIndex(orderItem =>
+            orderItem.restaurantId.toString() === restaurantId.toString()
+        );
+
+        if (orderIndex !== -1) {
+            const menuIndex = order.Orders[orderIndex].Menus.findIndex(item => item.menuId.toString() === idMenu);
+
+            if (menuIndex !== -1) {
+                order.Orders[orderIndex].Menus[menuIndex].quantityMenu += quantityMenu;
+            } else {
+                order.Orders[orderIndex].Menus.push({ menuId: idMenu, quantityMenu: quantityMenu });
+            }
+
+            // Update the OrderPrice of the subOrder
+            order.Orders[orderIndex].OrderPrice += menuTotalPrice;
+        } else {
+            // Create a new subOrder
+            const newSubOrder = new SubOrder({
+                restaurantId,
+                Menus: [{ menuId: idMenu, quantityMenu: quantityMenu }],
+                OrderPrice: menuTotalPrice,
+                OrderStatus: "en cours"
+            });
+
+            await newSubOrder.save();
+
+            const restaurant = await Restaurant.findById(restaurantId);
+            if (!restaurant) {
+                throw new Error(`Restaurant with id ${restaurantId} not found`);
+            }
+            restaurant.subOrders.push(newSubOrder._id);
+            await restaurant.save();
+
+            const newOrder = {
+                subOrderId: newSubOrder._id,
+                restaurantId: restaurantId,
+                Menus: newSubOrder.Menus,
+                OrderPrice: newSubOrder.OrderPrice,
+                OrderStatus: newSubOrder.OrderStatus
+            };
+            order.Orders.push(newOrder);
+        }
+
+        order.OrderPrice = (order.OrderPrice || 0) + menuTotalPrice;
+
+        await order.save();
+
+        res.status(200).json({ message: 'Menu added/updated successfully', order });
+    } catch (error) {
+        console.error('Error adding/updating menu in order:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+// add article by id 
 orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
     const { idorder, idarticle } = req.params;
     const { quantity } = req.body;
@@ -287,6 +374,13 @@ orderRoute.post('/:idorder/article/:idarticle', isAuth(), async (req, res) => {
             });
 
             await newSubOrder.save();
+
+            const restaurant = await Restaurant.findById(restaurantId);
+            if (!restaurant) {
+                throw new Error(`Restaurant with id ${restaurantId} not found`);
+            }
+            restaurant.subOrders.push(newSubOrder._id);
+            await restaurant.save();
 
             const newOrder = {
                 subOrderId: newSubOrder._id,

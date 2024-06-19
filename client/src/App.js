@@ -20,6 +20,7 @@ import Dashboard from "./pages/Dashboard";
 import RestaurantDetail from "./pages/RestaurantDetail"; 
 import UserManagement from './pages/UserManagement';
 import UserDetails from './pages/UserDetails';
+import DeliveryCommands from "./pages/DeliveryCommands";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 import { Elements } from '@stripe/react-stripe-js';
@@ -79,7 +80,8 @@ function App() {
                 <Route path="/error" element={<Error />} />
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/usermanagement" element={<UserManagement />} />
-                <Route path="/user/:id" element={<UserDetails />} />
+                <Route path="/user/:id" element={<UserDetails />} />\
+                <Route path="/delivery-commands" element={<DeliveryCommands />} />
 
               </Routes>
             </CSSTransition>

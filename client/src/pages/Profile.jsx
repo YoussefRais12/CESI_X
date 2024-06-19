@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { logout, userCurrent, userEdit, uploadUserImage, userDelete } from '../redux/slice/userSlice';
+import { logout, userCurrent, userEdit, uploadUserImage, userDelete, fetchReferralDetails } from '../redux/slice/userSlice';
 import { fetchDeliveryPersonByUserId, updateDeliveryPersonAvailability } from '../redux/slice/deliveryPersonSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faCamera } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +13,7 @@ import '../styles/profile.css';
 const Profile = ({ ping, setPing }) => {
   const user = useSelector((state) => state.user?.user);
   const deliveryPerson = useSelector((state) => state.deliveryPerson?.deliveryPerson);
+  const referralDetails = useSelector((state) => state.user?.referralDetails); // Get referral details from state
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,6 +51,9 @@ const Profile = ({ ping, setPing }) => {
       if (user.role === 'deliveryPerson') {
         dispatch(fetchDeliveryPersonByUserId(user._id));
       }
+
+      // Fetch referral details
+      dispatch(fetchReferralDetails(user._id));
     }
   }, [user, dispatch]);
 
@@ -366,6 +370,25 @@ const Profile = ({ ping, setPing }) => {
             </button>
           </div>
         );
+      case 'referrals':
+        return (
+          <div>
+            <h2>{languageData.referrals || 'Referrals'}</h2>
+            <p>{languageData.yourReferralCode || 'Your Referral Code'}: <strong>{referralDetails?.referralCode}</strong></p>
+            <h3>{languageData.referredUsers || 'Referred Users'}</h3>
+            {referralDetails?.referredUsers && referralDetails.referredUsers.length > 0 ? (
+              <ul>
+                {referralDetails.referredUsers.map((user) => (
+                  <li key={user._id}>
+                    {user.name} ({user.email})
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>{languageData.noReferredUsers || 'No referred users yet.'}</p>
+            )}
+          </div>
+        );
       default:
         return null;
     }
@@ -386,6 +409,12 @@ const Profile = ({ ping, setPing }) => {
           onClick={() => setActiveTab('security')}
         >
           {languageData.security || 'Security'}
+        </button>
+        <button
+          style={{ display: 'block', padding: '10px', cursor: 'pointer', background: activeTab === 'referrals' ? '#ddd' : 'transparent', border: 'none', textAlign: 'left', width: '100%' }}
+          onClick={() => setActiveTab('referrals')}
+        >
+          {languageData.referrals || 'Referrals'}
         </button>
         <button
           style={{ display: 'block', padding: '10px', cursor: 'pointer', background: activeTab === 'delete' ? '#ddd' : 'transparent', border: 'none', textAlign: 'left', width: '100%', color: 'red' }}

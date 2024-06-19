@@ -19,13 +19,15 @@ const orderSchema = new Schema({
                 articleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Article', required: true },
                 quantity: { type: Number, required: true }
             }],
-            quantityMenu : { type: Number, required: true }
+            quantityMenu: { type: Number, required: true }
         }],
         OrderPrice: { type: Number, required: true },
         OrderStatus: { type: String, required: true }
     }],
-    OrderPrice: { type: Number },
-    OrderStatus: { type: String }
+    OrderPrice: { type: Number, required: true },
+    OriginalOrderPrice: { type: Number, required: true }, // New field for original price
+    DiscountApplied: { type: Boolean, required: true }, // New field to indicate if discount was applied
+    OrderStatus: { type: String, required: true }
 });
 
 const Order = mongoose.model('Order', orderSchema);

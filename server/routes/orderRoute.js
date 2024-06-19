@@ -14,14 +14,14 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 orderRoute.post('/add', async (req, res) => {
-    const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles, Menus } = req.body;
+    const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles, Menus, referralCode } = req.body;
 
     try {
         let allItemsExist = true;
         let totalOrderPrice = 0;
         const itemsByRestaurant = {};
 
-        // Traitement des articles
+        // Process articles
         for (const item of Articles) {
             const article = await Article.findById(item.articleId);
             if (!article || item.quantity <= 0) {
@@ -44,7 +44,7 @@ orderRoute.post('/add', async (req, res) => {
             itemsByRestaurant[restaurantId].articles.push(newArticle);
         }
 
-        // Traitement des menus
+        // Process menus
         for (const menuItem of Menus) {
             const menu = await Menu.findById(menuItem.menuId).populate('articles');
             if (!menu || menuItem.quantityMenu <= 0) {
@@ -112,9 +112,10 @@ orderRoute.post('/add', async (req, res) => {
                 throw new Error('User not found');
             }
 
+            // Apply referral discount if applicable
+            let discountRate = 0;
             if (user.orders.length === 0 && user.referredBy && !user.hasUsedReferral) {
-                const discountRate = 0.10;
-                totalOrderPrice = totalOrderPrice * (1 - discountRate);
+                discountRate = 0.10;
                 user.hasUsedReferral = true;
                 await user.save();
 
@@ -123,6 +124,11 @@ orderRoute.post('/add', async (req, res) => {
                     referrer.hasUsedReferral = true;
                     await referrer.save();
                 }
+            }
+
+            const originalOrderPrice = totalOrderPrice;
+            if (discountRate > 0) {
+                totalOrderPrice = totalOrderPrice * (1 - discountRate);
             }
 
             const newOrder = new Order({
@@ -139,6 +145,8 @@ orderRoute.post('/add', async (req, res) => {
                     Menus: subOrder.Menus
                 })),
                 OrderPrice: totalOrderPrice,
+                OriginalOrderPrice: originalOrderPrice,
+                DiscountApplied: discountRate,
                 OrderStatus: "en cours"
             });
 
@@ -166,6 +174,62 @@ orderRoute.post('/add', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
+orderRoute.post('/apply-referral', isAuth(), async (req, res) => {
+    const { orderId, referralCode } = req.body;
+
+    try {
+        if (!orderId || !referralCode) {
+            return res.status(400).json({ message: 'Order ID and referral code are required' });
+        }
+
+        // Find the order by ID
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Ensure the order status is 'en cours'
+        if (order.OrderStatus !== 'en cours') {
+            return res.status(400).json({ message: 'Referral code can only be applied to orders in progress' });
+        }
+
+        // Find the user using the referral code
+        const referrer = await User.findOne({ referralCode });
+        if (!referrer) {
+            return res.status(400).json({ message: 'Invalid referral code' });
+        }
+
+        // Check if the user has already used the referral code
+        const user = await User.findById(order.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.orders.length > 0 || user.hasUsedReferral) {
+            return res.status(400).json({ message: 'Referral code cannot be applied' });
+        }
+
+        // Apply discount
+        const discountRate = 0.10;
+        const discountedPrice = order.OrderPrice * (1 - discountRate);
+
+        // Update user's referral usage
+        user.hasUsedReferral = true;
+        await user.save();
+
+        // Update referrer's referral usage
+        referrer.hasUsedReferral = true;
+        await referrer.save();
+
+        res.status(200).json({ success: true, discountedPrice });
+    } catch (error) {
+        console.error('Error applying referral code:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 
 // Supprimer une commande par ID
 orderRoute.delete('/:id', isAuth(), async (req, res) => {

@@ -267,8 +267,8 @@ const RestaurantDetail = () => {
     
             if (selectedMenu) {
                 orderData = {
-                    orderaddress: "user.address",
-                    orderPhone: "user.phoneNumber",
+                    orderaddress: user.address,
+                    orderPhone: user.phoneNumber,
                     userId: user._id,
                     DeliveryPersonId: '664f0e247baafc94cf772754',
                     Articles: [],
@@ -285,8 +285,8 @@ const RestaurantDetail = () => {
                 };
             } else if (articleSelected) {
                 orderData = {
-                    orderaddress: "user.address",
-                    orderPhone: "user.phoneNumber",
+                    orderaddress: user.address,
+                    orderPhone: user.phoneNumber,
                     userId: user._id,
                     DeliveryPersonId: '664f0e247baafc94cf772754',
                     Articles: [

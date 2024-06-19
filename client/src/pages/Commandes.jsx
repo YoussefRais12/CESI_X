@@ -9,7 +9,7 @@ import ViewPaymentDialog from "../components/ViewPaymentDialog";
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
 
-  if (user && user.orders) 
+  if (user && user.orders) {
     if (user.role === "restaurantOwner") {
       try {
         const result = await axios.get(`http://localhost:5000/restaurant/owner/${user._id}`, {
@@ -30,26 +30,27 @@ async function fetchOrdersByUserRole(user) {
             if (order.Orders.some(subOrder => subOrder.OrderStatus === "en cours")) {
               orderDetails.push(order);
             }
+          }
         }
-      }
-    } catch (error) {
-      console.error(`Error fetching orders for restaurants owned by ${user._id}:`, error);
-    }
-  } else {
-    if (!Array.isArray(user.orders)) {
-      user.orders = [user.orders];
-    }
-
-    for (const orderId of user.orders) {
-      try {
-        const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
-          headers: {
-            Authorization: localStorage.getItem("token"),
-          },
-        });
-        orderDetails.push(result.data);
       } catch (error) {
-        console.error(`Error fetching order ${orderId}:`, error);
+        console.error(`Error fetching orders for restaurants owned by ${user._id}:`, error);
+      }
+    } else {
+      if (!Array.isArray(user.orders)) {
+        user.orders = [user.orders];
+      }
+
+      for (const orderId of user.orders) {
+        try {
+          const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
+            headers: {
+              Authorization: localStorage.getItem("token"),
+            },
+          });
+          orderDetails.push(result.data);
+        } catch (error) {
+          console.error(`Error fetching order ${orderId}:`, error);
+        }
       }
     }
   }
@@ -106,6 +107,8 @@ function Commandes() {
   const location = useLocation();
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [referralCode, setReferralCode] = useState('');
+  const [discountedPrice, setDiscountedPrice] = useState(null);
 
   useEffect(() => {
     async function fetchOrders() {
@@ -168,6 +171,33 @@ function Commandes() {
         console.error("Error loading language file:", error);
       });
   }, [location.search]);
+
+  const handleApplyReferral = async (order) => {
+    try {
+      const response = await axios.post(`http://localhost:5000/order/apply-referral`, {
+        orderId: order._id,
+        referralCode,
+      }, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+
+      if (response.data.success) {
+        setDiscountedPrice(response.data.discountedPrice);
+        alert('Referral code applied successfully!');
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error applying referral code:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        alert(`Error applying referral code: ${error.response.data.message}`);
+      } else {
+        alert('An error occurred while applying the referral code.');
+      }
+    }
+  };
 
   const downloadPDF = (order) => {
     const doc = new jsPDF();
@@ -239,7 +269,7 @@ function Commandes() {
 
   return (
     <div className="wrapper">
-      <h3>{languageData.Commandes || 'Order'}</h3>
+      <h3>{languageData.Commandes || 'Orders'}</h3>
       {orders.length === 0 ? (
         <p>No orders found.</p>
       ) : (
@@ -253,7 +283,7 @@ function Commandes() {
                   <p>Order ID: {order._id}</p>
                   <p>Order Address: {user.address}</p>
                   <p>Order Phone: {user.phoneNumber}</p>
-                  <p>Order Price: {order.OrderPrice}</p>
+                  <p>Order Price: {discountedPrice !== null && selectedOrder?._id === order._id ? `${order.OrderPrice} (Discounted: ${discountedPrice})` : order.OrderPrice}</p>
                   <p>Order Status: {order.OrderStatus}</p>
                   <h6>Sub Orders:</h6>
                   {order.Orders && order.Orders.length > 0 ? (
@@ -301,6 +331,17 @@ function Commandes() {
                   )}
                   <button onClick={() => PayOrder(order)}>Pay Order</button>
                   <button onClick={() => deleteOrder(order)}>Delete Order</button>
+                  {order.OrderStatus === "en cours" && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Enter referral code"
+                        value={referralCode}
+                        onChange={(e) => setReferralCode(e.target.value)}
+                      />
+                      <button onClick={() => handleApplyReferral(order)}>Apply Referral Code</button>
+                    </>
+                  )}
                 </div>
               )
             ))}

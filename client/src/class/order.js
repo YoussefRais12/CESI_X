@@ -9,6 +9,8 @@ export default class Order {
     DeliveryPersonId;
     orders;
     OrderPrice;
+    OriginalOrderPrice;
+    DiscountApplied;
     OrderStatus;
     initialized = false;
 
@@ -27,6 +29,8 @@ export default class Order {
             this.orders = result.Orders;
             this.OrderStatus = result.OrderStatus;
             this.OrderPrice = result.OrderPrice;
+            this.OriginalOrderPrice = result.OriginalOrderPrice;
+            this.DiscountApplied = result.DiscountApplied;
             this.initialized = true;
         } catch (error) {
             throw error;

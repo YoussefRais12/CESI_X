@@ -162,6 +162,36 @@ export const suspendUser = createAsyncThunk("user/suspend", async ({ id, suspend
   }
 });
 
+// Validate referral code
+export const validateReferralCode = createAsyncThunk("user/validateReferralCode", async (referralCode) => {
+  try {
+    const result = await axios.get(`http://localhost:5000/user/referral/validate/${referralCode}`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return result.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+});
+
+// Fetch referral details
+export const fetchReferralDetails = createAsyncThunk('user/fetchReferralDetails', async (userId) => {
+  try {
+      const result = await axios.get(`http://localhost:5000/user/referral/details/${userId}`, {
+          headers: {
+              Authorization: localStorage.getItem('token'),
+          },
+      });
+      return result.data;
+  } catch (error) {
+      console.log(error);
+      throw error;
+  }
+});
+
 const initialState = {
   user: null,
   users: [],
@@ -317,6 +347,21 @@ export const userSlice = createSlice({
         state.status = "fail";
         state.error = action.error.message;
       })
+      .addCase(validateReferralCode.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+        state.referralValidation = null;
+      })
+      .addCase(validateReferralCode.fulfilled, (state, action) => {
+        state.status = "success";
+        state.error = null;
+        state.referralValidation = action.payload;
+      })
+      .addCase(validateReferralCode.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+        state.referralValidation = null;
+      })
         // suspend user cases
         .addCase(suspendUser.pending, (state) => {
           state.status = "loading";
@@ -333,7 +378,20 @@ export const userSlice = createSlice({
         .addCase(suspendUser.rejected, (state, action) => {
           state.status = "fail";
           state.error = action.error.message;
-        });
+        })
+        
+        // referral details cases
+        .addCase(fetchReferralDetails.pending, (state) => {
+          state.status = 'loading';
+      })
+      .addCase(fetchReferralDetails.fulfilled, (state, action) => {
+          state.status = 'success';
+          state.referralDetails = action.payload;
+      })
+      .addCase(fetchReferralDetails.rejected, (state, action) => {
+          state.status = 'fail';
+          state.error = action.error.message;
+      });
   },
 });
 

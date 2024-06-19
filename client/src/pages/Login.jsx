@@ -2,14 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import '../styles/login.css';
-import { userLogin, userRegister } from '../redux/slice/userSlice';
-import { useDispatch } from 'react-redux';
+import { userLogin, userRegister, validateReferralCode } from '../redux/slice/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const LoginContainer = ({ ping, setPing }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
+    const { referralValidation, error: referralError } = useSelector((state) => state.user); // Destructure state
     const [login, setLogin] = useState({ email: '', password: '', showPassword: false });
     const [newUser, setNewUser] = useState({
         name: '', email: '', password: '', role: '', referralCode: '',
@@ -104,6 +105,19 @@ const LoginContainer = ({ ping, setPing }) => {
     const handleRegister = async () => {
         if (!validateInputs()) {
             return;
+        }
+        if (newUser.referralCode) {
+            try {
+                const response = await dispatch(validateReferralCode(newUser.referralCode)).unwrap();
+                if (!response.valid) {
+                    setError('Invalid referral code.');
+                    return;
+                }
+            } catch (error) {
+                setError('Error validating referral code.');
+                console.error("Error validating referral code", error);
+                return;
+            }
         }
         try {
             console.log('Registering user:', newUser); // Debug log

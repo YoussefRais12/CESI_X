@@ -39,14 +39,6 @@
   margin-bottom: 20px;
 }
 
-.headline-login {
-  font-size: 32px;
-  font-weight: bold;
-  color: #000000;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
 .input-container {
   position: relative;
   margin-bottom: 20px;
@@ -203,32 +195,32 @@
 }
 
 /* Adjusted modal styles */
-.modal {
+#loginModal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8); /* Change modal background color */
+  background-color: rgba(0, 0, 0, 0.3); /* Change modal background color */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-.modal-content {
+#loginModal .modal-content {
   padding: 40px; /* Increased padding for better spacing */
   border-radius: 20px; /* Adjusted border-radius for a smoother look */
   position: relative;
   width: 100%;
   max-width: 500px;
-  background-color: #1a1a1a; /* Modal content background color */
+  background-color: #888; /* Modal content background color */
   color: #ffffff; /* Text color inside modal */
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5); /* Enhanced shadow for a cleaner look */
   text-align: center;
 }
 
-.modal-content .close {
+#loginModal .modal-content .close {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -237,13 +229,13 @@
   color: #ffffff;
 }
 
-.login-container {
+#loginModal .login-container {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.login-container button {
+#loginModal .login-container button {
   width: 100%;
   padding: 12px;
   background-color: #333232;
@@ -256,17 +248,17 @@
   font-weight: bold;
 }
 
-.login-container button:hover {
+#loginModal .login-container button:hover {
   background-color: #444;
 }
 
 /* Emojis */
-.headline-login::before {
+#loginModal .headline-login::before {
   content: "🔑 ";
   font-size: 32px;
 }
 
-.create-account::before {
+#loginModal .create-account::before {
   content: "📝 ";
-  font-size: 16px;
+  font-size: 32px;
 }

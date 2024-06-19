@@ -152,7 +152,7 @@ const LoginContainer = ({ ping, setPing }) => {
             </div>
 
             {showSignInModal && (
-                <div className="modal">
+                <div id="loginModal" className="modal">
                     <div className="modal-content">
                         <div className="login-container">
                             <span className="close" onClick={() => setShowSignInModal(false)}>&times;</span>
@@ -189,11 +189,11 @@ const LoginContainer = ({ ping, setPing }) => {
             )}
 
             {showCreateAccountModal && (
-                <div className="modal">
+                <div id="loginModal" className="modal">
                     <div className="modal-content">
                         <div className="login-container">
                             <span className="close" onClick={() => setShowCreateAccountModal(false)}>&times;</span>
-                            <h2 className="headline-login">Create your account</h2>
+                            <h2 className="create-account">Create your account</h2>
                             <div className="input-container">
                                 <input
                                     type="text"

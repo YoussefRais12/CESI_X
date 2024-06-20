@@ -820,5 +820,42 @@ orderRoute.put('/remove-delivery-person/:orderId', isAuth(), async (req, res) =>
     }
 });
 
+// Update order status to delivered
+orderRoute.put('/set-delivered/:orderId', isAuth(), async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        order.OrderStatus = 'delivered';
+        await order.save();
+
+        res.status(200).json({ message: 'Order status set to delivered', order });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Update order status to picked up
+orderRoute.put('/set-picked-up/:orderId', isAuth(), async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        order.OrderStatus = 'picked up';
+        await order.save();
+
+        res.status(200).json({ message: 'Order status set to picked up', order });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 module.exports = orderRoute;

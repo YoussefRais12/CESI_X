@@ -144,6 +144,18 @@ function DeliveryCommands() {
       });
   }, [location.search]);
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const lang = searchParams.get("lang") || "fr";
+    import(`../lang/${lang}.json`)
+      .then((data) => {
+        setLanguageData(data);
+      })
+      .catch((error) => {
+        console.error("Error loading language file:", error);
+      });
+  }, [location.search]);
+
   const acceptOrder = async (orderId) => {
     try {
       const response = await axios.put(`http://localhost:5000/order/accept-order/${orderId}`, {}, {

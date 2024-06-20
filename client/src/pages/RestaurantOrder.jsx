@@ -7,6 +7,7 @@ import "../styles/commandes.css";
 import ViewPaymentDialog from "../components/ViewPaymentDialog";
 import { fetchAllDeliveryPersons } from "../redux/slice/deliveryPersonSlice";
 const API_URL = (window.location.host).split(":")[0];
+
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
 
@@ -372,7 +373,7 @@ function RestaurantOrder() {
                               ))}
                             </>
                           )}
-                          <QRCode value={`http://${API_URL}:5000/order/validate-delivery/${subOrder.subOrderId._id}`} />
+                          <QRCode value={`${window.location.origin}/qr-code-handler/${subOrder.subOrderId._id}`} />
                         </div>
                       ))
                     ) : (

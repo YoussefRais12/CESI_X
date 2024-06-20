@@ -6,20 +6,24 @@ export default class Order {
         this.initialize(orderData);
     }
 
-    async initialize(orderData) {
-        this.orderId = orderData._id;
-        this.orderaddress = orderData.orderaddress;
-        this.orderPhone = orderData.orderPhone;
-        this.userId = orderData.userId;
-        this.DeliveryPersonId = orderData.DeliveryPersonId;
-        this.orders = orderData.Orders;
-        this.OrderStatus = orderData.OrderStatus;
-        this.OrderPrice = orderData.OrderPrice;
-        this.OriginalOrderPrice = orderData.OriginalOrderPrice;
-        this.DiscountApplied = orderData.DiscountApplied;
-        this.initialized = true;
-    }
-
+ async initialize(orderData) {
+        try {
+            const result = await Order.addOrderUsingRoute(orderData);
+            this.orderId = result._id;
+            this.orderaddress = result.orderaddress;
+            this.orderPhone = result.orderPhone;
+            this.userId = result.userId;
+            this.DeliveryPersonId = result.DeliveryPersonId;
+            this.orders = result.Orders;
+            this.OrderStatus = result.OrderStatus;
+            this.OrderPrice = result.OrderPrice;
+            this.OriginalOrderPrice = result.OriginalOrderPrice;
+            this.DiscountApplied = result.DiscountApplied;
+            this.initialized = true;
+        } catch (error) {
+            throw error;
+        }
+ }
     checkInitialization() {
         if (!this.initialized) {
             throw new Error('Order not initialized yet');

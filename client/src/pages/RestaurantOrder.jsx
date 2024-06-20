@@ -230,39 +230,43 @@ function RestaurantOrder() {
               <div key={index} className="order-accepted">
                 <h6>Sub Orders:</h6>
                 {order.Orders && order.Orders.length > 0 ? (
-                  order.Orders.filter(subOrder => subOrder.OrderStatus === "accepted").map((subOrder, subIndex) => (
-                    <div key={subIndex}>
-                      <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
-                      <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
-                      <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                      <p>Sub Order Status: {subOrder.subOrderId.OrderStatus}</p>
-                      {subOrder.Menus && subOrder.Menus.length > 0 && (
-                        <>
-                          <h6>Menus:</h6>
-                          {subOrder.Menus.map((menu, menuIndex) => (
-                            <div key={menuIndex}>
-                              <p>Menu Name: {menu.name}</p>
-                              <p>Menu Price: {menu.price}</p>
-                              <p>Quantity: {menu.quantityMenu}</p>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      {subOrder.Articles && subOrder.Articles.length > 0 && (
-                        <>
-                          <h6>Articles:</h6>
-                          {subOrder.Articles.map((article, articleIndex) => (
-                            <div key={articleIndex}>
-                              <p>Article Name: {article.name}</p>
-                              <p>Article Price: {article.price}</p>
-                              <p>Quantity: {article.quantity}</p>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      <QRCode value={`http://localhost:5000/order/validate-delivery/${subOrder.subOrderId._id}`} />
-                    </div>
-                  ))
+                  order.Orders.filter(subOrder => subOrder.OrderStatus === "accepted").map((subOrder, subIndex) => {
+                    const validationLink = `http://localhost:5000/order/validate-delivery/${subOrder.subOrderId._id}`;
+
+                    return (
+                      <div key={subIndex}>
+                        <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
+                        <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
+                        <p>Sub Order Price: {subOrder.OrderPrice}</p>
+                        <p>Sub Order Status: {subOrder.subOrderId.OrderStatus}</p>
+                        {subOrder.Menus && subOrder.Menus.length > 0 && (
+                          <>
+                            <h6>Menus:</h6>
+                            {subOrder.Menus.map((menu, menuIndex) => (
+                              <div key={menuIndex}>
+                                <p>Menu Name: {menu.name}</p>
+                                <p>Menu Price: {menu.price}</p>
+                                <p>Quantity: {menu.quantityMenu}</p>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                        {subOrder.Articles && subOrder.Articles.length > 0 && (
+                          <>
+                            <h6>Articles:</h6>
+                            {subOrder.Articles.map((article, articleIndex) => (
+                              <div key={articleIndex}>
+                                <p>Article Name: {article.name}</p>
+                                <p>Article Price: {article.price}</p>
+                                <p>Quantity: {article.quantity}</p>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                        <QRCode value={validationLink} />
+                      </div>
+                    );
+                  })
                 ) : (
                   <p>No accepted sub-orders found.</p>
                 )}

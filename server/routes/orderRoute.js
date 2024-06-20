@@ -627,7 +627,40 @@ orderRoute.get('/all-orders', isAuth(), async (req, res) => {
     }
 });
 
-// Parameterized route should be defined after all specific routes
+orderRoute.put('/validate-delivery/:subOrderId', isAuth(), async (req, res) => {
+    const { subOrderId } = req.params;
+
+    try {
+        if (!subOrderId) {
+            return res.status(400).json({ message: 'SubOrder ID is required' });
+        }
+        const subOrder = await SubOrder.findById(subOrderId);
+        if (!subOrder) {
+            return res.status(404).json({ message: 'SubOrder not found' });
+        }
+
+        if (subOrder.OrderStatus !== 'accepted') {
+            return res.status(400).json({ message: 'Only subOrders with status "accepted" can be validated for delivery' });
+        }
+        subOrder.OrderStatus = 'in delivery';
+        await subOrder.save();
+
+        const parentOrder = await Order.findOne({ 'Orders.subOrderId': subOrderId });
+        if (parentOrder) {
+            const subOrderToUpdate = parentOrder.Orders.find(o => o.subOrderId.toString() === subOrderId);
+            if (subOrderToUpdate) {
+                subOrderToUpdate.OrderStatus = 'in delivery';
+                await parentOrder.save();
+            }
+        }
+
+        res.status(200).json({ success: true, message: 'SubOrder validated for delivery successfully' });
+    } catch (error) {
+        console.error('Error validating subOrder for delivery:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 orderRoute.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {

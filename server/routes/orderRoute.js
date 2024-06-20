@@ -745,6 +745,76 @@ orderRoute.put('/assign-delivery-person/:orderId', isAuth(), async (req, res) =>
     }
 });
 
+// Accept an order as a delivery person
+orderRoute.put('/accept-order/:orderId', isAuth(), async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        if (order.OrderStatus !== 'accepted') {
+            return res.status(400).json({ error: 'Order can only be accepted if it is accepted' });
+        }
+
+        order.OrderStatus = 'accepted by deliveryPerson';
+        await order.save();
+
+        res.status(200).json({ message: 'Order accepted successfully', order });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Reject an order as a delivery person
+orderRoute.put('/reject-order/:orderId', isAuth(), async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        order.DeliveryPersonId = null;
+        await order.save();
+
+        res.status(200).json({ message: 'Order rejected successfully', order });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Remove delivery person from order
+orderRoute.put('/remove-delivery-person/:orderId', isAuth(), async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const deliveryPersonId = order.DeliveryPersonId;
+        order.DeliveryPersonId = null;
+        await order.save();
+
+        // Update delivery person's availability
+        if (deliveryPersonId) {
+            const deliveryPerson = await DeliveryPerson.findById(deliveryPersonId);
+            if (deliveryPerson) {
+                deliveryPerson.available = true;
+                await deliveryPerson.save();
+            }
+        }
+
+        res.status(200).json({ message: 'Delivery person removed from order successfully', order });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 
 module.exports = orderRoute;

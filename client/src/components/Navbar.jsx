@@ -323,6 +323,14 @@ const Navbar = ({ setPing, ping }) => {
                                 )}
                             </>
                         )}
+                           {user?.role === 'deliveryPerson' && (
+                            <>
+                                
+                                <Link to={`/delivery-commands?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Commandes</h1>
+                                </Link>
+                            </>
+                        )}
                         <button className="logout-button" onClick={handleLogout}>Logout</button>
                     </div>
                 </>

@@ -11,6 +11,7 @@ import "react-circular-progressbar/dist/styles.css";
 
 const notifier = new AWN();
 
+const API_URL = (window.location.host).split(":")[0];
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
 
@@ -21,7 +22,7 @@ async function fetchOrdersByUserRole(user) {
 
     for (const orderId of user.orders) {
       try {
-        const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
+        const result = await axios.get(`http://${API_URL}:5000/order/${orderId}`, {
           headers: {
             Authorization: localStorage.getItem("token"),
           },
@@ -38,7 +39,7 @@ async function fetchOrdersByUserRole(user) {
 
 async function FetchArticle(idarticle) {
   try {
-    const result = await axios.get(`http://localhost:5000/article/articles/${idarticle}`, {
+    const result = await axios.get(`http://${API_URL}:5000/article/articles/${idarticle}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -51,7 +52,7 @@ async function FetchArticle(idarticle) {
 
 async function FetchMenu(idMenu) {
   try {
-    const result = await axios.get(`http://localhost:5000/menu/${idMenu}`, {
+    const result = await axios.get(`http://${API_URL}:5000/menu/${idMenu}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -139,7 +140,7 @@ function Commandes() {
 
   const handleApplyReferral = async (order) => {
     try {
-      const response = await axios.post(`http://localhost:5000/order/apply-referral`, {
+      const response = await axios.post(`http://${API_URL}:5000/order/apply-referral`, {
         orderId: order._id,
         referralCode,
       }, {
@@ -208,7 +209,7 @@ function Commandes() {
       return;
     }
     try {
-      const result = await axios.delete(`http://localhost:5000/order/${order._id}`, {
+      const result = await axios.delete(`http://${API_URL}:5000/order/${order._id}`, {
         headers: {
           Authorization: localStorage.getItem("token"),
         },

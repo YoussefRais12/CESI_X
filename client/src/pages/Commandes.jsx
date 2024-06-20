@@ -5,6 +5,11 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "../styles/commandes.css";
 import ViewPaymentDialog from "../components/ViewPaymentDialog";
+import AWN from "awesome-notifications";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+
+const notifier = new AWN();
 
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
@@ -68,6 +73,7 @@ function Commandes() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [referralCode, setReferralCode] = useState('');
   const [discountedPrice, setDiscountedPrice] = useState(null);
+  const [timers, setTimers] = useState({});
 
   useEffect(() => {
     async function fetchOrders() {
@@ -101,6 +107,16 @@ function Commandes() {
 
         setArticles(orderArticleInfo);
         setMenus(orderMenuInfo);
+
+        // Initialize timers for orders with status "picked up"
+        const initialTimers = {};
+        orders.forEach(order => {
+          if (order.OrderStatus === "picked up") {
+            initialTimers[order._id] = { startTime: Date.now(), duration: 30 * 60 * 1000 }; // 30 minutes timer
+          }
+        });
+        setTimers(initialTimers);
+
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -134,16 +150,16 @@ function Commandes() {
 
       if (response.data.success) {
         setDiscountedPrice(response.data.discountedPrice);
-        alert('Referral code applied successfully!');
+        notifier.success('Referral code applied successfully!');
       } else {
-        alert(response.data.message);
+        notifier.alert(response.data.message);
       }
     } catch (error) {
       console.error('Error applying referral code:', error);
       if (error.response && error.response.data && error.response.data.message) {
-        alert(`Error applying referral code: ${error.response.data.message}`);
+        notifier.alert(`Error applying referral code: ${error.response.data.message}`);
       } else {
-        alert('An error occurred while applying the referral code.');
+        notifier.alert('An error occurred while applying the referral code.');
       }
     }
   };
@@ -212,6 +228,25 @@ function Commandes() {
   const closePaymentDialog = () => {
     setShowPaymentDialog(false); 
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimers(prevTimers => {
+        const newTimers = { ...prevTimers };
+        Object.keys(newTimers).forEach(orderId => {
+          const timeLeft = newTimers[orderId].startTime + newTimers[orderId].duration - Date.now();
+          if (timeLeft <= 0) {
+            delete newTimers[orderId];
+          } else {
+            newTimers[orderId].timeLeft = timeLeft;
+          }
+        });
+        return newTimers;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="wrapper">
@@ -345,6 +380,20 @@ function Commandes() {
                     <p>No sub-orders found.</p>
                   )}
                   <button onClick={() => downloadPDF(order)}>Download as PDF</button>
+                  {order.OrderStatus === "picked up" && (
+                    <div className="circular-progressbar-container">
+                      <CircularProgressbar
+                        value={Math.max(0, (timers[order._id]?.timeLeft / timers[order._id]?.duration) * 100)}
+                        text={`${Math.floor(Math.max(0, timers[order._id]?.timeLeft / 1000 / 60))}m ${Math.floor(Math.max(0, (timers[order._id]?.timeLeft / 1000) % 60))}s`}
+                        styles={buildStyles({
+                          textSize: '16px',
+                          pathColor: `rgba(62, 152, 199, ${Math.max(0, timers[order._id]?.timeLeft / timers[order._id]?.duration)})`,
+                          textColor: '#f88',
+                          trailColor: '#d6d6d6',
+                        })}
+                      />
+                    </div>
+                  )}
                 </div>
               )
             ))}

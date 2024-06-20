@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "../styles/deliveryCommands.css";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 async function fetchAllOrders() {
   try {
@@ -66,6 +68,7 @@ function DeliveryCommands() {
   const [menus, setMenus] = useState([]);
   const location = useLocation();
   const [languageData, setLanguageData] = useState({});
+  const [timers, setTimers] = useState({});
 
   useEffect(() => {
     async function fetchOrders() {
@@ -111,6 +114,16 @@ function DeliveryCommands() {
         setRestaurants(orderRestaurantInfo.filter(Boolean));
         setArticles(orderArticleInfo.filter(Boolean));
         setMenus(orderMenuInfo.filter(Boolean));
+
+        // Initialize timers for orders with status "picked up"
+        const initialTimers = {};
+        orders.forEach(order => {
+          if (order.OrderStatus === "picked up") {
+            initialTimers[order._id] = { startTime: Date.now(), duration: 30 * 60 * 1000 }; // 30 minutes timer
+          }
+        });
+        setTimers(initialTimers);
+
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -133,28 +146,23 @@ function DeliveryCommands() {
 
   const acceptOrder = async (orderId) => {
     try {
-        const response = await axios.put(`http://localhost:5000/order/accept-order/${orderId}`, {}, {
-            headers: {
-                Authorization: localStorage.getItem("token"),
-            },
-        });
+      const response = await axios.put(`http://localhost:5000/order/accept-order/${orderId}`, {}, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
 
-        if (response.data.success) {
-            alert('Order accepted successfully!');
-            window.location.reload(); // Refresh the page to reflect changes
-        } else {
-            alert(response.data.message);
-        }
+      if (response.data.success) {
+        window.location.reload(); // Refresh the page to reflect changes
+      } else {
+        console.error(response.data.message);
+        window.location.reload(); // Refresh the page to reflect changes
+      }
     } catch (error) {
-        console.error('Error accepting order:', error);
-        if (error.response && error.response.data && error.response.data.message) {
-            alert(`Error accepting order: ${error.response.data.message}`);
-        } else {
-            alert('An error occurred while accepting the order.');
-        }
+      console.error('Error accepting order:', error);
+      window.location.reload(); // Refresh the page to reflect changes
     }
-};
-
+  };
 
   const rejectOrder = async (orderId) => {
     try {
@@ -165,20 +173,80 @@ function DeliveryCommands() {
       });
 
       if (response.data.success) {
-        alert('Order rejected successfully!');
         window.location.reload(); // Refresh the page to reflect changes
       } else {
-        alert(response.data.message);
+        console.error(response.data.message);
+        window.location.reload(); // Refresh the page to reflect changes
       }
     } catch (error) {
       console.error('Error rejecting order:', error);
-      if (error.response && error.response.data && error.response.data.message) {
-        alert(`Error rejecting order: ${error.response.data.message}`);
-      } else {
-        alert('An error occurred while rejecting the order.');
-      }
+      window.location.reload(); // Refresh the page to reflect changes
     }
   };
+
+  const setPickedUp = async (orderId) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/order/${orderId}/status`, { OrderStatus: "picked up" }, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+
+      if (response.data.message) {
+        setTimers(prevTimers => ({
+          ...prevTimers,
+          [orderId]: { startTime: Date.now(), duration: 30 * 60 * 1000 } // 30 minutes timer
+        }));
+        window.location.reload(); // Refresh the page to reflect changes
+      } else {
+        console.error(response.data.error);
+        window.location.reload(); // Refresh the page to reflect changes
+      }
+    } catch (error) {
+      console.error('Error updating order status to picked up:', error);
+      window.location.reload(); // Refresh the page to reflect changes
+    }
+  };
+
+  const setDelivered = async (orderId) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/order/${orderId}/status`, { OrderStatus: "delivered" }, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+
+      if (response.data.message) {
+        window.location.reload(); // Refresh the page to reflect changes
+      } else {
+        console.error(response.data.error);
+        window.location.reload(); // Refresh the page to reflect changes
+      }
+    } catch (error) {
+      console.error('Error updating order status to delivered:', error);
+      window.location.reload(); // Refresh the page to reflect changes
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimers(prevTimers => {
+        const newTimers = { ...prevTimers };
+        Object.keys(newTimers).forEach(orderId => {
+          const timeLeft = newTimers[orderId].startTime + newTimers[orderId].duration - Date.now();
+          if (timeLeft <= 0) {
+            delete newTimers[orderId];
+          } else {
+            newTimers[orderId].timeLeft = timeLeft;
+          }
+        });
+        return newTimers;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="wrapper">
       <h3>{languageData.Commandes || 'Orders'}</h3>
@@ -189,7 +257,6 @@ function DeliveryCommands() {
           <div>
             <h4>All Orders</h4>
             {orders
-           
               .map((order, index) => (
                 <div key={index} className="ticket-wrap">
                   <div className="ticket">
@@ -267,14 +334,36 @@ function DeliveryCommands() {
                           <p>No sub-orders found.</p>
                         )}
                       </div>
-                      {order.Status === 'payé' ? (
-                          <div>
-                                 <button onClick={() => acceptOrder(order._id)}>Accept Order</button>
-                                 <button onClick={() => rejectOrder(order._id)}>Reject Order</button>
+                      {order.OrderStatus === 'payé' ? (
+                        <div>
+                          <button onClick={() => acceptOrder(order._id)}>Accept Order</button>
+                          <button onClick={() => rejectOrder(order._id)}>Reject Order</button>
+                        </div>
+                      ) : (
+                        <p>Delivery Person Assigned: {order.DeliveryPersonId}</p>
+                      )}
+                      {order.OrderStatus === 'accepted by deliveryPerson' && (
+                        <button onClick={() => setPickedUp(order._id)}>Set as Picked Up</button>
+                      )}
+                      {order.OrderStatus === 'picked up' && (
+                        <div>
+                          <button onClick={() => setDelivered(order._id)}>Set as Delivered</button>
+                          {timers[order._id] && (
+                            <div style={{ width: "100px", height: "100px", margin: "0 auto" }}>
+                              <CircularProgressbar
+                                value={Math.max(0, (timers[order._id].timeLeft / timers[order._id].duration) * 100)}
+                                text={`${Math.floor(Math.max(0, timers[order._id].timeLeft / 1000 / 60))}m ${Math.floor(Math.max(0, (timers[order._id].timeLeft / 1000) % 60))}s`}
+                                styles={buildStyles({
+                                  textSize: '16px',
+                                  pathColor: `rgba(62, 152, 199, ${Math.max(0, timers[order._id].timeLeft / timers[order._id].duration)})`,
+                                  textColor: '#f88',
+                                  trailColor: '#d6d6d6',
+                                })}
+                              />
                             </div>
-                        ) : (
-                           <p>Delivery Person Assigned: {order.DeliveryPersonId}</p>
-                        )}
+                          )}
+                        </div>
+                      )}
                       <img className="ticket__barcode" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/515428/barcode.png" alt="Fake barcode" />
                     </div>
                   </div>

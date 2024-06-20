@@ -151,16 +151,16 @@ function Commandes() {
 
       if (response.data.success) {
         setDiscountedPrice(response.data.discountedPrice);
-        notifier.success('Referral code applied successfully!');
+        notifier.success(languageData.referralCodeApplied || 'Referral code applied successfully!');
       } else {
         notifier.alert(response.data.message);
       }
     } catch (error) {
       console.error('Error applying referral code:', error);
       if (error.response && error.response.data && error.response.data.message) {
-        notifier.alert(`Error applying referral code: ${error.response.data.message}`);
+        notifier.alert(`${languageData.errorApplyingReferralCode || 'Error applying referral code'}: ${error.response.data.message}`);
       } else {
-        notifier.alert('An error occurred while applying the referral code.');
+        notifier.alert(languageData.unexpectedError || 'An error occurred while applying the referral code.');
       }
     }
   };
@@ -170,30 +170,30 @@ function Commandes() {
     let yOffset = 10;
     doc.text(`Order ${1}`, 10, yOffset);
     yOffset += 10;
-    doc.text(`Order Address: ${user.address}`, 10, yOffset);
+    doc.text(`${languageData.orderAddress || 'Order Address'}: ${user.address}`, 10, yOffset);
     yOffset += 10;
-    doc.text(`Order Phone: ${user.phoneNumber}`, 10, yOffset);
+    doc.text(`${languageData.orderPhone || 'Order Phone'}: ${user.phoneNumber}`, 10, yOffset);
     yOffset += 10;
-    doc.text(`Order Price: ${order.OrderPrice}`, 10, yOffset);
+    doc.text(`${languageData.orderPrice || 'Order Price'}: ${order.OrderPrice}`, 10, yOffset);
     yOffset += 10;
-    doc.text(`Order Status: ${order.OrderStatus}`, 10, yOffset);
+    doc.text(`${languageData.orderStatus || 'Order Status'}: ${order.OrderStatus}`, 10, yOffset);
     yOffset += 10;
 
     order.Orders.forEach((subOrder, subIndex) => {
       doc.text(`  Sub Order ${subIndex + 1}`, 10, yOffset);
       yOffset += 10;
-      doc.text(`  Sub Order Price: ${subOrder.OrderPrice}`, 10, yOffset);
+      doc.text(`  ${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice}`, 10, yOffset);
       yOffset += 10;
-      doc.text(`  Sub Order Status: ${subOrder.OrderStatus}`, 10, yOffset);
+      doc.text(`  ${languageData.subOrderStatus || 'Sub Order Status'}: ${subOrder.OrderStatus}`, 10, yOffset);
       yOffset += 10;
 
       subOrder.Articles.forEach(article => {
         const articleInfo = articles.find(item => item._id === article.articleId);
-        doc.text(`    Article Name: ${articleInfo ? articleInfo.name : 'N/A'}`, 10, yOffset);
+        doc.text(`    ${languageData.articleName || 'Article Name'}: ${articleInfo ? articleInfo.name : 'N/A'}`, 10, yOffset);
         yOffset += 10;
-        doc.text(`    Article Price: ${articleInfo ? articleInfo.price : 'N/A'}`, 10, yOffset);
+        doc.text(`    ${languageData.articlePrice || 'Article Price'}: ${articleInfo ? articleInfo.price : 'N/A'}`, 10, yOffset);
         yOffset += 10;
-        doc.text(`    Quantity: ${article.quantity}`, 10, yOffset);
+        doc.text(`    ${languageData.quantity || 'Quantity'}: ${article.quantity}`, 10, yOffset);
         yOffset += 10;
       });
     });
@@ -253,39 +253,39 @@ function Commandes() {
     <div className="wrapper">
       <h3>{languageData.Commandes || 'Orders'}</h3>
       {orders.length === 0 ? (
-        <p>No orders found.</p>
+        <p>{languageData.noOrdersFound || 'No orders found.'}</p>
       ) : (
         <>
           <div>
-            <h4>Orders in Progress</h4>
+            <h4>{languageData.ordersInProgress || 'Orders in Progress'}</h4>
             {orders.map((order, index) => (
               order.OrderStatus === "en cours" && (
                 <div key={index} className="order-in-progress">
-                  <h5>Order {index + 1}</h5>
-                  <p>Order ID: {order._id}</p>
-                  <p>Order Address: {user.address}</p>
-                  <p>Order Phone: {user.phoneNumber}</p>
-                  <p>Order Price: {discountedPrice !== null && selectedOrder?._id === order._id ? `${order.OrderPrice} (Discounted: ${discountedPrice})` : order.OrderPrice}</p>
-                  <p>Order Status: {order.OrderStatus}</p>
-                  <h6>Sub Orders:</h6>
+                  <h5>{`${languageData.order || 'Order'} ${index + 1}`}</h5>
+                  <p>{`${languageData.orderID || 'Order ID'}: ${order._id}`}</p>
+                  <p>{`${languageData.orderAddress || 'Order Address'}: ${user.address}`}</p>
+                  <p>{`${languageData.orderPhone || 'Order Phone'}: ${user.phoneNumber}`}</p>
+                  <p>{`${languageData.orderPrice || 'Order Price'}: ${discountedPrice !== null && selectedOrder?._id === order._id ? `${order.OrderPrice} (${languageData.discounted || 'Discounted'}: ${discountedPrice})` : order.OrderPrice}`}</p>
+                  <p>{`${languageData.orderStatus || 'Order Status'}: ${order.OrderStatus}`}</p>
+                  <h6>{languageData.subOrders || 'Sub Orders'}:</h6>
                   {order.Orders && order.Orders.length > 0 ? (
                     order.Orders.map((subOrder, subIndex) => (
                       <div key={subIndex}>
-                        <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                        <p>Sub Order Status: {subOrder.OrderStatus}</p>
+                        <p>{`${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice}`}</p>
+                        <p>{`${languageData.subOrderStatus || 'Sub Order Status'}: ${subOrder.OrderStatus}`}</p>
                         {subOrder.Menus && subOrder.Menus.length > 0 && (
                           <>
-                            <h6>Menus:</h6>
+                            <h6>{languageData.menus || 'Menus'}:</h6>
                             {subOrder.Menus.map((menu, menuIndex) => (
                               <div key={menuIndex}>
-                                <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'N/A'}</p>
-                                <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'N/A'}</p>
-                                <p>Quantity: {menu.quantityMenu}</p>
-                                <h6>Menu Articles:</h6>
+                                <p>{`${languageData.menuName || 'Menu Name'}: ${menus.find(item => item._id === menu.menuId)?.name || 'N/A'}`}</p>
+                                <p>{`${languageData.menuPrice || 'Menu Price'}: ${menus.find(item => item._id === menu.menuId)?.price || 'N/A'}`}</p>
+                                <p>{`${languageData.quantity || 'Quantity'}: ${menu.quantityMenu}`}</p>
+                                <h6>{languageData.articles || 'Articles'}:</h6>
                                 {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
                                   <div key={menuArticleIndex}>
-                                    <p>Article Name: {menuArticle?.name || 'N/A'}</p>
-                                    <p>Article Price: {menuArticle?.price || 'N/A'}</p>
+                                    <p>{`${languageData.articleName || 'Article Name'}: ${menuArticle?.name || 'N/A'}`}</p>
+                                    <p>{`${languageData.articlePrice || 'Article Price'}: ${menuArticle?.price || 'N/A'}`}</p>
                                   </div>
                                 ))}
                               </div> 
@@ -294,12 +294,12 @@ function Commandes() {
                         )}
                         {subOrder.Articles && subOrder.Articles.length > 0 && (
                           <>
-                            <h6>Articles:</h6>
+                            <h6>{languageData.articles || 'Articles'}:</h6>
                             {subOrder.Articles.map((article, articleIndex) => (
                               <div key={articleIndex}>
-                                <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
-                                <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
-                                <p>Quantity: {article.quantity}</p>
+                                <p>{`${languageData.articleName || 'Article Name'}: ${articles.find(item => item._id === article.articleId)?.name || 'N/A'}`}</p>
+                                <p>{`${languageData.articlePrice || 'Article Price'}: ${articles.find(item => item._id === article.articleId)?.price || 'N/A'}`}</p>
+                                <p>{`${languageData.quantity || 'Quantity'}: ${article.quantity}`}</p>
                               </div>
                             ))}
                           </>
@@ -307,19 +307,19 @@ function Commandes() {
                       </div>
                     ))
                   ) : (
-                    <p>No sub-orders found.</p>
+                    <p>{languageData.noSubOrders || 'No sub-orders found.'}</p>
                   )}
-                  <button onClick={() => PayOrder(order)}>Pay Order</button>
-                  <button onClick={() => deleteOrder(order)}>Delete Order</button>
+                  <button onClick={() => PayOrder(order)}>{languageData.payOrder || 'Pay Order'}</button>
+                  <button onClick={() => deleteOrder(order)}>{languageData.deleteOrder || 'Delete Order'}</button>
                   {order.OrderStatus === "en cours" && (
                     <>
                       <input
                         type="text"
-                        placeholder="Enter referral code"
+                        placeholder={languageData.enterReferralCode || "Enter referral code"}
                         value={referralCode}
                         onChange={(e) => setReferralCode(e.target.value)}
                       />
-                      <button onClick={() => handleApplyReferral(order)}>Apply Referral Code</button>
+                      <button onClick={() => handleApplyReferral(order)}>{languageData.applyReferralCode || 'Apply Referral Code'}</button>
                     </>
                   )}
                 </div>
@@ -328,35 +328,35 @@ function Commandes() {
           </div>
           <hr /> 
           <div>
-            <h4>Paid Orders</h4>
+            <h4>{languageData.paidOrders || 'Paid Orders'}</h4>
             {orders.map((order, index) => (
               order.OrderStatus !== "en cours" && (
                 <div key={index} className="order-paid">
-                  <h5>Order {index + 1}</h5>
-                  <p>Order ID: {order._id}</p>
-                  <p>Order Address: {user.address}</p>
-                  <p>Order Phone: {user.phoneNumber}</p>
-                  <p>Order Price: {order.OrderPrice}</p>
-                  <p>Order Status: {order.OrderStatus}</p>
-                  <h6>Sub Orders:</h6>
+                  <h5>{`${languageData.order || 'Order'} ${index + 1}`}</h5>
+                  <p>{`${languageData.orderID || 'Order ID'}: ${order._id}`}</p>
+                  <p>{`${languageData.orderAddress || 'Order Address'}: ${user.address}`}</p>
+                  <p>{`${languageData.orderPhone || 'Order Phone'}: ${user.phoneNumber}`}</p>
+                  <p>{`${languageData.orderPrice || 'Order Price'}: ${order.OrderPrice}`}</p>
+                  <p>{`${languageData.orderStatus || 'Order Status'}: ${order.OrderStatus}`}</p>
+                  <h6>{languageData.subOrders || 'Sub Orders'}:</h6>
                   {order.Orders && order.Orders.length > 0 ? (
                     order.Orders.map((subOrder, subIndex) => (
                       <div key={subIndex}>
-                        <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                        <p>Sub Order Status: {subOrder.OrderStatus}</p>
+                        <p>{`${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice}`}</p>
+                        <p>{`${languageData.subOrderStatus || 'Sub Order Status'}: ${subOrder.OrderStatus}`}</p>
                         {subOrder.Menus && subOrder.Menus.length > 0 && (
                           <>
-                            <h6>Menus:</h6>
+                            <h6>{languageData.menus || 'Menus'}:</h6>
                             {subOrder.Menus.map((menu, menuIndex) => (
                               <div key={menuIndex}>
-                                <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'N/A'}</p>
-                                <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'N/A'}</p>
-                                <p>Quantity: {menu.quantityMenu}</p>
-                                <h6>Menu Articles:</h6>
+                                <p>{`${languageData.menuName || 'Menu Name'}: ${menus.find(item => item._id === menu.menuId)?.name || 'N/A'}`}</p>
+                                <p>{`${languageData.menuPrice || 'Menu Price'}: ${menus.find(item => item._id === menu.menuId)?.price || 'N/A'}`}</p>
+                                <p>{`${languageData.quantity || 'Quantity'}: ${menu.quantityMenu}`}</p>
+                                <h6>{languageData.articles || 'Articles'}:</h6>
                                 {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
                                   <div key={menuArticleIndex}>
-                                    <p>Article Name: {menuArticle?.name || 'N/A'}</p>
-                                    <p>Article Price: {menuArticle?.price || 'N/A'}</p>
+                                    <p>{`${languageData.articleName || 'Article Name'}: ${menuArticle?.name || 'N/A'}`}</p>
+                                    <p>{`${languageData.articlePrice || 'Article Price'}: ${menuArticle?.price || 'N/A'}`}</p>
                                   </div>
                                 ))}
                               </div> 
@@ -365,12 +365,12 @@ function Commandes() {
                         )}
                         {subOrder.Articles && subOrder.Articles.length > 0 && (
                           <>
-                            <h6>Articles:</h6>
+                            <h6>{languageData.articles || 'Articles'}:</h6>
                             {subOrder.Articles.map((article, articleIndex) => (
                               <div key={articleIndex}>
-                                <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'N/A'}</p>
-                                <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'N/A'}</p>
-                                <p>Quantity: {article.quantity}</p>
+                                <p>{`${languageData.articleName || 'Article Name'}: ${articles.find(item => item._id === article.articleId)?.name || 'N/A'}`}</p>
+                                <p>{`${languageData.articlePrice || 'Article Price'}: ${articles.find(item => item._id === article.articleId)?.price || 'N/A'}`}</p>
+                                <p>{`${languageData.quantity || 'Quantity'}: ${article.quantity}`}</p>
                               </div>
                             ))}
                           </>
@@ -378,9 +378,9 @@ function Commandes() {
                       </div>
                     ))
                   ) : (
-                    <p>No sub-orders found.</p>
+                    <p>{languageData.noSubOrders || 'No sub-orders found.'}</p>
                   )}
-                  <button onClick={() => downloadPDF(order)}>Download as PDF</button>
+                  <button onClick={() => downloadPDF(order)}>{languageData.downloadPDF || 'Download as PDF'}</button>
                   {order.OrderStatus === "picked up" && (
                     <div className="circular-progressbar-container">
                       <CircularProgressbar

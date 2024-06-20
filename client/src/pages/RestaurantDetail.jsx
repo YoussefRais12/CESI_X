@@ -320,7 +320,6 @@ const RestaurantDetail = () => {
             }
     
             console.log(user);
-            console.log(orderData);
     
             const order = new Order(orderData);
             await new Promise(resolve => {
@@ -333,6 +332,7 @@ const RestaurantDetail = () => {
             });
     
             setOrder(order);
+            console.log(order);
         } catch (error) {
             console.error('Error creating order:', error);
         }

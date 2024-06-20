@@ -6,13 +6,15 @@ import QRCode from "qrcode.react";
 import "../styles/commandes.css";
 import ViewPaymentDialog from "../components/ViewPaymentDialog";
 
+const BASE_URL = 'http://127.0.0.1:5000';
+
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
 
   if (user && user.orders) {
     if (user.role === "restaurantOwner") {
       try {
-        const result = await axios.get(`http://localhost:5000/restaurant/owner/${user._id}`, {
+        const result = await axios.get(`${BASE_URL}/restaurant/owner/${user._id}`, {
           headers: {
             Authorization: localStorage.getItem("token"),
           },
@@ -21,7 +23,7 @@ async function fetchOrdersByUserRole(user) {
 
         for (const restaurant of restaurants) {
           for (const subOrderId of restaurant.subOrders) {
-            const orderResult = await axios.get(`http://localhost:5000/order/suborder/${subOrderId}`, {
+            const orderResult = await axios.get(`${BASE_URL}/order/suborder/${subOrderId}`, {
               headers: {
                 Authorization: localStorage.getItem("token"),
               },
@@ -42,7 +44,7 @@ async function fetchOrdersByUserRole(user) {
 
       for (const orderId of user.orders) {
         try {
-          const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
+          const result = await axios.get(`${BASE_URL}/order/${orderId}`, {
             headers: {
               Authorization: localStorage.getItem("token"),
             },
@@ -60,7 +62,7 @@ async function fetchOrdersByUserRole(user) {
 
 async function FetchRestaurant(idRestaurant) {
   try {
-    const result = await axios.get(`http://localhost:5000/restaurant/${idRestaurant}`, {
+    const result = await axios.get(`${BASE_URL}/restaurant/${idRestaurant}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -118,7 +120,7 @@ function RestaurantOrder() {
 
   const acceptOrder = async (subOrder) => {
     try {
-      const response = await axios.put(`http://localhost:5000/order/accept-suborder/${subOrder.subOrderId._id}`, {}, {
+      const response = await axios.put(`${BASE_URL}/order/accept-suborder/${subOrder.subOrderId._id}`, {}, {
         headers: {
           Authorization: localStorage.getItem("token"),
         },
@@ -142,7 +144,7 @@ function RestaurantOrder() {
 
   const validateDelivery = async (subOrderId) => {
     try {
-      const response = await axios.put(`http://localhost:5000/order/validate-delivery/${subOrderId}`, {}, {
+      const response = await axios.put(`${BASE_URL}/order/validate-delivery/${subOrderId}`, {}, {
         headers: {
           Authorization: localStorage.getItem("token"),
         },
@@ -231,7 +233,7 @@ function RestaurantOrder() {
                 <h6>Sub Orders:</h6>
                 {order.Orders && order.Orders.length > 0 ? (
                   order.Orders.filter(subOrder => subOrder.OrderStatus === "accepted").map((subOrder, subIndex) => {
-                    const validationLink = `http://localhost:5000/order/validate-delivery/${subOrder.subOrderId._id}`;
+                    const validationLink = `${BASE_URL}/order/validate-delivery/${subOrder.subOrderId._id}`;
 
                     return (
                       <div key={subIndex}>

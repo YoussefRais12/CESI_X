@@ -1,9 +1,9 @@
 import axios from "axios";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
+const API_URL = (window.location.host).split(":")[0];
 // Fetch all articles
 export const fetchAllArticles = createAsyncThunk("article/fetchAllArticles", async () => {
-    const response = await axios.get("http://localhost:5000/article/all");
+    const response = await axios.get(`http://${API_URL}:5000/article/all`);
     return response.data;
 });
 
@@ -12,7 +12,7 @@ export const fetchArticlesByIds = createAsyncThunk('article/fetchByIds', async (
     try {
         const articles = [];
         for (const id of ids) {
-            const response = await axios.get(`http://localhost:5000/article/articles/${id}`);
+            const response = await axios.get(`http://${API_URL}:5000/article/articles/${id}`);
             articles.push(response.data);
         }
         return articles;
@@ -26,14 +26,14 @@ export const fetchArticlesByIds = createAsyncThunk('article/fetchByIds', async (
 
 // Fetch all articles for a restaurant
 export const fetchArticlesByRestaurantId = createAsyncThunk("article/fetchArticlesByRestaurantId", async (restaurantId) => {
-    const response = await axios.get(`http://localhost:5000/article/restaurant/${restaurantId}`);
+    const response = await axios.get(`http://${API_URL}:5000/article/restaurant/${restaurantId}`);
     return response.data;
 });
 
 // Add new article
 export const addArticle = createAsyncThunk("article/addArticle", async (newArticle) => {
     try {
-        let result = await axios.post("http://localhost:5000/article/add", newArticle, {
+        let result = await axios.post(`http://${API_URL}:5000/article/add`, newArticle, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -48,7 +48,7 @@ export const addArticle = createAsyncThunk("article/addArticle", async (newArtic
 // Update article
 export const updateArticle = createAsyncThunk("article/updateArticle", async ({ id, articleData }) => {
     try {
-        let result = await axios.put(`http://localhost:5000/article/${id}`, articleData, {
+        let result = await axios.put(`http://${API_URL}:5000/article/${id}`, articleData, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -63,7 +63,7 @@ export const updateArticle = createAsyncThunk("article/updateArticle", async ({ 
 // Delete article
 export const deleteArticle = createAsyncThunk("article/deleteArticle", async (id) => {
     try {
-        await axios.delete(`http://localhost:5000/article/${id}`, {
+        await axios.delete(`http://${API_URL}:5000/article/${id}`, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -78,7 +78,7 @@ export const deleteArticle = createAsyncThunk("article/deleteArticle", async (id
 // Upload article image
 export const uploadArticleImage = createAsyncThunk("article/uploadArticleImage", async ({ id, formData }) => {
     try {
-        const result = await axios.post(`http://localhost:5000/article/upload-image/${id}`, formData, {
+        const result = await axios.post(`http://${API_URL}:5000/article/upload-image/${id}`, formData, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },

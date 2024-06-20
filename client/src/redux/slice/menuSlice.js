@@ -1,22 +1,22 @@
 import axios from "axios";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
+const API_URL = (window.location.host).split(":")[0];
 // Fetch all menus for a restaurant
 export const fetchMenusByRestaurantId = createAsyncThunk("menu/fetchMenusByRestaurantId", async (restaurantId) => {
-    const response = await axios.get(`http://localhost:5000/menu/restaurant/${restaurantId}`);
+    const response = await axios.get(`http://${API_URL}:5000/menu/restaurant/${restaurantId}`);
     return response.data;
 });
 
 // Fetch menu by ID
 export const fetchMenuById = createAsyncThunk("menu/fetchMenuById", async (id) => {
-    const response = await axios.get(`http://localhost:5000/menu/${id}`);
+    const response = await axios.get(`http://${API_URL}:5000/menu/${id}`);
     return response.data;
 });
 
 // Add new menu
 export const createMenu = createAsyncThunk("menu/createMenu", async (newMenu) => {
     try {
-        let result = await axios.post("http://localhost:5000/menu/", newMenu, {
+        let result = await axios.post(`http://${API_URL}:5000/menu/`, newMenu, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -31,7 +31,7 @@ export const createMenu = createAsyncThunk("menu/createMenu", async (newMenu) =>
 // Update menu
 export const updateMenu = createAsyncThunk("menu/updateMenu", async ({ id, menuData }) => {
     try {
-        let result = await axios.put(`http://localhost:5000/menu/${id}`, menuData, {
+        let result = await axios.put(`http://${API_URL}:5000/menu/${id}`, menuData, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },
@@ -46,7 +46,7 @@ export const updateMenu = createAsyncThunk("menu/updateMenu", async ({ id, menuD
 // Delete menu
 export const deleteMenu = createAsyncThunk("menu/deleteMenu", async (id) => {
     try {
-        await axios.delete(`http://localhost:5000/menu/${id}`, {
+        await axios.delete(`http://${API_URL}:5000/menu/${id}`, {
             headers: {
                 Authorization: localStorage.getItem("token"),
             },

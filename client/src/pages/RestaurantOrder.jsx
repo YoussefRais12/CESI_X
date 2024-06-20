@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import QRCode from "qrcode.react";
 import "../styles/commandes.css";
 import ViewPaymentDialog from "../components/ViewPaymentDialog";
+import { fetchAllDeliveryPersons } from "../redux/slice/deliveryPersonSlice";
 
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
@@ -75,10 +76,14 @@ function RestaurantOrder() {
   const [orders, setOrders] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const user = useSelector((state) => state.user?.user);
-  const [languageData, setLanguageData] = useState({});
-  const location = useLocation();
+  const deliveryPersons = useSelector((state) => state.deliveryPerson.deliveryPersons);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showDeliveryPersonDialog, setShowDeliveryPersonDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedDeliveryPerson, setSelectedDeliveryPerson] = useState(null);
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const [languageData, setLanguageData] = useState({});
 
   useEffect(() => {
     async function fetchOrders() {
@@ -102,7 +107,8 @@ function RestaurantOrder() {
     }
 
     fetchOrders();
-  }, [user?.orders]);
+    dispatch(fetchAllDeliveryPersons());
+  }, [user?.orders, dispatch]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -164,6 +170,39 @@ function RestaurantOrder() {
     }
   };
 
+  const handleAssignDeliveryPerson = async () => {
+    if (!selectedDeliveryPerson) {
+      alert('Please select a delivery person.');
+      return;
+    }
+
+    try {
+      console.log("Selected Order ID:", selectedOrder._id);
+      console.log("Selected Delivery Person ID:", selectedDeliveryPerson);
+      const response = await axios.put(`http://localhost:5000/order/assign-delivery-person/${selectedOrder._id}`, {
+        DeliveryPersonId: selectedDeliveryPerson
+      }, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+
+      if (response.data.message) {
+        alert('Delivery person assigned successfully!');
+        window.location.reload(); // Refresh the page to reflect changes
+      } else {
+        alert(response.data.error);
+      }
+    } catch (error) {
+      console.error('Error assigning delivery person:', error);
+      if (error.response && error.response.data && error.response.data.error) {
+        alert(`Error assigning delivery person: ${error.response.data.error}`);
+      } else {
+        alert('An error occurred while assigning the delivery person.');
+      }
+    }
+  };
+
   const PayOrder = (order) => {
     setSelectedOrder(order);
     setShowPaymentDialog(true);
@@ -171,6 +210,15 @@ function RestaurantOrder() {
 
   const closePaymentDialog = () => {
     setShowPaymentDialog(false);
+  };
+
+  const openDeliveryPersonDialog = (order) => {
+    setSelectedOrder(order);
+    setShowDeliveryPersonDialog(true);
+  };
+
+  const handleDeliveryPersonSelection = (personId) => {
+    setSelectedDeliveryPerson(personId);
   };
 
   return (
@@ -183,89 +231,153 @@ function RestaurantOrder() {
           <div>
             <h4>Orders in Progress</h4>
             {orders.filter(order => order.OrderStatus !== "en cours").map((order, index) => (
-              <div key={index} className="order-in-progress">
-                {order.Orders && order.Orders.length > 0 ? (
-                  order.Orders.filter(subOrder => subOrder.OrderStatus === "en cours").map((subOrder, subIndex) => (
-                    <div key={subIndex}>
-                      <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
-                      <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
-                      <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                      <p>Sub Order Status: {subOrder.subOrderId.OrderStatus}</p>
-                      {subOrder.Menus && subOrder.Menus.length > 0 && (
-                        <>
-                          <h6>Menus:</h6>
-                          {subOrder.Menus.map((menu, menuIndex) => (
-                            <div key={menuIndex}>
-                              <p>Menu Name: {menu.name}</p>
-                              <p>Menu Price: {menu.price}</p>
-                              <p>Quantity: {menu.quantityMenu}</p>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      {subOrder.Articles && subOrder.Articles.length > 0 && (
-                        <>
-                          <h6>Articles:</h6>
-                          {subOrder.Articles.map((article, articleIndex) => (
-                            <div key={articleIndex}>
-                              <p>Article Name: {article.name}</p>
-                              <p>Article Price: {article.price}</p>
-                              <p>Quantity: {article.quantity}</p>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      <button onClick={() => acceptOrder(subOrder)}>Accepter la commande</button>
+              <div key={index} className="ticket-wrap">
+                <div className="ticket">
+                  <div className="ticket__header">
+                    <div className="ticket__co">
+                      <svg className="ticket__co-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+                        <circle fill="#506072" cx="32" cy="32" r="32" />
+                      </svg>
+                      <span className="ticket__co-name">{restaurants.find(r => r.id === order.Orders[0].restaurantId)?.name || 'Unknown'}</span>
+                      <span className="u-upper ticket__co-subname">Restaurant Order</span>
                     </div>
-                  ))
-                ) : (
-                  <p>No sub-orders found.</p>
-                )}
+                  </div>
+                  <div className="ticket__body">
+                    <p className="ticket__route">Order ID: {order._id}</p>
+                    <p className="ticket__description">Order Address: {order.orderaddress}</p>
+                    <div className="ticket__timing">
+                      <p>
+                        <span className="u-upper ticket__small-label">Phone</span>
+                        <span className="ticket__detail">{order.orderPhone}</span>
+                      </p>
+                      <p>
+                        <span className="u-upper ticket__small-label">Price</span>
+                        <span className="ticket__detail">{order.OrderPrice} €</span>
+                      </p>
+                      <p>
+                        <span className="u-upper ticket__small-label">Status</span>
+                        <span className="ticket__detail">{order.OrderStatus}</span>
+                      </p>
+                    </div>
+                    <h6 className="ticket__fine-print">Sub Orders:</h6>
+                    {order.Orders && order.Orders.length > 0 ? (
+                      order.Orders.filter(subOrder => subOrder.OrderStatus === "en cours").map((subOrder, subIndex) => (
+                        <div key={subIndex}>
+                          <h6>Sub Order: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}</h6>
+                          <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}</p>
+                          <p>Sub Order Price: {subOrder.OrderPrice}</p>
+                          <p>Sub Order Status: {subOrder.subOrderId.OrderStatus}</p>
+                          {subOrder.Menus && subOrder.Menus.length > 0 && (
+                            <>
+                              <h6>Menus:</h6>
+                              {subOrder.Menus.map((menu, menuIndex) => (
+                                <div key={menuIndex}>
+                                  <p>Menu Name: {menu.name}</p>
+                                  <p>Menu Price: {menu.price}</p>
+                                  <p>Quantity: {menu.quantityMenu}</p>
+                                </div>
+                              ))}
+                            </>
+                          )}
+                          {subOrder.Articles && subOrder.Articles.length > 0 && (
+                            <>
+                              <h6>Articles:</h6>
+                              {subOrder.Articles.map((article, articleIndex) => (
+                                <div key={articleIndex}>
+                                  <p>Article Name: {article.name}</p>
+                                  <p>Article Price: {article.price}</p>
+                                  <p>Quantity: {article.quantity}</p>
+                                </div>
+                              ))}
+                            </>
+                          )}
+                          <button onClick={() => acceptOrder(subOrder)}>Accepter la commande</button>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No sub-orders found.</p>
+                    )}
+                    {order.DeliveryPersonId ? (
+                      <p>Delivery Person Assigned</p>
+                    ) : (
+                      <button onClick={() => openDeliveryPersonDialog(order)}>Assign Delivery Person</button>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
           <div>
             <h4>Accepted Orders</h4>
             {orders.filter(order => order.Orders.some(subOrder => subOrder.OrderStatus === "accepted")).map((order, index) => (
-              <div key={index} className="order-accepted">
-                <h6>Sub Orders:</h6>
-                {order.Orders && order.Orders.length > 0 ? (
-                  order.Orders.filter(subOrder => subOrder.OrderStatus === "accepted").map((subOrder, subIndex) => (
-                    <div key={subIndex}>
-                      <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
-                      <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
-                      <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                      <p>Sub Order Status: {subOrder.subOrderId.OrderStatus}</p>
-                      {subOrder.Menus && subOrder.Menus.length > 0 && (
-                        <>
-                          <h6>Menus:</h6>
-                          {subOrder.Menus.map((menu, menuIndex) => (
-                            <div key={menuIndex}>
-                              <p>Menu Name: {menu.name}</p>
-                              <p>Menu Price: {menu.price}</p>
-                              <p>Quantity: {menu.quantityMenu}</p>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      {subOrder.Articles && subOrder.Articles.length > 0 && (
-                        <>
-                          <h6>Articles:</h6>
-                          {subOrder.Articles.map((article, articleIndex) => (
-                            <div key={articleIndex}>
-                              <p>Article Name: {article.name}</p>
-                              <p>Article Price: {article.price}</p>
-                              <p>Quantity: {article.quantity}</p>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                      <QRCode value={`http://localhost:5000/order/validate-delivery/${subOrder.subOrderId._id}`} />
+              <div key={index} className="ticket-wrap">
+                <div className="ticket">
+                  <div className="ticket__header">
+                    <div className="ticket__co">
+                      <svg className="ticket__co-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+                        <circle fill="#506072" cx="32" cy="32" r="32" />
+                      </svg>
+                      <span className="ticket__co-name">{restaurants.find(r => r.id === order.Orders[0].restaurantId)?.name || 'Unknown'}</span>
+                      <span className="u-upper ticket__co-subname">Restaurant Order</span>
                     </div>
-                  ))
-                ) : (
-                  <p>No accepted sub-orders found.</p>
-                )}
+                  </div>
+                  <div className="ticket__body">
+                    <p className="ticket__route">Order ID: {order._id}</p>
+                    <p className="ticket__description">Order Address: {order.orderaddress}</p>
+                    <div className="ticket__timing">
+                      <p>
+                        <span className="u-upper ticket__small-label">Phone</span>
+                        <span className="ticket__detail">{order.orderPhone}</span>
+                      </p>
+                      <p>
+                        <span className="u-upper ticket__small-label">Price</span>
+                        <span className="ticket__detail">{order.OrderPrice} €</span>
+                      </p>
+                      <p>
+                        <span className="u-upper ticket__small-label">Status</span>
+                        <span className="ticket__detail">{order.OrderStatus}</span>
+                      </p>
+                    </div>
+                    <h6 className="ticket__fine-print">Sub Orders:</h6>
+                    {order.Orders && order.Orders.length > 0 ? (
+                      order.Orders.filter(subOrder => subOrder.OrderStatus === "accepted").map((subOrder, subIndex) => (
+                        <div key={subIndex}>
+                          <h6>Sub Order: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}</h6>
+                          <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}</p>
+                          <p>Sub Order Price: {subOrder.OrderPrice}</p>
+                          <p>Sub Order Status: {subOrder.subOrderId.OrderStatus}</p>
+                          {subOrder.Menus && subOrder.Menus.length > 0 && (
+                            <>
+                              <h6>Menus:</h6>
+                              {subOrder.Menus.map((menu, menuIndex) => (
+                                <div key={menuIndex}>
+                                  <p>Menu Name: {menu.name}</p>
+                                  <p>Menu Price: {menu.price}</p>
+                                  <p>Quantity: {menu.quantityMenu}</p>
+                                </div>
+                              ))}
+                            </>
+                          )}
+                          {subOrder.Articles && subOrder.Articles.length > 0 && (
+                            <>
+                              <h6>Articles:</h6>
+                              {subOrder.Articles.map((article, articleIndex) => (
+                                <div key={articleIndex}>
+                                  <p>Article Name: {article.name}</p>
+                                  <p>Article Price: {article.price}</p>
+                                  <p>Quantity: {article.quantity}</p>
+                                </div>
+                              ))}
+                            </>
+                          )}
+                          <QRCode value={`http://localhost:5000/order/validate-delivery/${subOrder.subOrderId._id}`} />
+                        </div>
+                      ))
+                    ) : (
+                      <p>No accepted sub-orders found.</p>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -273,6 +385,25 @@ function RestaurantOrder() {
       )}
       {showPaymentDialog && selectedOrder && (
         <ViewPaymentDialog order={selectedOrder} onClose={closePaymentDialog} />
+      )}
+      {showDeliveryPersonDialog && (
+        <div className="delivery-person-dialog">
+          <h4>Select a Delivery Person</h4>
+          {deliveryPersons.length > 0 ? (
+            deliveryPersons.map(person => (
+              <div key={person._id}>
+                <p>Name: {person.userId.name}</p>
+                <p>Email: {person.userId.email}</p>
+                <p>Vehicle: {person.vehicleDetails}</p>
+                <button onClick={() => handleDeliveryPersonSelection(person._id)}>Select</button>
+              </div>
+            ))
+          ) : (
+            <p>No delivery persons available.</p>
+          )}
+          <button onClick={handleAssignDeliveryPerson}>Assign</button>
+          <button onClick={() => setShowDeliveryPersonDialog(false)}>Close</button>
+        </div>
       )}
     </div>
   );

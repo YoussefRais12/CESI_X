@@ -1,11 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+// Thunk to fetch all delivery persons
+export const fetchAllDeliveryPersons = createAsyncThunk(
+  'deliveryPerson/fetchAll',
+  async (_, thunkAPI) => {
+    const response = await axios.get('http://localhost:5000/deliveryPerson/all', {
+      headers: {
+        Authorization: localStorage.getItem('token'),
+      },
+    });
+    return response.data;
+  }
+);
+
 // Thunk to fetch delivery person by user ID
 export const fetchDeliveryPersonByUserId = createAsyncThunk(
   'deliveryPerson/fetchByUserId',
   async (userId, thunkAPI) => {
-    const response = await axios.get(`/api/deliveryPerson/user/${userId}`);
+    const response = await axios.get(`http://localhost:5000/deliveryPerson/user/${userId}`, {
+      headers: {
+        Authorization: localStorage.getItem('token'),
+      },
+    });
     return response.data;
   }
 );
@@ -14,7 +31,11 @@ export const fetchDeliveryPersonByUserId = createAsyncThunk(
 export const updateDeliveryPersonAvailability = createAsyncThunk(
   'deliveryPerson/updateAvailability',
   async ({ id, available }, thunkAPI) => {
-    const response = await axios.put(`/api/deliveryPerson/update/${id}`, { available });
+    const response = await axios.put(`http://localhost:5000/deliveryPerson/update/${id}`, { available }, {
+      headers: {
+        Authorization: localStorage.getItem('token'),
+      },
+    });
     return response.data;
   }
 );
@@ -22,6 +43,7 @@ export const updateDeliveryPersonAvailability = createAsyncThunk(
 const deliveryPersonSlice = createSlice({
   name: 'deliveryPerson',
   initialState: {
+    deliveryPersons: [],
     deliveryPerson: null,
     status: 'idle',
     error: null,
@@ -29,6 +51,17 @@ const deliveryPersonSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(fetchAllDeliveryPersons.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchAllDeliveryPersons.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.deliveryPersons = action.payload;
+      })
+      .addCase(fetchAllDeliveryPersons.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      })
       .addCase(fetchDeliveryPersonByUserId.pending, (state) => {
         state.status = 'loading';
       })

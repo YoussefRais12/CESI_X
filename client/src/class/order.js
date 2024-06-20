@@ -2,39 +2,22 @@ import axios from "axios";
 const REACT_APP_API_URL = "http://localhost:5000";
 
 export default class Order {
-    orderId;
-    orderaddress;
-    orderPhone;
-    userId;
-    DeliveryPersonId;
-    orders;
-    OrderPrice;
-    OriginalOrderPrice;
-    DiscountApplied;
-    OrderStatus;
-    initialized = false;
-
     constructor(orderData) {
         this.initialize(orderData);
     }
 
     async initialize(orderData) {
-        try {
-            const result = await Order.addOrderUsingRoute(orderData);
-            this.orderId = result._id;
-            this.orderaddress = result.orderaddress;
-            this.orderPhone = result.orderPhone;
-            this.userId = result.userId;
-            this.DeliveryPersonId = result.DeliveryPersonId;
-            this.orders = result.Orders;
-            this.OrderStatus = result.OrderStatus;
-            this.OrderPrice = result.OrderPrice;
-            this.OriginalOrderPrice = result.OriginalOrderPrice;
-            this.DiscountApplied = result.DiscountApplied;
-            this.initialized = true;
-        } catch (error) {
-            throw error;
-        }
+        this.orderId = orderData._id;
+        this.orderaddress = orderData.orderaddress;
+        this.orderPhone = orderData.orderPhone;
+        this.userId = orderData.userId;
+        this.DeliveryPersonId = orderData.DeliveryPersonId;
+        this.orders = orderData.Orders;
+        this.OrderStatus = orderData.OrderStatus;
+        this.OrderPrice = orderData.OrderPrice;
+        this.OriginalOrderPrice = orderData.OriginalOrderPrice;
+        this.DiscountApplied = orderData.DiscountApplied;
+        this.initialized = true;
     }
 
     checkInitialization() {
@@ -122,9 +105,10 @@ export default class Order {
         }
     }
 
+    
     async assignDeliveryPerson(deliveryPersonId) {
+        this.checkInitialization();
         try {
-            this.checkInitialization();
             const apiurl = REACT_APP_API_URL;
             const requestData = { DeliveryPersonId: deliveryPersonId };
             const result = await axios.put(`${apiurl}/order/assign-delivery-person/${this.getOrderId()}`, requestData, {
@@ -133,13 +117,13 @@ export default class Order {
                 },
             });
             this.DeliveryPersonId = deliveryPersonId;
-            return result;
+            return result.data;
         } catch (error) {
             console.error('Error assigning delivery person to order:', error);
             throw error;
         }
     }
-
+    
       static async addOrderUsingRoute(orderData) {
         try {
             const apiurl = REACT_APP_API_URL;

@@ -1,11 +1,11 @@
 // userSlice.js
 import axios from "axios";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
+const API_URL = (window.location.host).split(":")[0];
 // Fetch all users
 export const fetchAllUsers = createAsyncThunk("user/fetchAllUsers", async () => {
   try {
-    let result = await axios.get("http://localhost:5000/user/all", {
+    let result = await axios.get(`http://${API_URL}:5000/user/all`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -20,7 +20,7 @@ export const fetchAllUsers = createAsyncThunk("user/fetchAllUsers", async () => 
 // Fetch user by ID
 export const fetchUserById = createAsyncThunk("user/fetchUserById", async (userId) => {
   try {
-    let result = await axios.get(`http://localhost:5000/user/find/${userId}`, {
+    let result = await axios.get(`http://${API_URL}:5000/user/find/${userId}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -35,7 +35,7 @@ export const fetchUserById = createAsyncThunk("user/fetchUserById", async (userI
 // Fetch user logs
 export const fetchUserLogs = createAsyncThunk("user/fetchUserLogs", async (userId) => {
   try {
-    let result = await axios.get(`http://localhost:5000/user/logs/${userId}`, {
+    let result = await axios.get(`http://${API_URL}:5000/user/logs/${userId}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -50,7 +50,7 @@ export const fetchUserLogs = createAsyncThunk("user/fetchUserLogs", async (userI
 // Edit user role
 export const userEdit = createAsyncThunk("user/update", async (data) => {
   try {
-    let result = await axios.put(`http://localhost:5000/user/update/${data.id}`, data, {
+    let result = await axios.put(`http://${API_URL}:5000/user/update/${data.id}`, data, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -65,7 +65,7 @@ export const userEdit = createAsyncThunk("user/update", async (data) => {
 // Delete user
 export const userDelete = createAsyncThunk("user/delete", async (userId) => {
   try {
-    await axios.delete(`http://localhost:5000/user/delete/${userId}`, {
+    await axios.delete(`http://${API_URL}:5000/user/delete/${userId}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -80,7 +80,7 @@ export const userDelete = createAsyncThunk("user/delete", async (userId) => {
 // Add new user
 export const userAdd = createAsyncThunk("user/add", async (newUser) => {
   try {
-    let result = await axios.post("http://localhost:5000/user/add", newUser, {
+    let result = await axios.post(`http://${API_URL}:5000/user/add`, newUser, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -95,7 +95,7 @@ export const userAdd = createAsyncThunk("user/add", async (newUser) => {
 // Register user
 export const userRegister = createAsyncThunk("user/register", async (newUser) => {
   try {
-    let result = await axios.post("http://localhost:5000/user/register", newUser);
+    let result = await axios.post("http://${API_URL}:5000/user/register", newUser);
     return result.data.user;
   } catch (error) {
     console.log(error);
@@ -106,7 +106,7 @@ export const userRegister = createAsyncThunk("user/register", async (newUser) =>
 // Login user
 export const userLogin = createAsyncThunk("user/login", async (user, { rejectWithValue }) => {
   try {
-    let result = await axios.post("http://localhost:5000/user/login", user);
+    let result = await axios.post(`http://${API_URL}:5000/user/login`, user);
     return result.data;
   } catch (error) {
     if (error.response && error.response.data) {
@@ -120,7 +120,7 @@ export const userLogin = createAsyncThunk("user/login", async (user, { rejectWit
 // Get current user
 export const userCurrent = createAsyncThunk("user/current", async () => {
   try {
-    let result = await axios.get("http://localhost:5000/user/current", {
+    let result = await axios.get(`http://${API_URL}:5000/user/current`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -134,7 +134,7 @@ export const userCurrent = createAsyncThunk("user/current", async () => {
 // Upload user image
 export const uploadUserImage = createAsyncThunk("user/uploadImage", async (formData) => {
   try {
-    let result = await axios.post("http://localhost:5000/user/upload-image", formData, {
+    let result = await axios.post(`http://${API_URL}:5000/user/upload-image`, formData, {
       headers: {
         Authorization: localStorage.getItem("token"),
         "Content-Type": "multipart/form-data",
@@ -150,7 +150,7 @@ export const uploadUserImage = createAsyncThunk("user/uploadImage", async (formD
 // Suspend user
 export const suspendUser = createAsyncThunk("user/suspend", async ({ id, suspend }) => {
   try {
-    let result = await axios.put(`http://localhost:5000/user/suspend/${id}`, { suspend }, {
+    let result = await axios.put(`http://${API_URL}:5000/user/suspend/${id}`, { suspend }, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -165,7 +165,7 @@ export const suspendUser = createAsyncThunk("user/suspend", async ({ id, suspend
 // Validate referral code
 export const validateReferralCode = createAsyncThunk("user/validateReferralCode", async (referralCode) => {
   try {
-    const result = await axios.get(`http://localhost:5000/user/referral/validate/${referralCode}`, {
+    const result = await axios.get(`http://${API_URL}:5000/user/referral/validate/${referralCode}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -180,7 +180,7 @@ export const validateReferralCode = createAsyncThunk("user/validateReferralCode"
 // Fetch referral details
 export const fetchReferralDetails = createAsyncThunk('user/fetchReferralDetails', async (userId) => {
   try {
-      const result = await axios.get(`http://localhost:5000/user/referral/details/${userId}`, {
+      const result = await axios.get(`http://${API_URL}:5000/user/referral/details/${userId}`, {
           headers: {
               Authorization: localStorage.getItem('token'),
           },

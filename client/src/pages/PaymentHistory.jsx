@@ -4,7 +4,7 @@ import axios from 'axios';
 import moment from 'moment';
 import '../styles/paymenthistory.css';
 import jsPDF from 'jspdf';
-
+const API_URL = (window.location.host).split(":")[0];
 const PaymentHistory = () => {
     const user = useSelector((state) => state.user?.user);
     const [payments, setPayments] = useState([]);
@@ -18,7 +18,7 @@ const PaymentHistory = () => {
     useEffect(() => {
         const fetchPayments = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/payments/${user._id}`);
+                const response = await axios.get(`http://${API_URL}:5000/payments/${user._id}`);
                 setPayments(response.data);
             } catch (error) {
                 console.error('Error fetching payment history:', error);
@@ -31,7 +31,7 @@ const PaymentHistory = () => {
 
     const fetchOrderDetails = async (orderId) => {
         try {
-            const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
+            const result = await axios.get(`http://${API_URL}:5000/order/${orderId}`, {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },
@@ -45,7 +45,7 @@ const PaymentHistory = () => {
 
     const fetchArticle = async (idarticle) => {
         try {
-            const result = await axios.get(`http://localhost:5000/article/articles/${idarticle}`, {
+            const result = await axios.get(`http://${API_URL}:5000/article/articles/${idarticle}`, {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },
@@ -58,7 +58,7 @@ const PaymentHistory = () => {
 
     const fetchRestaurant = async (idRestaurant) => {
         try {
-            const result = await axios.get(`http://localhost:5000/restaurant/${idRestaurant}`, {
+            const result = await axios.get(`http://${API_URL}:5000/restaurant/${idRestaurant}`, {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },
@@ -71,7 +71,7 @@ const PaymentHistory = () => {
 
     const fetchMenu = async (idMenu) => {
         try {
-            const result = await axios.get(`http://localhost:5000/menu/${idMenu}`, {
+            const result = await axios.get(`http://${API_URL}:5000/menu/${idMenu}`, {
                 headers: {
                     Authorization: localStorage.getItem("token"),
                 },

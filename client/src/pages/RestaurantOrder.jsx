@@ -6,14 +6,14 @@ import QRCode from "qrcode.react";
 import "../styles/commandes.css";
 import ViewPaymentDialog from "../components/ViewPaymentDialog";
 import { fetchAllDeliveryPersons } from "../redux/slice/deliveryPersonSlice";
-
+const API_URL = (window.location.host).split(":")[0];
 async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
 
   if (user && user.orders) {
     if (user.role === "restaurantOwner") {
       try {
-        const result = await axios.get(`http://localhost:5000/restaurant/owner/${user._id}`, {
+        const result = await axios.get(`http://${API_URL}:5000/restaurant/owner/${user._id}`, {
           headers: {
             Authorization: localStorage.getItem("token"),
           },
@@ -22,7 +22,7 @@ async function fetchOrdersByUserRole(user) {
 
         for (const restaurant of restaurants) {
           for (const subOrderId of restaurant.subOrders) {
-            const orderResult = await axios.get(`http://localhost:5000/order/suborder/${subOrderId}`, {
+            const orderResult = await axios.get(`http://${API_URL}:5000/order/suborder/${subOrderId}`, {
               headers: {
                 Authorization: localStorage.getItem("token"),
               },
@@ -43,7 +43,7 @@ async function fetchOrdersByUserRole(user) {
 
       for (const orderId of user.orders) {
         try {
-          const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
+          const result = await axios.get(`http://${API_URL}:5000/order/${orderId}`, {
             headers: {
               Authorization: localStorage.getItem("token"),
             },
@@ -61,7 +61,7 @@ async function fetchOrdersByUserRole(user) {
 
 async function FetchRestaurant(idRestaurant) {
   try {
-    const result = await axios.get(`http://localhost:5000/restaurant/${idRestaurant}`, {
+    const result = await axios.get(`http://${API_URL}:5000/restaurant/${idRestaurant}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -124,7 +124,7 @@ function RestaurantOrder() {
 
   const acceptOrder = async (subOrder) => {
     try {
-      const response = await axios.put(`http://localhost:5000/order/accept-suborder/${subOrder.subOrderId._id}`, {}, {
+      const response = await axios.put(`http://${API_URL}:5000/order/accept-suborder/${subOrder.subOrderId._id}`, {}, {
         headers: {
           Authorization: localStorage.getItem("token"),
         },
@@ -148,7 +148,7 @@ function RestaurantOrder() {
 
   const validateDelivery = async (subOrderId) => {
     try {
-      const response = await axios.put(`http://localhost:5000/order/validate-delivery/${subOrderId}`, {}, {
+      const response = await axios.put(`http://${API_URL}:5000/order/validate-delivery/${subOrderId}`, {}, {
         headers: {
           Authorization: localStorage.getItem("token"),
         },
@@ -179,7 +179,7 @@ function RestaurantOrder() {
     try {
       console.log("Selected Order ID:", selectedOrder._id);
       console.log("Selected Delivery Person ID:", selectedDeliveryPerson);
-      const response = await axios.put(`http://localhost:5000/order/assign-delivery-person/${selectedOrder._id}`, {
+      const response = await axios.put(`http://${API_URL}:5000/order/assign-delivery-person/${selectedOrder._id}`, {
         DeliveryPersonId: selectedDeliveryPerson
       }, {
         headers: {
@@ -229,6 +229,7 @@ function RestaurantOrder() {
       ) : (
         <>
           <div>
+            <hr></hr>
             <h4>Orders in Progress</h4>
             {orders.filter(order => order.OrderStatus !== "en cours").map((order, index) => (
               <div key={index} className="ticket-wrap">
@@ -308,6 +309,7 @@ function RestaurantOrder() {
             ))}
           </div>
           <div>
+            <hr></hr>
             <h4>Accepted Orders</h4>
             {orders.filter(order => order.Orders.some(subOrder => subOrder.OrderStatus === "accepted")).map((order, index) => (
               <div key={index} className="ticket-wrap">
@@ -370,7 +372,7 @@ function RestaurantOrder() {
                               ))}
                             </>
                           )}
-                          <QRCode value={`http://localhost:5000/order/validate-delivery/${subOrder.subOrderId._id}`} />
+                          <QRCode value={`http://${API_URL}:5000/order/validate-delivery/${subOrder.subOrderId._id}`} />
                         </div>
                       ))
                     ) : (

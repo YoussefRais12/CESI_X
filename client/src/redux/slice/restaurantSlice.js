@@ -1,40 +1,40 @@
 import axios from "axios";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
+const API_URL = (window.location.host).split(":")[0];
 // Fetch all restaurants
 export const fetchAllRestaurants = createAsyncThunk("restaurant/fetchAllRestaurants", async () => {
-  const response = await axios.get("http://localhost:5000/restaurant/all");
+  const response = await axios.get(`http://${API_URL}:5000/restaurant/all`);
   return response.data;
 });
 
 // Fetch restaurant by ID
 export const fetchRestaurantById = createAsyncThunk("restaurant/fetchRestaurantById", async (id) => {
-  const response = await axios.get(`http://localhost:5000/restaurant/${id}`);
+  const response = await axios.get(`http://${API_URL}:5000/restaurant/${id}`);
   return response.data;
 });
 
 // Fetch restaurants by owner ID
 export const fetchRestaurantsByOwnerId = createAsyncThunk("restaurant/fetchRestaurantsByOwnerId", async (ownerId) => {
-  const response = await axios.get(`http://localhost:5000/restaurant/owner/${ownerId}`);
+  const response = await axios.get(`http://${API_URL}:5000/restaurant/owner/${ownerId}`);
   return response.data;
 });
 
 // Fetch restaurants by Name
 export const fetchRestaurantByName = createAsyncThunk("restaurant/fetchRestaurantByName", async (name) => {
-  const response = await axios.get(`http://localhost:5000/restaurant/name/${name}`);
+  const response = await axios.get(`http://${API_URL}:5000/restaurant/name/${name}`);
   return response.data;
 });
 
 // Fetch restaurants by category
 export const fetchRestaurantsByCategory = createAsyncThunk("restaurant/fetchRestaurantsByCategory", async (category) => {
-  const response = await axios.get(`http://localhost:5000/restaurant/category/${category}`);
+  const response = await axios.get(`http://${API_URL}:5000/restaurant/category/${category}`);
   return response.data;
 });
 
 // Create new restaurant
 export const createRestaurant = createAsyncThunk("restaurant/createRestaurant", async (newRestaurant) => {
   try {
-    let result = await axios.post("http://localhost:5000/restaurant/register", newRestaurant, {
+    let result = await axios.post(`http://${API_URL}:5000/restaurant/register`, newRestaurant, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -49,7 +49,7 @@ export const createRestaurant = createAsyncThunk("restaurant/createRestaurant", 
 // Update restaurant
 export const updateRestaurant = createAsyncThunk("restaurant/updateRestaurant", async (data) => {
   try {
-    let result = await axios.put(`http://localhost:5000/restaurant/${data.id}`, data, {
+    let result = await axios.put(`http://${API_URL}:5000/restaurant/${data.id}`, data, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -64,7 +64,7 @@ export const updateRestaurant = createAsyncThunk("restaurant/updateRestaurant", 
 // Delete restaurant
 export const deleteRestaurant = createAsyncThunk("restaurant/deleteRestaurant", async (id) => {
   try {
-    await axios.delete(`http://localhost:5000/restaurant/${id}`, {
+    await axios.delete(`http://${API_URL}:5000/restaurant/${id}`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -79,7 +79,7 @@ export const deleteRestaurant = createAsyncThunk("restaurant/deleteRestaurant", 
 // Fetch all articles for a specific restaurant
 export const fetchArticlesByRestaurantId = createAsyncThunk("restaurant/fetchArticlesByRestaurantId", async (restaurantId) => {
   try {
-    let result = await axios.get(`http://localhost:5000/restaurant/${restaurantId}/articles`, {
+    let result = await axios.get(`http://${API_URL}:5000/restaurant/${restaurantId}/articles`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -94,7 +94,7 @@ export const fetchArticlesByRestaurantId = createAsyncThunk("restaurant/fetchArt
 // Fetch all menus for a specific restaurant
 export const fetchMenusByRestaurantId = createAsyncThunk("restaurant/fetchMenusByRestaurantId", async (restaurantId) => {
   try {
-    let result = await axios.get(`http://localhost:5000/restaurant/${restaurantId}/menus`, {
+    let result = await axios.get(`http://${API_URL}:5000/restaurant/${restaurantId}/menus`, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -109,7 +109,7 @@ export const fetchMenusByRestaurantId = createAsyncThunk("restaurant/fetchMenusB
 // Upload restaurant image
 export const uploadRestaurantImage = createAsyncThunk("restaurant/uploadImage", async ({ id, formData }) => {
   try {
-      let result = await axios.post(`http://localhost:5000/restaurant/upload-image/${id}`, formData, {
+      let result = await axios.post(`http://${API_URL}:5000/restaurant/upload-image/${id}`, formData, {
           headers: {
               Authorization: localStorage.getItem("token"),
               "Content-Type": "multipart/form-data"
@@ -125,7 +125,7 @@ export const uploadRestaurantImage = createAsyncThunk("restaurant/uploadImage", 
 // Rate a restaurant
 export const rateRestaurant = createAsyncThunk("restaurant/rateRestaurant", async ({ id, rating }) => {
   try {
-    let response = await axios.post(`http://localhost:5000/restaurant/${id}/rate`, { rating }, {
+    let response = await axios.post(`http://${API_URL}:5000/restaurant/${id}/rate`, { rating }, {
       headers: {
         Authorization: localStorage.getItem("token"),
       },

@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-
+const API_URL = (window.location.host).split(":")[0];
 // Thunk to fetch all delivery persons
 export const fetchAllDeliveryPersons = createAsyncThunk(
   'deliveryPerson/fetchAll',
   async (_, thunkAPI) => {
-    const response = await axios.get('http://localhost:5000/deliveryPerson/all', {
+    const response = await axios.get(`http://${API_URL}:5000/deliveryPerson/all`, {
       headers: {
         Authorization: localStorage.getItem('token'),
       },
@@ -18,7 +18,7 @@ export const fetchAllDeliveryPersons = createAsyncThunk(
 export const fetchDeliveryPersonByUserId = createAsyncThunk(
   'deliveryPerson/fetchByUserId',
   async (userId, thunkAPI) => {
-    const response = await axios.get(`http://localhost:5000/deliveryPerson/user/${userId}`, {
+    const response = await axios.get(`http://${API_URL}:5000/deliveryPerson/user/${userId}`, {
       headers: {
         Authorization: localStorage.getItem('token'),
       },
@@ -31,7 +31,7 @@ export const fetchDeliveryPersonByUserId = createAsyncThunk(
 export const updateDeliveryPersonAvailability = createAsyncThunk(
   'deliveryPerson/updateAvailability',
   async ({ id, available }, thunkAPI) => {
-    const response = await axios.put(`http://localhost:5000/deliveryPerson/update/${id}`, { available }, {
+    const response = await axios.put(`http://${API_URL}:5000/deliveryPerson/update/${id}`, { available }, {
       headers: {
         Authorization: localStorage.getItem('token'),
       },

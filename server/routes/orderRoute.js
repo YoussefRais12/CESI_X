@@ -750,13 +750,16 @@ orderRoute.put('/accept-order/:orderId', isAuth(), async (req, res) => {
     const { orderId } = req.params;
 
     try {
+        console.log(`Accepting order with ID: ${orderId}`);
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        if (order.OrderStatus !== 'accepted') {
-            return res.status(400).json({ error: 'Order can only be accepted if it is accepted' });
+        console.log(`Order Status before accepting: ${order.OrderStatus}`);
+
+        if (order.OrderStatus !== 'payé') { // Assuming 'pending' is the initial state
+            return res.status(400).json({ error: 'Order can only be accepted if it is pending' });
         }
 
         order.OrderStatus = 'accepted by deliveryPerson';
@@ -767,6 +770,7 @@ orderRoute.put('/accept-order/:orderId', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 // Reject an order as a delivery person
 orderRoute.put('/reject-order/:orderId', isAuth(), async (req, res) => {

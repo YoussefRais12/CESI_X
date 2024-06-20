@@ -133,27 +133,28 @@ function DeliveryCommands() {
 
   const acceptOrder = async (orderId) => {
     try {
-      const response = await axios.put(`http://localhost:5000/order/accept-order/${orderId}`, {}, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
+        const response = await axios.put(`http://localhost:5000/order/accept-order/${orderId}`, {}, {
+            headers: {
+                Authorization: localStorage.getItem("token"),
+            },
+        });
 
-      if (response.data.success) {
-        alert('Order accepted successfully!');
-        window.location.reload(); // Refresh the page to reflect changes
-      } else {
-        alert(response.data.message);
-      }
+        if (response.data.success) {
+            alert('Order accepted successfully!');
+            window.location.reload(); // Refresh the page to reflect changes
+        } else {
+            alert(response.data.message);
+        }
     } catch (error) {
-      console.error('Error accepting order:', error);
-      if (error.response && error.response.data && error.response.data.message) {
-        alert(`Error accepting order: ${error.response.data.message}`);
-      } else {
-        alert('An error occurred while accepting the order.');
-      }
+        console.error('Error accepting order:', error);
+        if (error.response && error.response.data && error.response.data.message) {
+            alert(`Error accepting order: ${error.response.data.message}`);
+        } else {
+            alert('An error occurred while accepting the order.');
+        }
     }
-  };
+};
+
 
   const rejectOrder = async (orderId) => {
     try {
@@ -178,7 +179,6 @@ function DeliveryCommands() {
       }
     }
   };
-
   return (
     <div className="wrapper">
       <h3>{languageData.Commandes || 'Orders'}</h3>
@@ -189,7 +189,7 @@ function DeliveryCommands() {
           <div>
             <h4>All Orders</h4>
             {orders
-              .filter(order => order.OrderStatus === 'payé' && !order.DeliveryPersonId)
+           
               .map((order, index) => (
                 <div key={index} className="ticket-wrap">
                   <div className="ticket">
@@ -267,14 +267,14 @@ function DeliveryCommands() {
                           <p>No sub-orders found.</p>
                         )}
                       </div>
-                      {order.DeliveryPersonId ? (
-                        <p>Delivery Person Assigned: {order.DeliveryPersonId}</p>
-                      ) : (
-                        <div>
-                          <button onClick={() => acceptOrder(order._id)}>Accept Order</button>
-                          <button onClick={() => rejectOrder(order._id)}>Reject Order</button>
-                        </div>
-                      )}
+                      {order.Status === 'payé' ? (
+                          <div>
+                                 <button onClick={() => acceptOrder(order._id)}>Accept Order</button>
+                                 <button onClick={() => rejectOrder(order._id)}>Reject Order</button>
+                            </div>
+                        ) : (
+                           <p>Delivery Person Assigned: {order.DeliveryPersonId}</p>
+                        )}
                       <img className="ticket__barcode" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/515428/barcode.png" alt="Fake barcode" />
                     </div>
                   </div>

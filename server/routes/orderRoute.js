@@ -14,7 +14,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 orderRoute.post('/add', async (req, res) => {
-    const { orderaddress, orderPhone, userId, DeliveryPersonId, Articles, Menus, referralCode } = req.body;
+    const { orderaddress, orderPhone, userId, Articles, Menus, referralCode } = req.body; // Removed DeliveryPersonId
 
     try {
         let allItemsExist = true;
@@ -135,7 +135,6 @@ orderRoute.post('/add', async (req, res) => {
                 orderaddress,
                 orderPhone,
                 userId,
-                DeliveryPersonId,
                 Orders: subOrders.map(subOrder => ({
                     subOrderId: subOrder._id,
                     restaurantId: subOrder.restaurantId,
@@ -174,6 +173,7 @@ orderRoute.post('/add', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 orderRoute.post('/apply-referral', isAuth(), async (req, res) => {
     const { orderId, referralCode } = req.body;
@@ -314,6 +314,7 @@ orderRoute.put('/:id/status', isAuth(), async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 // add menu by id 
 orderRoute.post('/:idorder/menu/:idMenu', isAuth(), async (req, res) => {
     const { idorder, idMenu } = req.params;
@@ -533,7 +534,6 @@ orderRoute.get('/suborder/:subOrderId', async (req, res) => {
 });
 
 
-
 orderRoute.post('/:orderId/menu/:menuId', async (req, res) => {
     const { orderId, menuId } = req.params;
     const { quantityMenu } = req.body;
@@ -692,6 +692,26 @@ orderRoute.put('/accept-suborder/:subOrderId', isAuth(), async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+orderRoute.put('/assign-delivery-person/:orderId', isAuth(), async (req, res) => {
+    const { orderId } = req.params;
+    const { DeliveryPersonId } = req.body;
+
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        order.DeliveryPersonId = DeliveryPersonId;
+        await order.save();
+
+        res.status(200).json({ message: 'Delivery person assigned successfully', order });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 
 
 module.exports = orderRoute;

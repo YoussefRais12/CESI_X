@@ -5,7 +5,7 @@ const orderSchema = new Schema({
     orderaddress: { type: String, required: true },
     orderPhone: { type: String, required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    DeliveryPersonId: { type: mongoose.Schema.Types.ObjectId, ref: 'DeliveryPerson', required: true },
+    DeliveryPersonId: { type: mongoose.Schema.Types.ObjectId, ref: 'DeliveryPerson' }, // Made optional
     Orders: [{
         subOrderId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubOrder', required: true },
         restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant', required: true },

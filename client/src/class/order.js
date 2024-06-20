@@ -122,10 +122,29 @@ export default class Order {
         }
     }
 
-    static async addOrderUsingRoute(orderData) {
+    async assignDeliveryPerson(deliveryPersonId) {
+        try {
+            this.checkInitialization();
+            const apiurl = REACT_APP_API_URL;
+            const requestData = { DeliveryPersonId: deliveryPersonId };
+            const result = await axios.put(`${apiurl}/order/assign-delivery-person/${this.getOrderId()}`, requestData, {
+                headers: {
+                    Authorization: localStorage.getItem("token"),
+                },
+            });
+            this.DeliveryPersonId = deliveryPersonId;
+            return result;
+        } catch (error) {
+            console.error('Error assigning delivery person to order:', error);
+            throw error;
+        }
+    }
+
+      static async addOrderUsingRoute(orderData) {
         try {
             const apiurl = REACT_APP_API_URL;
             const idOrders = await this.getCurrentUserOrders();
+
             if (idOrders.length > 0) {
                 for (const orderId of idOrders) {
                     const result = await axios.get(`${apiurl}/order/${orderId}`, {
@@ -133,7 +152,7 @@ export default class Order {
                             Authorization: localStorage.getItem("token"),
                         },
                     });
-                    console.log(result)
+
                     if (result.data.OrderStatus === "en cours") {
                         for (const article of orderData.Articles) {
                             await this.StaticAddArticle(orderId, article.articleId, article.quantity);
@@ -142,29 +161,22 @@ export default class Order {
                             await this.StaticAddMenu(orderId, menu.menuId, menu.quantityMenu, menu.Articles);
                         }
                         return result.data;
-                    } else {
-                        const result = await axios.post(`${apiurl}/order/add`, orderData, {
-                            headers: {
-                                Authorization: localStorage.getItem("token"),
-                            },
-                        });
-                        return result.data.order;
                     }
                 }
-            } else {
-                const result = await axios.post(`${apiurl}/order/add`, orderData, {
-                    headers: {
-                        Authorization: localStorage.getItem("token"),
-                    },
-                });
-                return result.data.order;
             }
+
+            const result = await axios.post(`${apiurl}/order/add`, orderData, {
+                headers: {
+                    Authorization: localStorage.getItem("token"),
+                },
+            });
+            return result.data.order;
+
         } catch (error) {
             console.error('Error adding order using route:', error);
             throw error;
         }
     }
-
     /***************************** Static functions ******************************/
     static async getCurrentUserOrders() {
         try {

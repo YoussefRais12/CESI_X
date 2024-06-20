@@ -21,6 +21,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { fetchRestaurantById, updateRestaurant, uploadRestaurantImage, rateRestaurant } from '../redux/slice/restaurantSlice';
 import { updateArticle, addArticle, deleteArticle, fetchArticlesByRestaurantId, uploadArticleImage } from '../redux/slice/articleSlice';
 import { fetchMenusByRestaurantId, createMenu, deleteMenu, updateMenu } from '../redux/slice/menuSlice';
+import AssignDeliveryPersonDialog from '../components/AssignDeliveryPersonDialog';
 import CardCarousel from '../components/CardCarousel';
 import ArticleDialog from '../components/ArticleDialog';
 import ViewArticleDialog from '../components/ViewArticleDialog';
@@ -70,7 +71,9 @@ const RestaurantDetail = () => {
     const [newMenuData, setNewMenuData] = useState({ name: '', description: '', price: '', articles: [] });
     const [downloadMode, setDownloadMode] = useState(false);
     const [displayMode, setDisplayMode] = useState(null);
-
+    const [assignDialogOpen, setAssignDialogOpen] = useState(false); // State for the assign dialog
+    const [currentOrderId, setCurrentOrderId] = useState(null); // State for the current order ID
+    
     useEffect(() => {
         if (id) {
             dispatch(fetchRestaurantById(id));
@@ -158,6 +161,24 @@ const RestaurantDetail = () => {
                 setIsUploading(false);
             });
     };
+
+    const handleOpenAssignDialog = (orderId) => {
+        setCurrentOrderId(orderId);
+        setAssignDialogOpen(true);
+    };
+    
+    const handleAssignDeliveryPerson = async (deliveryPersonId) => {
+        try {
+            const order = new Order({ orderId: currentOrderId });
+            await order.assignDeliveryPerson(deliveryPersonId);
+            notifier.success('Delivery person assigned successfully');
+            setAssignDialogOpen(false);
+            dispatch(fetchRestaurantById(id));
+        } catch (error) {
+            notifier.alert('Error assigning delivery person');
+        }
+    };
+    
 
     const handleArticleImageUpload = (e) => {
         const file = e.target.files[0];
@@ -261,6 +282,7 @@ const RestaurantDetail = () => {
     const handleQuantityChange = (event) => {
         setSelectedQuantity(event.target.value);
     };
+
     const handleAddToCartConfirmed = async () => {
         try {
             let orderData;
@@ -270,7 +292,6 @@ const RestaurantDetail = () => {
                     orderaddress: user.address,
                     orderPhone: user.phoneNumber,
                     userId: user._id,
-                    DeliveryPersonId: '664f0e247baafc94cf772754',
                     Articles: [],
                     Menus: [
                         {
@@ -288,7 +309,6 @@ const RestaurantDetail = () => {
                     orderaddress: user.address,
                     orderPhone: user.phoneNumber,
                     userId: user._id,
-                    DeliveryPersonId: '664f0e247baafc94cf772754',
                     Articles: [
                         {
                             articleId: articleSelected.id,
@@ -301,6 +321,7 @@ const RestaurantDetail = () => {
     
             console.log(user);
             console.log(orderData);
+    
             const order = new Order(orderData);
             await new Promise(resolve => {
                 const interval = setInterval(() => {
@@ -317,7 +338,8 @@ const RestaurantDetail = () => {
         }
         setQuantityDialogOpen(false);
         notifier.success('Item added to cart successfully!');
-    };    
+    };
+    
 
     const handleAddToCart = async () => {
         setQuantityDialogOpen(true);
@@ -744,79 +766,80 @@ const RestaurantDetail = () => {
                 user={user}
                 restaurant={restaurant} />)}
 
-            <Dialog
-                open={createMenuMode}
-                onClose={() => setCreateMenuMode(false)}
+<Dialog
+    open={createMenuMode}
+    onClose={() => setCreateMenuMode(false)}
+    fullWidth
+    maxWidth="md">
+    <DialogTitle
+        sx={{
+            backgroundColor: 'transparent',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+        }}>
+        Create Menu
+        <IconButton onClick={() => setCreateMenuMode(false)}>
+            <CloseIcon />
+        </IconButton>
+    </DialogTitle>
+    <DialogContent>
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: 2
+            }}>
+            <TextField
+                label="Name"
+                name="name"
+                value={newMenuData.name}
+                onChange={handleNewMenuInputChange}
                 fullWidth
-                maxWidth="md">
-                <DialogTitle
-                    sx={{
-                        backgroundColor: 'transparent',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                    }}>
-                    Create Menu
-                    <IconButton onClick={() => setCreateMenuMode(false)}>
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            padding: 2
-                        }}>
-                        <TextField
-                            label="Name"
-                            name="name"
-                            value={newMenuData.name}
-                            onChange={handleNewMenuInputChange}
-                            fullWidth
-                            margin="normal" />
-                        <TextField
-                            label="Description"
-                            name="description"
-                            value={newMenuData.description}
-                            onChange={handleNewMenuInputChange}
-                            fullWidth
-                            margin="normal" />
-                        <TextField
-                            label="Price"
-                            name="price"
-                            value={newMenuData.price}
-                            onChange={handleNewMenuInputChange}
-                            fullWidth
-                            margin="normal" />
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel id="articles-label">Articles</InputLabel>
-                            <Select
-                                labelId="articles-label"
-                                name="articles"
-                                multiple
-                                value={newMenuData.articles}
-                                onChange={handleNewMenuArticleChange}
-                                renderValue={(selected) => selected.map(id => {
-                                    const article = articles.find(a => a._id === id);
-                                    return article ? article.name : id;
-                                }).join(', ')}>
-                                {articles.map((article) => (
-                                    <MenuItem key={article._id} value={article._id}>
-                                        {article.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Box>
+                margin="normal" />
+            <TextField
+                label="Description"
+                name="description"
+                value={newMenuData.description}
+                onChange={handleNewMenuInputChange}
+                fullWidth
+                margin="normal" />
+            <TextField
+                label="Price"
+                name="price"
+                value={newMenuData.price}
+                onChange={handleNewMenuInputChange}
+                fullWidth
+                margin="normal" />
+            <FormControl fullWidth margin="normal">
+                <InputLabel id="articles-label">Articles</InputLabel>
+                <Select
+                    labelId="articles-label"
+                    name="articles"
+                    multiple
+                    value={newMenuData.articles}
+                    onChange={handleNewMenuArticleChange}
+                    renderValue={(selected) => selected.map(id => {
+                        const article = articles.find(a => a._id === id);
+                        return article ? article.name : id;
+                    }).join(', ')}>
+                    {articles.map((article) => (
+                        <MenuItem key={article._id} value={article._id}>
+                            {article.name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+        </Box>
 
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCreateMenu} color="primary">Create</Button>
-                    <Button onClick={() => setCreateMenuMode(false)} color="secondary">Cancel</Button>
-                </DialogActions>
-            </Dialog>
+    </DialogContent>
+    <DialogActions>
+        <Button onClick={handleCreateMenu} color="primary">Create</Button>
+        <Button onClick={() => setCreateMenuMode(false)} color="secondary">Cancel</Button>
+    </DialogActions>
+</Dialog>
+
 
             <Dialog
                 open={downloadMode}

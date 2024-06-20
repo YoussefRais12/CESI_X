@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import QRCode from "qrcode.react";
 import "../styles/commandes.css";
 import ViewPaymentDialog from "../components/ViewPaymentDialog";
 
@@ -26,7 +27,7 @@ async function fetchOrdersByUserRole(user) {
               },
             });
             const order = orderResult.data;
-            if (order.Orders.some(subOrder => subOrder.OrderStatus === "en cours")) {
+            if (order.Orders.some(subOrder => subOrder.OrderStatus === "en cours" || subOrder.OrderStatus === "accepted")) {
               orderDetails.push(order);
             }
           }
@@ -116,7 +117,6 @@ function RestaurantOrder() {
   }, [location.search]);
 
   const acceptOrder = async (subOrder) => {
-    console.log(subOrder)
     try {
       const response = await axios.put(`http://localhost:5000/order/accept-suborder/${subOrder.subOrderId._id}`, {}, {
         headers: {
@@ -136,6 +136,30 @@ function RestaurantOrder() {
         alert(`Error accepting sub-order: ${error.response.data.message}`);
       } else {
         alert('An error occurred while accepting the sub-order.');
+      }
+    }
+  };
+
+  const validateDelivery = async (subOrderId) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/order/validate-delivery/${subOrderId}`, {}, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+
+      if (response.data.success) {
+        alert('Sub-order validated for delivery successfully!');
+        window.location.reload(); // Refresh the page to reflect changes
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error validating sub-order for delivery:', error);
+      if (error.response && error.response.data && error.response.data.message) {
+        alert(`Error validating sub-order for delivery: ${error.response.data.message}`);
+      } else {
+        alert('An error occurred while validating the sub-order for delivery.');
       }
     }
   };
@@ -160,9 +184,6 @@ function RestaurantOrder() {
             <h4>Orders in Progress</h4>
             {orders.filter(order => order.OrderStatus !== "en cours").map((order, index) => (
               <div key={index} className="order-in-progress">
-                <h5>Order {index + 1}</h5>
-                <p>Order ID: {order._id}</p>
-                <h6>Sub Orders:</h6>
                 {order.Orders && order.Orders.length > 0 ? (
                   order.Orders.filter(subOrder => subOrder.OrderStatus === "en cours").map((subOrder, subIndex) => (
                     <div key={subIndex}>
@@ -199,6 +220,51 @@ function RestaurantOrder() {
                   ))
                 ) : (
                   <p>No sub-orders found.</p>
+                )}
+              </div>
+            ))}
+          </div>
+          <div>
+            <h4>Accepted Orders</h4>
+            {orders.filter(order => order.Orders.some(subOrder => subOrder.OrderStatus === "accepted")).map((order, index) => (
+              <div key={index} className="order-accepted">
+                <h6>Sub Orders:</h6>
+                {order.Orders && order.Orders.length > 0 ? (
+                  order.Orders.filter(subOrder => subOrder.OrderStatus === "accepted").map((subOrder, subIndex) => (
+                    <div key={subIndex}>
+                      <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
+                      <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
+                      <p>Sub Order Price: {subOrder.OrderPrice}</p>
+                      <p>Sub Order Status: {subOrder.subOrderId.OrderStatus}</p>
+                      {subOrder.Menus && subOrder.Menus.length > 0 && (
+                        <>
+                          <h6>Menus:</h6>
+                          {subOrder.Menus.map((menu, menuIndex) => (
+                            <div key={menuIndex}>
+                              <p>Menu Name: {menu.name}</p>
+                              <p>Menu Price: {menu.price}</p>
+                              <p>Quantity: {menu.quantityMenu}</p>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                      {subOrder.Articles && subOrder.Articles.length > 0 && (
+                        <>
+                          <h6>Articles:</h6>
+                          {subOrder.Articles.map((article, articleIndex) => (
+                            <div key={articleIndex}>
+                              <p>Article Name: {article.name}</p>
+                              <p>Article Price: {article.price}</p>
+                              <p>Quantity: {article.quantity}</p>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                      <QRCode value={`http://localhost:5000/order/validate-delivery/${subOrder.subOrderId._id}`} />
+                    </div>
+                  ))
+                ) : (
+                  <p>No accepted sub-orders found.</p>
                 )}
               </div>
             ))}

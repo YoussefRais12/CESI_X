@@ -10,47 +10,20 @@ async function fetchOrdersByUserRole(user) {
   let orderDetails = [];
 
   if (user && user.orders) {
-    if (user.role === "restaurantOwner") {
+    if (!Array.isArray(user.orders)) {
+      user.orders = [user.orders];
+    }
+
+    for (const orderId of user.orders) {
       try {
-        const result = await axios.get(`http://localhost:5000/restaurant/owner/${user._id}`, {
+        const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
           headers: {
             Authorization: localStorage.getItem("token"),
           },
         });
-        const restaurants = result.data;
-
-        for (const restaurant of restaurants) {
-          for (const subOrderId of restaurant.subOrders) {
-            const orderResult = await axios.get(`http://localhost:5000/order/suborder/${subOrderId}`, {
-              headers: {
-                Authorization: localStorage.getItem("token"),
-              },
-            });
-            const order = orderResult.data;
-            if (order.Orders.some(subOrder => subOrder.OrderStatus === "en cours")) {
-              orderDetails.push(order);
-            }
-          }
-        }
+        orderDetails.push(result.data);
       } catch (error) {
-        console.error(`Error fetching orders for restaurants owned by ${user._id}:`, error);
-      }
-    } else {
-      if (!Array.isArray(user.orders)) {
-        user.orders = [user.orders];
-      }
-
-      for (const orderId of user.orders) {
-        try {
-          const result = await axios.get(`http://localhost:5000/order/${orderId}`, {
-            headers: {
-              Authorization: localStorage.getItem("token"),
-            },
-          });
-          orderDetails.push(result.data);
-        } catch (error) {
-          console.error(`Error fetching order ${orderId}:`, error);
-        }
+        console.error(`Error fetching order ${orderId}:`, error);
       }
     }
   }
@@ -71,19 +44,6 @@ async function FetchArticle(idarticle) {
   }
 }
 
-async function FetchRestaurant(idRestaurant) {
-  try {
-    const result = await axios.get(`http://localhost:5000/restaurant/${idRestaurant}`, {
-      headers: {
-        Authorization: localStorage.getItem("token"),
-      },
-    });
-    return result.data;
-  } catch (error) {
-    console.error(`Error fetching restaurant ${idRestaurant}:`, error);
-  }
-}
-
 async function FetchMenu(idMenu) {
   try {
     const result = await axios.get(`http://localhost:5000/menu/${idMenu}`, {
@@ -99,7 +59,6 @@ async function FetchMenu(idMenu) {
 
 function Commandes() {
   const [orders, setOrders] = useState([]);
-  const [restaurants, setRestaurants] = useState([]); 
   const [articles, setArticles] = useState([]);
   const [menus, setMenus] = useState([]);
   const user = useSelector((state) => state.user?.user);
@@ -128,15 +87,6 @@ function Commandes() {
           )
         );
 
-        const orderRestaurantInfo = await Promise.all(
-          orders.flatMap(order =>
-            order.Orders.map(subOrder => subOrder.restaurantId)
-          ).map(async restaurantId => {
-            const restaurant = await FetchRestaurant(restaurantId);
-            return { id: restaurantId, name: restaurant.name };
-          })
-        );
-
         const orderArticleInfo = await Promise.all(
           articleIds.map(async (articleId) => {
             return await FetchArticle(articleId);
@@ -149,7 +99,6 @@ function Commandes() {
           })
         );
 
-        setRestaurants(orderRestaurantInfo);
         setArticles(orderArticleInfo);
         setMenus(orderMenuInfo);
       } catch (error) {
@@ -215,9 +164,6 @@ function Commandes() {
 
     order.Orders.forEach((subOrder, subIndex) => {
       doc.text(`  Sub Order ${subIndex + 1}`, 10, yOffset);
-      yOffset += 10;
-      const restaurantInfo = restaurants.find(r => r.id === subOrder.restaurantId);
-      doc.text(`  Restaurant Name: ${restaurantInfo ? restaurantInfo.name : 'N/A'}`, 10, yOffset);
       yOffset += 10;
       doc.text(`  Sub Order Price: ${subOrder.OrderPrice}`, 10, yOffset);
       yOffset += 10;
@@ -289,8 +235,6 @@ function Commandes() {
                   {order.Orders && order.Orders.length > 0 ? (
                     order.Orders.map((subOrder, subIndex) => (
                       <div key={subIndex}>
-                        <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
-                        <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
                         <p>Sub Order Price: {subOrder.OrderPrice}</p>
                         <p>Sub Order Status: {subOrder.OrderStatus}</p>
                         {subOrder.Menus && subOrder.Menus.length > 0 && (
@@ -362,8 +306,6 @@ function Commandes() {
                   {order.Orders && order.Orders.length > 0 ? (
                     order.Orders.map((subOrder, subIndex) => (
                       <div key={subIndex}>
-                        <h6>Sub Order : {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</h6>
-                        <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'N/A'}</p>
                         <p>Sub Order Price: {subOrder.OrderPrice}</p>
                         <p>Sub Order Status: {subOrder.OrderStatus}</p>
                         {subOrder.Menus && subOrder.Menus.length > 0 && (

@@ -22,6 +22,7 @@ import Dashboard from "./pages/Dashboard";
 import RestaurantDetail from "./pages/RestaurantDetail"; 
 import UserManagement from './pages/UserManagement';
 import UserDetails from './pages/UserDetails';
+import AdminOrders from "./pages/AdminOrders";
 import DeliveryCommands from "./pages/DeliveryCommands";
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
@@ -67,7 +68,7 @@ function App() {
                 <Route path="/verif-pay" element={<VerifPay />} />
                 <Route path="/payment-history" element={<PaymentHistory />} />
                 <Route path="/restaurant/:id" element={<RestaurantDetail />} /> {/* Add this line for RestaurantDetail */}
-
+                <Route path="/admin-orders" element={<AdminOrders />} /> {/* Add this line for AdminOrders */}
                 {/* Applying RequireRole for protected routes */}
                 <Route element={<PrivateRoute />}>
                   <Route element={<RequireRole allowedRoles={['user']} userRole={userRole} />}>

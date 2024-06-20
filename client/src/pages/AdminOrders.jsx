@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 import axios from "axios";
 import "../styles/deliveryCommands.css";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
@@ -61,7 +61,7 @@ async function FetchMenu(idMenu) {
   }
 }
 
-function DeliveryCommands() {
+function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [articles, setArticles] = useState([]);
@@ -145,102 +145,6 @@ function DeliveryCommands() {
   }, [location.search]);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const lang = searchParams.get("lang") || "fr";
-    import(`../lang/${lang}.json`)
-      .then((data) => {
-        setLanguageData(data);
-      })
-      .catch((error) => {
-        console.error("Error loading language file:", error);
-      });
-  }, [location.search]);
-
-  const acceptOrder = async (orderId) => {
-    try {
-      const response = await axios.put(`http://localhost:5000/order/accept-order/${orderId}`, {}, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
-
-      if (response.data.success) {
-        window.location.reload(); // Refresh the page to reflect changes
-      } else {
-        console.error(response.data.message);
-        window.location.reload(); // Refresh the page to reflect changes
-      }
-    } catch (error) {
-      console.error('Error accepting order:', error);
-      window.location.reload(); // Refresh the page to reflect changes
-    }
-  };
-
-  const rejectOrder = async (orderId) => {
-    try {
-      const response = await axios.put(`http://localhost:5000/order/reject-order/${orderId}`, {}, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
-
-      if (response.data.success) {
-        window.location.reload(); // Refresh the page to reflect changes
-      } else {
-        console.error(response.data.message);
-        window.location.reload(); // Refresh the page to reflect changes
-      }
-    } catch (error) {
-      console.error('Error rejecting order:', error);
-      window.location.reload(); // Refresh the page to reflect changes
-    }
-  };
-
-  const setPickedUp = async (orderId) => {
-    try {
-      const response = await axios.put(`http://localhost:5000/order/${orderId}/status`, { OrderStatus: "picked up" }, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
-
-      if (response.data.message) {
-        setTimers(prevTimers => ({
-          ...prevTimers,
-          [orderId]: { startTime: Date.now(), duration: 30 * 60 * 1000 } // 30 minutes timer
-        }));
-        window.location.reload(); // Refresh the page to reflect changes
-      } else {
-        console.error(response.data.error);
-        window.location.reload(); // Refresh the page to reflect changes
-      }
-    } catch (error) {
-      console.error('Error updating order status to picked up:', error);
-      window.location.reload(); // Refresh the page to reflect changes
-    }
-  };
-
-  const setDelivered = async (orderId) => {
-    try {
-      const response = await axios.put(`http://localhost:5000/order/${orderId}/status`, { OrderStatus: "delivered" }, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
-
-      if (response.data.message) {
-        window.location.reload(); // Refresh the page to reflect changes
-      } else {
-        console.error(response.data.error);
-        window.location.reload(); // Refresh the page to reflect changes
-      }
-    } catch (error) {
-      console.error('Error updating order status to delivered:', error);
-      window.location.reload(); // Refresh the page to reflect changes
-    }
-  };
-
-  useEffect(() => {
     const interval = setInterval(() => {
       setTimers(prevTimers => {
         const newTimers = { ...prevTimers };
@@ -263,11 +167,11 @@ function DeliveryCommands() {
     <div className="wrapper">
       <h3>{languageData.Commandes || 'Orders'}</h3>
       {orders.length === 0 ? (
-        <p>No orders found.</p>
+        <p>{languageData.noOrdersFound || 'No orders found.'}</p>
       ) : (
         <>
           <div>
-            <h4>All Orders</h4>
+            <h4>{languageData.allOrders || 'All Orders'}</h4>
             {orders
               .map((order, index) => (
                 <div key={index} className="ticket-wrap">
@@ -277,51 +181,51 @@ function DeliveryCommands() {
                         <svg className="ticket__co-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
                           <circle fill="#506072" cx="32" cy="32" r="32" />
                         </svg>
-                        <span className="ticket__co-name">Order {index + 1}</span>
+                        <span className="ticket__co-name">{`${languageData.order || 'Order'} ${index + 1}`}</span>
                         <span className="u-upper ticket__co-subname"> {order._id}</span>
                       </div>
                     </div>
                     <div className="ticket__body">
                       <div className="ticket__timing">
                         <p>
-                          <span className="u-upper ticket__small-label">Order Address</span>
+                          <span className="u-upper ticket__small-label">{languageData.orderAddress || 'Order Address'}</span>
                           <span className="ticket__detail">{order.orderaddress}</span>
                         </p>
                         <p>
-                          <span className="u-upper ticket__small-label">Order Phone</span>
+                          <span className="u-upper ticket__small-label">{languageData.orderPhone || 'Order Phone'}</span>
                           <span className="ticket__detail">{order.orderPhone}</span>
                         </p>
                         <p>
-                          <span className="u-upper ticket__small-label">Order Price</span>
+                          <span className="u-upper ticket__small-label">{languageData.orderPrice || 'Order Price'}</span>
                           <span className="ticket__detail">{order.OrderPrice}</span>
                         </p>
                         <p>
-                          <span className="u-upper ticket__small-label">Order Status</span>
+                          <span className="u-upper ticket__small-label">{languageData.orderStatus || 'Order Status'}</span>
                           <span className="ticket__detail">{order.OrderStatus}</span>
                         </p>
                       </div>
                       <div className="ticket__fine-print">
-                        <h6>Sub Orders:</h6>
+                        <h6>{languageData.subOrders || 'Sub Orders'}:</h6>
                         {order.Orders && order.Orders.length > 0 ? (
                           order.Orders.map((subOrder, subIndex) => (
                             <div key={subIndex}>
-                              <h6>Sub Order: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}</h6>
-                              <p>Restaurant Name: {restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}</p>
-                              <p>Sub Order Price: {subOrder.OrderPrice}</p>
-                              <p>Sub Order Status: {subOrder.OrderStatus}</p>
+                              <h6>{`${languageData.subOrder || 'Sub Order'}: ${restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}`}</h6>
+                              <p>{`${languageData.restaurantName || 'Restaurant Name'}: ${restaurants.find(r => r.id === subOrder.restaurantId)?.name || 'Unknown'}`}</p>
+                              <p>{`${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice}`}</p>
+                              <p>{`${languageData.subOrderStatus || 'Sub Order Status'}: ${subOrder.OrderStatus}`}</p>
                               {subOrder.Menus && subOrder.Menus.length > 0 && (
                                 <>
-                                  <h6>Menus:</h6>
+                                  <h6>{languageData.menus || 'Menus'}:</h6>
                                   {subOrder.Menus.map((menu, menuIndex) => (
                                     <div key={menuIndex}>
-                                      <p>Menu Name: {menus.find(item => item._id === menu.menuId)?.name || 'Unknown'}</p>
-                                      <p>Menu Price: {menus.find(item => item._id === menu.menuId)?.price || 'Unknown'}</p>
-                                      <p>Quantity: {menu.quantityMenu}</p>
-                                      <h6>Menu Articles:</h6>
+                                      <p>{`${languageData.menuName || 'Menu Name'}: ${menus.find(item => item._id === menu.menuId)?.name || 'Unknown'}`}</p>
+                                      <p>{`${languageData.menuPrice || 'Menu Price'}: ${menus.find(item => item._id === menu.menuId)?.price || 'Unknown'}`}</p>
+                                      <p>{`${languageData.quantity || 'Quantity'}: ${menu.quantityMenu}`}</p>
+                                      <h6>{languageData.articles || 'Articles'}:</h6>
                                       {menus.find(item => item._id === menu.menuId)?.articles.map((menuArticle, menuArticleIndex) => (
                                         <div key={menuArticleIndex}>
-                                          <p>Article Name: {menuArticle?.name || 'Unknown'}</p>
-                                          <p>Article Price: {menuArticle?.price || 'Unknown'}</p>
+                                          <p>{`${languageData.articleName || 'Article Name'}: ${menuArticle?.name || 'Unknown'}`}</p>
+                                          <p>{`${languageData.articlePrice || 'Article Price'}: ${menuArticle?.price || 'Unknown'}`}</p>
                                         </div>
                                       ))}
                                     </div>
@@ -330,12 +234,12 @@ function DeliveryCommands() {
                               )}
                               {subOrder.Articles && subOrder.Articles.length > 0 && (
                                 <>
-                                  <h6>Articles:</h6>
+                                  <h6>{languageData.articles || 'Articles'}:</h6>
                                   {subOrder.Articles.map((article, articleIndex) => (
                                     <div key={articleIndex}>
-                                      <p>Article Name: {articles.find(item => item._id === article.articleId)?.name || 'Unknown'}</p>
-                                      <p>Article Price: {articles.find(item => item._id === article.articleId)?.price || 'Unknown'}</p>
-                                      <p>Quantity: {article.quantity}</p>
+                                      <p>{`${languageData.articleName || 'Article Name'}: ${articles.find(item => item._id === article.articleId)?.name || 'Unknown'}`}</p>
+                                      <p>{`${languageData.articlePrice || 'Article Price'}: ${articles.find(item => item._id === article.articleId)?.price || 'Unknown'}`}</p>
+                                      <p>{`${languageData.quantity || 'Quantity'}: ${article.quantity}`}</p>
                                     </div>
                                   ))}
                                 </>
@@ -343,37 +247,21 @@ function DeliveryCommands() {
                             </div>
                           ))
                         ) : (
-                          <p>No sub-orders found.</p>
+                          <p>{languageData.noSubOrders || 'No sub-orders found.'}</p>
                         )}
                       </div>
-                      {order.OrderStatus === 'payé' ? (
-                        <div>
-                          <button onClick={() => acceptOrder(order._id)}>Accept Order</button>
-                          <button onClick={() => rejectOrder(order._id)}>Reject Order</button>
-                        </div>
-                      ) : (
-                        <p>Delivery Person Assigned: {order.DeliveryPersonId}</p>
-                      )}
-                      {order.OrderStatus === 'accepted by deliveryPerson' && (
-                        <button onClick={() => setPickedUp(order._id)}>Set as Picked Up</button>
-                      )}
-                      {order.OrderStatus === 'picked up' && (
-                        <div>
-                          <button onClick={() => setDelivered(order._id)}>Set as Delivered</button>
-                          {timers[order._id] && (
-                            <div style={{ width: "100px", height: "100px", margin: "0 auto" }}>
-                              <CircularProgressbar
-                                value={Math.max(0, (timers[order._id].timeLeft / timers[order._id].duration) * 100)}
-                                text={`${Math.floor(Math.max(0, timers[order._id].timeLeft / 1000 / 60))}m ${Math.floor(Math.max(0, (timers[order._id].timeLeft / 1000) % 60))}s`}
-                                styles={buildStyles({
-                                  textSize: '16px',
-                                  pathColor: `rgba(62, 152, 199, ${Math.max(0, timers[order._id].timeLeft / timers[order._id].duration)})`,
-                                  textColor: '#f88',
-                                  trailColor: '#d6d6d6',
-                                })}
-                              />
-                            </div>
-                          )}
+                      {order.OrderStatus === 'picked up' && timers[order._id] && (
+                        <div style={{ width: "100px", height: "100px", margin: "0 auto" }}>
+                          <CircularProgressbar
+                            value={Math.max(0, (timers[order._id].timeLeft / timers[order._id].duration) * 100)}
+                            text={`${Math.floor(Math.max(0, timers[order._id].timeLeft / 1000 / 60))}m ${Math.floor(Math.max(0, (timers[order._id].timeLeft / 1000) % 60))}s`}
+                            styles={buildStyles({
+                              textSize: '16px',
+                              pathColor: `rgba(62, 152, 199, ${Math.max(0, timers[order._id].timeLeft / timers[order._id].duration)})`,
+                              textColor: '#f88',
+                              trailColor: '#d6d6d6',
+                            })}
+                          />
                         </div>
                       )}
                       <img className="ticket__barcode" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/515428/barcode.png" alt="Fake barcode" />
@@ -388,4 +276,4 @@ function DeliveryCommands() {
   );
 }
 
-export default DeliveryCommands;
+export default AdminOrders;

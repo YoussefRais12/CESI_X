@@ -202,6 +202,8 @@ const Navbar = ({ setPing, ping }) => {
                         <FontAwesomeIcon icon={faStore} /> My Restaurants
                     </button>
                 );
+                case "deliveryPerson":
+                    return null;
             default:
                 return (
                     <div className="auth-buttons">
@@ -293,7 +295,7 @@ const Navbar = ({ setPing, ping }) => {
                                 <Link to={`/usermanagement?lang=${lang}`} onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faTachometerAlt} className="menu-icon" /> User Management</h1>
                                 </Link>
-                                <Link to={`/commandes?lang=${lang}`} onClick={toggleMenu}>
+                                <Link to={`/admin-orders?lang=${lang}`} onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Orders</h1>
                                 </Link>
                                 <Link to={`/feed?lang=${lang}`} onClick={toggleMenu}>
@@ -303,7 +305,7 @@ const Navbar = ({ setPing, ping }) => {
                         )}
                         {user?.role === 'restaurantOwner' && (
                             <>
-                                <Link to={`/commandes?lang=${lang}`} onClick={toggleMenu}>
+                                <Link to={`/restaurantOrder?lang=${lang}`} onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Orders</h1>
                                 </Link>
                                 <Link to={`/feed?lang=${lang}`} onClick={toggleMenu}>

@@ -35,14 +35,17 @@ const ViewArticleDialog = ({ open, onClose, article, onEdit, onDelete, onAddToCa
             </Box>
         </DialogContent>
         <DialogActions>
-            <Button onClick={onAddToCart} color="primary">Add to Cart</Button>
-            {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' ? (
-                <>
-                    <Button onClick={onEdit} color="secondary">Edit</Button>
-                    <Button onClick={onDelete} color="error">Delete</Button>
-                </>
-           ) : null}
-        </DialogActions>
+  {user?.role !== 'restaurantOwner' && (
+    <Button onClick={onAddToCart} color="primary">Add to Cart</Button>
+  )}
+  {(user?.role === 'restaurantOwner' && user?._id === restaurant.ownerId) || user?.role === 'admin' ? (
+    <>
+      <Button onClick={onEdit} color="secondary">Edit</Button>
+      <Button onClick={onDelete} color="error">Delete</Button>
+    </>
+  ) : null}
+</DialogActions>
+
     </Dialog>
 );
 

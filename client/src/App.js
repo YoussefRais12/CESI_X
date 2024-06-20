@@ -8,6 +8,7 @@ import Profile from "./pages/Profile";
 import PrivateRoute from "./routes/PrivateRoute";
 import Commandes from "./pages/Commandes";
 import RestaurantOrder from "./pages/RestaurantOrder";
+import QrCodeHandler from "./pages/QrCodeHandler";
 import DepComercial from "./pages/DepComercial";
 import Favoris from "./pages/Favoris";
 import Navbar from "./components/Navbar";
@@ -61,7 +62,7 @@ function App() {
           <TransitionGroup>
             <CSSTransition key={location.key} classNames="fade" timeout={1000}>
               <Routes location={location}>
-                <Route path="/" element={isAuth ? <Navigate to={"/profile?lang=" + lang} replace /> : <Login ping={ping} setPing={setPing} />} />
+                <Route path="/" element={isAuth ? <Navigate to={`/profile?lang=${lang}`} replace /> : <Login ping={ping} setPing={setPing} />} />
                 <Route path="/test" element={<Test />} />
                 <Route path="/verif-pay" element={<VerifPay />} />
                 <Route path="/payment-history" element={<PaymentHistory />} />
@@ -75,6 +76,7 @@ function App() {
                 </Route>
 
                 <Route path="/commandes" element={<Commandes />} />
+                <Route path="/qr-code-handler/:subOrderId" element={<QrCodeHandler />} />
                 <Route path="/restaurantOrder" element={<RestaurantOrder />} />
                 <Route path="/depcomercial" element={<DepComercial />} />
                 <Route path="/dashboard" element={<Dashboard />} />
@@ -82,9 +84,8 @@ function App() {
                 <Route path="/error" element={<Error />} />
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/usermanagement" element={<UserManagement />} />
-                <Route path="/user/:id" element={<UserDetails />} />\
+                <Route path="/user/:id" element={<UserDetails />} />
                 <Route path="/delivery-commands" element={<DeliveryCommands />} />
-
               </Routes>
             </CSSTransition>
           </TransitionGroup>

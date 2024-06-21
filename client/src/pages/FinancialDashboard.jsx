@@ -8,58 +8,29 @@ import 'chart.js/auto';
 
 const API_URL = (window.location.host).split(":")[0];
 
-async function fetchDeliveredOrders(user) {
-  let deliveredOrders = [];
-
-  if (user && user.orders) {
-    if (user.role === "restaurantOwner") {
-      try {
-        const result = await axios.get(`http://${API_URL}:5000/restaurant/owner/${user._id}`, {
-          headers: {
-            Authorization: localStorage.getItem("token"),
-          },
-        });
-        const restaurants = result.data;
-
-        for (const restaurant of restaurants) {
-          for (const subOrderId of restaurant.subOrders) {
-            const orderResult = await axios.get(`http://${API_URL}:5000/order/suborder/${subOrderId}`, {
-              headers: {
-                Authorization: localStorage.getItem("token"),
-              },
-            });
-            const order = orderResult.data;
-            if (order.Orders.some(subOrder => subOrder.OrderStatus === "delivered")) {
-              deliveredOrders.push(order);
-            }
-          }
-        }
-      } catch (error) {
-        console.error(`Error fetching delivered orders for restaurants owned by ${user._id}:`, error);
-      }
-    } else {
-      if (!Array.isArray(user.orders)) {
-        user.orders = [user.orders];
-      }
-
-      for (const orderId of user.orders) {
-        try {
-          const result = await axios.get(`http://${API_URL}:5000/order/${orderId}`, {
-            headers: {
-              Authorization: localStorage.getItem("token"),
-            },
-          });
-          if (result.data.OrderStatus === "delivered") {
-            deliveredOrders.push(result.data);
-          }
-        } catch (error) {
-          console.error(`Error fetching order ${orderId}:`, error);
-        }
-      }
-    }
+async function fetchAllOrders() {
+  try {
+    const result = await axios.get(`http://${API_URL}:5000/order/all-orders`, {
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching all orders:", error);
+    return [];
   }
+}
 
-  return deliveredOrders;
+function generateRandomFinancialData(orders) {
+  return orders.map(order => ({
+    ...order,
+    financialInfo: {
+      revenue: Math.floor(Math.random() * 100) + 1,
+      profit: Math.floor(Math.random() * 50) + 1,
+      expenses: Math.floor(Math.random() * 30) + 1,
+    },
+  }));
 }
 
 function FinancialDashboard() {
@@ -71,8 +42,9 @@ function FinancialDashboard() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const deliveredOrders = await fetchDeliveredOrders(user);
-        setOrders(deliveredOrders);
+        const allOrders = await fetchAllOrders();
+        const ordersWithFinancialData = generateRandomFinancialData(allOrders);
+        setOrders(ordersWithFinancialData);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -93,15 +65,32 @@ function FinancialDashboard() {
       });
   }, [location.search]);
 
-  const totalRevenue = orders.reduce((acc, order) => acc + order.OrderPrice, 0);
+  const totalRevenue = orders.reduce((acc, order) => acc + order.financialInfo.revenue, 0);
+  const totalProfit = orders.reduce((acc, order) => acc + order.financialInfo.profit, 0);
+  const totalExpenses = orders.reduce((acc, order) => acc + order.financialInfo.expenses, 0);
+
   const data = {
     labels: orders.map((order, index) => `Order ${index + 1}`),
     datasets: [
       {
         label: languageData.revenue || 'Revenue',
-        data: orders.map(order => order.OrderPrice),
+        data: orders.map(order => order.financialInfo.revenue),
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      },
+      {
+        label: languageData.profit || 'Profit',
+        data: orders.map(order => order.financialInfo.profit),
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1,
+      },
+      {
+        label: languageData.expenses || 'Expenses',
+        data: orders.map(order => order.financialInfo.expenses),
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderColor: 'rgba(255, 99, 132, 1)',
         borderWidth: 1,
       },
     ],
@@ -113,6 +102,8 @@ function FinancialDashboard() {
       <div className="dashboard-content">
         <div className="dashboard-summary">
           <h4>{languageData.totalRevenue || 'Total Revenue'}: {totalRevenue} €</h4>
+          <h4>{languageData.totalProfit || 'Total Profit'}: {totalProfit} €</h4>
+          <h4>{languageData.totalExpenses || 'Total Expenses'}: {totalExpenses} €</h4>
         </div>
         <div className="dashboard-chart">
           <Bar data={data} />

@@ -202,7 +202,9 @@ const Navbar = ({ setPing, ping }) => {
                         <FontAwesomeIcon icon={faStore} /> My Restaurants
                     </button>
                 );
-                case "deliveryPerson":
+            case "deliveryPerson":
+                    return null;
+            case "user":
                     return null;
             default:
                 return (
@@ -311,6 +313,9 @@ const Navbar = ({ setPing, ping }) => {
                                 <Link to={`/feed?lang=${lang}`} onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Feed</h1>
                                 </Link>
+                                <Link to={`/financial-dashboard?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" /> Financial Dashboard</h1>
+                                </Link>
                                 <h1 className='dropdown-content' onClick={toggleMenu}>
                                     <FontAwesomeIcon icon={faStore} className="menu-icon" /> My Restaurants
                                 </h1>
@@ -333,6 +338,16 @@ const Navbar = ({ setPing, ping }) => {
                                 </Link>
                             </>
                         )}
+                        {user?.role === 'user' && (
+                            <>
+                              
+                                <Link to={`/commandes?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Orders</h1>
+                                </Link>
+                            </>
+                        )
+
+                        }
                         <button className="logout-button" onClick={handleLogout}>Logout</button>
                     </div>
                 </>

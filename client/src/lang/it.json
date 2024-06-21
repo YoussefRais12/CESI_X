@@ -38,7 +38,6 @@
   "Address": "Indirizzo",
   "Phone Number": "Numero di telefono",
   "allOrders": "Tutti gli ordini",
-  "order": "Ordine",
   "orderAddress": "Indirizzo dell'ordine",
   "orderPhone": "Telefono dell'ordine",
   "orderPrice": "Prezzo dell'ordine",
@@ -75,5 +74,7 @@
   "deliveryPersonInfo": "Informazioni sul corriere",
   "vehicleDetails": "Dettagli del veicolo",
   "status": "Stato",
-  "logout": "Disconnessione"
+  "logout": "Disconnessione",
+  "languageSettings": "Impostazioni della lingua"
+
 }

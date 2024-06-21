@@ -74,5 +74,6 @@
   "deliveryPersonInfo": "Informations sur le livreur",
   "vehicleDetails": "Détails du véhicule",
   "status": "Statut",
-  "logout": "Déconnexion"
+  "logout": "Déconnexion",
+  "languageSettings": "Paramètres de langue"
 }

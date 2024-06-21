@@ -74,5 +74,6 @@
   "deliveryPersonInfo": "Información del repartidor",
   "vehicleDetails": "Detalles del vehículo",
   "status": "Estado",
-  "logout": "Cerrar sesión"
+  "logout": "Cerrar sesión",
+  "languageSettings": "Configuración de idioma"
 }

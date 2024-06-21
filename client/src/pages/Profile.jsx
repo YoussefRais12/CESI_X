@@ -35,6 +35,7 @@ const Profile = ({ ping, setPing }) => {
   const [activeTab, setActiveTab] = useState('info');
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   useEffect(() => {
     if (!user) {
@@ -60,6 +61,7 @@ const Profile = ({ ping, setPing }) => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get('lang') || 'en';
+    setSelectedLanguage(lang);
     import(`../lang/${lang}.json`)
       .then((data) => {
         setLanguageData(data);
@@ -194,6 +196,12 @@ const Profile = ({ ping, setPing }) => {
       const newAvailability = !deliveryPerson.available;
       dispatch(updateDeliveryPersonAvailability({ id: deliveryPerson._id, available: newAvailability }));
     }
+  };
+
+  const handleLanguageChange = (e) => {
+    const newLang = e.target.value;
+    setSelectedLanguage(newLang);
+    navigate(`${location.pathname}?lang=${newLang}`);
   };
 
   const renderTabContent = () => {
@@ -389,6 +397,20 @@ const Profile = ({ ping, setPing }) => {
             )}
           </div>
         );
+      case 'language':
+        return (
+          <div>
+            <h2>{languageData.languageSettings || 'Language Settings'}</h2>
+            <label htmlFor="language-select">{languageData.selectLanguage || 'Select Language'}:</label>
+            <select id="language-select" value={selectedLanguage} onChange={handleLanguageChange}>
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+              <option value="it">Italiano</option>
+              {/* Add more languages as needed */}
+            </select>
+          </div>
+        );
       default:
         return null;
     }
@@ -415,6 +437,12 @@ const Profile = ({ ping, setPing }) => {
           onClick={() => setActiveTab('referrals')}
         >
           {languageData.referrals || 'Referrals'}
+        </button>
+        <button
+          style={{ display: 'block', padding: '10px', cursor: 'pointer', background: activeTab === 'language' ? '#ddd' : 'transparent', border: 'none', textAlign: 'left', width: '100%' }}
+          onClick={() => setActiveTab('language')}
+        >
+          {languageData.languageSettings || 'Language Settings'}
         </button>
         <button
           style={{ display: 'block', padding: '10px', cursor: 'pointer', background: activeTab === 'delete' ? '#ddd' : 'transparent', border: 'none', textAlign: 'left', width: '100%', color: 'red' }}

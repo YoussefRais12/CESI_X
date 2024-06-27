@@ -35,6 +35,10 @@ const Profile = ({ ping, setPing }) => {
   const [activeTab, setActiveTab] = useState('info');
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+<<<<<<< HEAD
+=======
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
 
   useEffect(() => {
     if (!user) {
@@ -60,6 +64,10 @@ const Profile = ({ ping, setPing }) => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const lang = searchParams.get('lang') || 'en';
+<<<<<<< HEAD
+=======
+    setSelectedLanguage(lang);
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
     import(`../lang/${lang}.json`)
       .then((data) => {
         setLanguageData(data);
@@ -196,6 +204,15 @@ const Profile = ({ ping, setPing }) => {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const handleLanguageChange = (e) => {
+    const newLang = e.target.value;
+    setSelectedLanguage(newLang);
+    navigate(`${location.pathname}?lang=${newLang}`);
+  };
+
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
   const renderTabContent = () => {
     switch (activeTab) {
       case 'info':
@@ -389,6 +406,23 @@ const Profile = ({ ping, setPing }) => {
             )}
           </div>
         );
+<<<<<<< HEAD
+=======
+      case 'language':
+        return (
+          <div>
+            <h2>{languageData.languageSettings || 'Language Settings'}</h2>
+            <label htmlFor="language-select">{languageData.selectLanguage || 'Select Language'}:</label>
+            <select id="language-select" value={selectedLanguage} onChange={handleLanguageChange}>
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+              <option value="it">Italiano</option>
+              {/* Add more languages as needed */}
+            </select>
+          </div>
+        );
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
       default:
         return null;
     }
@@ -417,6 +451,15 @@ const Profile = ({ ping, setPing }) => {
           {languageData.referrals || 'Referrals'}
         </button>
         <button
+<<<<<<< HEAD
+=======
+          style={{ display: 'block', padding: '10px', cursor: 'pointer', background: activeTab === 'language' ? '#ddd' : 'transparent', border: 'none', textAlign: 'left', width: '100%' }}
+          onClick={() => setActiveTab('language')}
+        >
+          {languageData.languageSettings || 'Language Settings'}
+        </button>
+        <button
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
           style={{ display: 'block', padding: '10px', cursor: 'pointer', background: activeTab === 'delete' ? '#ddd' : 'transparent', border: 'none', textAlign: 'left', width: '100%', color: 'red' }}
           onClick={() => setActiveTab('delete')}
         >

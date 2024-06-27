@@ -38,7 +38,10 @@
   "Address": "Indirizzo",
   "Phone Number": "Numero di telefono",
   "allOrders": "Tutti gli ordini",
+<<<<<<< HEAD
   "order": "Ordine",
+=======
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
   "orderAddress": "Indirizzo dell'ordine",
   "orderPhone": "Telefono dell'ordine",
   "orderPrice": "Prezzo dell'ordine",
@@ -75,5 +78,11 @@
   "deliveryPersonInfo": "Informazioni sul corriere",
   "vehicleDetails": "Dettagli del veicolo",
   "status": "Stato",
+<<<<<<< HEAD
   "logout": "Disconnessione"
+=======
+  "logout": "Disconnessione",
+  "languageSettings": "Impostazioni della lingua"
+
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
 }

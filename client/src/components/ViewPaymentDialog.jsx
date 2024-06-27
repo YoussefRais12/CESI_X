@@ -124,7 +124,11 @@ const ViewPaymentDialog  = ({ order, onClose }) => {
           <DialogTitle>Effectuer le Paiement</DialogTitle>
           <DialogContent>
             <Typography variant="subtitle1" gutterBottom>
+<<<<<<< HEAD
                 Montant : {order.OrderPrice} €
+=======
+                Montant : {order.OrderPrice.toFixed(2)} €
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
             </Typography>
             <TextField
                 label="Prénom"
@@ -155,7 +159,11 @@ const ViewPaymentDialog  = ({ order, onClose }) => {
             <DialogActions>
             <Button onClick={onClose}>Annuler</Button>
             <Button onClick={handlePayment} disabled={!stripe} variant="contained" color="primary">
+<<<<<<< HEAD
                 Payer {order.OrderPrice} €
+=======
+                Payer {order.OrderPrice.toFixed(2)} €
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
             </Button>
             </DialogActions>
         </Dialog>

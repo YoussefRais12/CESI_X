@@ -5,9 +5,16 @@ import "../styles/deliveryCommands.css";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
+<<<<<<< HEAD
 async function fetchAllOrders() {
   try {
     const result = await axios.get("http://localhost:5000/order/all-orders", {
+=======
+const API_URL = (window.location.host).split(":")[0];
+async function fetchAllOrders() {
+  try {
+    const result = await axios.get(`http://${API_URL}:5000/order/all-orders`, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -21,7 +28,11 @@ async function fetchAllOrders() {
 
 async function FetchArticle(idarticle) {
   try {
+<<<<<<< HEAD
     const result = await axios.get(`http://localhost:5000/article/articles/${idarticle}`, {
+=======
+    const result = await axios.get(`http://${API_URL}:5000/article/articles/${idarticle}`, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -35,7 +46,11 @@ async function FetchArticle(idarticle) {
 
 async function FetchRestaurant(idRestaurant) {
   try {
+<<<<<<< HEAD
     const result = await axios.get(`http://localhost:5000/restaurant/${idRestaurant}`, {
+=======
+    const result = await axios.get(`http://${API_URL}:5000/restaurant/${idRestaurant}`, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -49,7 +64,11 @@ async function FetchRestaurant(idRestaurant) {
 
 async function FetchMenu(idMenu) {
   try {
+<<<<<<< HEAD
     const result = await axios.get(`http://localhost:5000/menu/${idMenu}`, {
+=======
+    const result = await axios.get(`http://${API_URL}:5000/menu/${idMenu}`, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
       headers: {
         Authorization: localStorage.getItem("token"),
       },
@@ -158,7 +177,11 @@ function DeliveryCommands() {
 
   const acceptOrder = async (orderId) => {
     try {
+<<<<<<< HEAD
       const response = await axios.put(`http://localhost:5000/order/accept-order/${orderId}`, {}, {
+=======
+      const response = await axios.put(`http://${API_URL}:5000/order/accept-order/${orderId}`, {}, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
         headers: {
           Authorization: localStorage.getItem("token"),
         },
@@ -178,7 +201,11 @@ function DeliveryCommands() {
 
   const rejectOrder = async (orderId) => {
     try {
+<<<<<<< HEAD
       const response = await axios.put(`http://localhost:5000/order/reject-order/${orderId}`, {}, {
+=======
+      const response = await axios.put(`http://${API_URL}:5000/order/reject-order/${orderId}`, {}, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
         headers: {
           Authorization: localStorage.getItem("token"),
         },
@@ -198,7 +225,11 @@ function DeliveryCommands() {
 
   const setPickedUp = async (orderId) => {
     try {
+<<<<<<< HEAD
       const response = await axios.put(`http://localhost:5000/order/${orderId}/status`, { OrderStatus: "picked up" }, {
+=======
+      const response = await axios.put(`http://${API_URL}:5000/order/${orderId}/status`, { OrderStatus: "picked up" }, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
         headers: {
           Authorization: localStorage.getItem("token"),
         },
@@ -222,7 +253,11 @@ function DeliveryCommands() {
 
   const setDelivered = async (orderId) => {
     try {
+<<<<<<< HEAD
       const response = await axios.put(`http://localhost:5000/order/${orderId}/status`, { OrderStatus: "delivered" }, {
+=======
+      const response = await axios.put(`http://${API_URL}:5000/order/${orderId}/status`, { OrderStatus: "delivered" }, {
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
         headers: {
           Authorization: localStorage.getItem("token"),
         },

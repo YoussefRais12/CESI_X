@@ -202,7 +202,13 @@ const Navbar = ({ setPing, ping }) => {
                         <FontAwesomeIcon icon={faStore} /> My Restaurants
                     </button>
                 );
+<<<<<<< HEAD
                 case "deliveryPerson":
+=======
+            case "deliveryPerson":
+                    return null;
+            case "user":
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
                     return null;
             default:
                 return (
@@ -311,6 +317,12 @@ const Navbar = ({ setPing, ping }) => {
                                 <Link to={`/feed?lang=${lang}`} onClick={toggleMenu}>
                                     <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Feed</h1>
                                 </Link>
+<<<<<<< HEAD
+=======
+                                <Link to={`/financial-dashboard?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faWallet} className="menu-icon" /> Financial Dashboard</h1>
+                                </Link>
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
                                 <h1 className='dropdown-content' onClick={toggleMenu}>
                                     <FontAwesomeIcon icon={faStore} className="menu-icon" /> My Restaurants
                                 </h1>
@@ -333,6 +345,19 @@ const Navbar = ({ setPing, ping }) => {
                                 </Link>
                             </>
                         )}
+<<<<<<< HEAD
+=======
+                        {user?.role === 'user' && (
+                            <>
+                              
+                                <Link to={`/commandes?lang=${lang}`} onClick={toggleMenu}>
+                                    <h1 className='dropdown-content'><FontAwesomeIcon icon={faShoppingCart} className="menu-icon" /> Orders</h1>
+                                </Link>
+                            </>
+                        )
+
+                        }
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
                         <button className="logout-button" onClick={handleLogout}>Logout</button>
                     </div>
                 </>

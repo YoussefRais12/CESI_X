@@ -271,7 +271,11 @@ function Commandes() {
                   {order.Orders && order.Orders.length > 0 ? (
                     order.Orders.map((subOrder, subIndex) => (
                       <div key={subIndex}>
+<<<<<<< HEAD
                         <p>{`${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice}`}</p>
+=======
+                        <p>{`${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice.toFixed(2)}`}</p>
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
                         <p>{`${languageData.subOrderStatus || 'Sub Order Status'}: ${subOrder.OrderStatus}`}</p>
                         {subOrder.Menus && subOrder.Menus.length > 0 && (
                           <>
@@ -336,13 +340,21 @@ function Commandes() {
                   <p>{`${languageData.orderID || 'Order ID'}: ${order._id}`}</p>
                   <p>{`${languageData.orderAddress || 'Order Address'}: ${user.address}`}</p>
                   <p>{`${languageData.orderPhone || 'Order Phone'}: ${user.phoneNumber}`}</p>
+<<<<<<< HEAD
                   <p>{`${languageData.orderPrice || 'Order Price'}: ${order.OrderPrice}`}</p>
+=======
+                  <p>{`${languageData.orderPrice || 'Order Price'}: ${order.OrderPrice.toFixed(2)}`}</p>
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
                   <p>{`${languageData.orderStatus || 'Order Status'}: ${order.OrderStatus}`}</p>
                   <h6>{languageData.subOrders || 'Sub Orders'}:</h6>
                   {order.Orders && order.Orders.length > 0 ? (
                     order.Orders.map((subOrder, subIndex) => (
                       <div key={subIndex}>
+<<<<<<< HEAD
                         <p>{`${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice}`}</p>
+=======
+                        <p>{`${languageData.subOrderPrice || 'Sub Order Price'}: ${subOrder.OrderPrice.toFixed(2)}`}</p>
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
                         <p>{`${languageData.subOrderStatus || 'Sub Order Status'}: ${subOrder.OrderStatus}`}</p>
                         {subOrder.Menus && subOrder.Menus.length > 0 && (
                           <>

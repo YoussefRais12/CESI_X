@@ -24,6 +24,10 @@ import UserManagement from './pages/UserManagement';
 import UserDetails from './pages/UserDetails';
 import AdminOrders from "./pages/AdminOrders";
 import DeliveryCommands from "./pages/DeliveryCommands";
+<<<<<<< HEAD
+=======
+import FinancialDashboard from './pages/FinancialDashboard'; // Adjust the path as needed
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 import { Elements } from '@stripe/react-stripe-js';
@@ -87,6 +91,10 @@ function App() {
                 <Route path="/usermanagement" element={<UserManagement />} />
                 <Route path="/user/:id" element={<UserDetails />} />
                 <Route path="/delivery-commands" element={<DeliveryCommands />} />
+<<<<<<< HEAD
+=======
+                <Route path="/financial-dashboard" element={<FinancialDashboard />} /> 
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
               </Routes>
             </CSSTransition>
           </TransitionGroup>

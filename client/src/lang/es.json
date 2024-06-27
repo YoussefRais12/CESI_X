@@ -74,5 +74,10 @@
   "deliveryPersonInfo": "Información del repartidor",
   "vehicleDetails": "Detalles del vehículo",
   "status": "Estado",
+<<<<<<< HEAD
   "logout": "Cerrar sesión"
+=======
+  "logout": "Cerrar sesión",
+  "languageSettings": "Configuración de idioma"
+>>>>>>> 8e72f17f710ce32065efe7ffea78856994bf13b8
 }
